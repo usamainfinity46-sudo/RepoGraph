@@ -52,3 +52,11 @@ directory containing installed Jest 30.5.2 and Vitest 5.1.0. CI installs them
 with --ignore-scripts in runner temp, using Node 24 on Linux and Windows, and
 runs real pass/fail/no-test and exact/substring-selection checks. These runtimes
 are not production Python dependencies and are never installed by the MCP.
+
+Phase 7 checks overview before and after indexing, repository-key isolation in
+a shared database, a saved baseline and host verification flag, and no source
+reads from overview. SDK subprocess tests exercise the tool and resource. CLI
+tests parse overview JSON. After building, CI installs the wheel in a clean
+temporary environment outside the source tree and checks its installed entry
+point, stdio negotiation, indexing, overview tool and resource. This does not
+certify behavior in specific GUI client releases.

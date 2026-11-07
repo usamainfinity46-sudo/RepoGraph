@@ -12,7 +12,8 @@
    classification, confidence, evidence, affected modules and snapshot context.
 6. Test intelligence: complete. Static pytest/Jest/Vitest discovery, graph/fixture
    test selection, approved bounded execution, persisted results and comparisons.
-7. Developer experience: planned. Final tools, resources, installation and client guides.
+7. Developer experience: complete. Persisted-state overview tool/resource/CLI,
+   local installation and client guides, isolated installed-wheel stdio smoke.
 8. Benchmarking and security: planned. Malicious input, performance, compatibility matrix.
 9. Public release: planned. PyPI, release automation, demos, contribution guidelines.
 

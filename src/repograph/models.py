@@ -83,6 +83,19 @@ class Health(BaseModel):
     repository: str
 
 
+class RepositoryOverview(BaseModel):
+    schema_version: int = 1
+    repository: str
+    indexed: bool
+    snapshot_id: str | None = None
+    indexed_files: int = 0
+    nodes: int = 0
+    edges: int = 0
+    unresolved_edges: int = 0
+    baseline_commit: str | None = None
+    verification_enabled: bool = False
+
+
 class ScanSummary(BaseModel):
     schema_version: int = 1
     discovered: int = 0

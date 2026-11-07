@@ -60,7 +60,9 @@ dependencies may be missed. Verification runs host-permission code; it is not
 an adversarial OS sandbox. Input fingerprints exclude ignored files, dependencies
 and external resources. Passing tests do not establish causal correctness.
 
-Phases 7–9 remain: installation/client setup polish, performance and accuracy
-benchmarks, formal hostile-repository/sandbox validation, broader runner/client
-compatibility, operational history retention/crash recovery, and public release.
+At the Phase 6 handoff, Phases 7–9 remained. Phase 7 is now documented in
+[its acceptance record](PHASE_7_ACCEPTANCE.md). Phases 8–9 still cover performance
+and accuracy benchmarks, formal hostile-repository/sandbox validation, broader
+runner/client compatibility, operational history retention/crash recovery, and
+public release.
 See VERIFICATION.md and SECURITY_MODEL.md before enabling execution.

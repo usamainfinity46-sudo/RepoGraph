@@ -111,3 +111,10 @@ reports cannot pass, no-test/all-skipped runs are distinct, and repository chang
 during execution invalidate a passed assessment. Persisted per-case results can
 be compared for potential regressions, continuing failures and unverified tests.
 The model labels potential regressions; it does not infer causality or coverage.
+
+Phase 7 adds a transport-independent overview service. It reads repository-scoped
+index and baseline metadata in one SQLite read transaction without scanning source
+or asserting freshness. The MCP tool and resource and the CLI share this service.
+Client configuration launches the already-installed executable over stdio, so
+MCP startup does not invoke a package manager. One server instance still binds
+to one host-selected repository root.

@@ -13,6 +13,8 @@ from repograph.discovery import RepositoryError
 class ProcessGroup:
     def __init__(self):
         self.job = None
+        self._kill_lock = threading.Lock()
+        self._killed = False
         if os.name == "nt":
             import ctypes
             from ctypes import wintypes
@@ -74,15 +76,21 @@ class ProcessGroup:
             )
 
     def kill(self, process):
-        if self.job:
-            self.kernel.TerminateJobObject(self.job, 1)
-        elif os.name != "nt":
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-        elif process.poll() is None:
-            process.kill()
+        # Reader, main thread and finally may all request cleanup. Repeated
+        # killpg can raise EPERM on macOS after the group has exited.
+        with self._kill_lock:
+            if self._killed:
+                return
+            if self.job:
+                self.kernel.TerminateJobObject(self.job, 1)
+            elif os.name != "nt":
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            elif process.poll() is None:
+                process.kill()
+            self._killed = True
 
     def close(self):
         if self.job:

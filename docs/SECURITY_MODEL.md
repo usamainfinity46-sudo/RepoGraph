@@ -33,6 +33,9 @@ Graph publication is transactional: partial scans or failed writes preserve the
 previous graph. Graph queries read persisted evidence, not live source. Graph
 snapshots are retained locally and may contain symbol/import names; the database
 is trusted local state and is not a sandbox for untrusted database files.
+The overview tool/resource exposes the configured root, saved baseline commit,
+verification opt-in state and graph counts to connected clients. It reads saved
+metadata only and cannot establish source freshness.
 
 Git commands use a host-installed executable outside the repository, argument
 arrays, no shell, disabled fsmonitor/hooks/network protocols, stripped inherited

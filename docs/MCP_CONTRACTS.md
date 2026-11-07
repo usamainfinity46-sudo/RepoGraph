@@ -162,3 +162,14 @@ verification_not_finished, invalid_test_selection, no_tests_selected,
 runner_unavailable, isolation_unavailable and invalid_test_report. Host policy
 cannot be changed through MCP arguments. Analysis tools never execute code;
 explicit verification executes repository code and can have its side effects.
+
+Implemented Phase 7:
+
+- `get_repository_overview()` returns schema version 1, configured root, whether
+  a graph was published, current snapshot ID, indexed file/node/edge/unresolved
+  counts, saved baseline commit and host verification opt-in state. It reads only
+  repository-scoped persisted metadata. An unindexed repository has null snapshot
+  and baseline unless separately saved, and zero graph counts.
+- Resource `repograph://overview` returns the same JSON. CLI `overview` returns
+  the same contract. Neither checks current source freshness, changes Git state,
+  or executes repository code. Counts describe only the last published graph.

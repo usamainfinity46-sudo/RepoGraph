@@ -10,6 +10,7 @@ from repograph.git_service import GitService
 from repograph.graph import GraphService
 from repograph.impact import ImpactService
 from repograph.logging import configure_logging
+from repograph.overview import OverviewService
 from repograph.server import create_server
 from repograph.service import RepositoryService
 from repograph.storage import Database
@@ -54,6 +55,7 @@ def main() -> None:
         choices=[
             "serve",
             "init",
+            "overview",
             "scan",
             "parse",
             "index",
@@ -96,6 +98,8 @@ def main() -> None:
         if args.command == "init":
             Database(settings.database).migrate()
             print(f"Initialized {settings.database}")
+        elif args.command == "overview":
+            print(OverviewService(settings).get().model_dump_json(indent=2))
         elif args.command == "scan":
             print(RepositoryService(settings).scan().model_dump_json(indent=2))
         elif args.command == "parse":

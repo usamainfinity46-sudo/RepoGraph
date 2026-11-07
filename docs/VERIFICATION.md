@@ -1,20 +1,23 @@
 # Verification workflow
 
+Examples use the installed macOS/Linux executable. On Windows use
+`.venv/Scripts/repograph.exe`; see [installation](INSTALLATION.md).
+
 Discovery and suggestions never execute repository code:
 
 ```sh
-uv run repograph --root /absolute/repository index
-uv run repograph --root /absolute/repository tests
-uv run repograph --root /absolute/repository suggest-tests src/service.py
+.venv/bin/repograph --root /absolute/repository index
+.venv/bin/repograph --root /absolute/repository tests
+.venv/bin/repograph --root /absolute/repository suggest-tests src/service.py
 ```
 
 Prepare a concrete command, review its output, then approve that plan ID. Use
 the same host policy flags for preparation and execution:
 
 ```sh
-uv run repograph --root /absolute/repository --enable-verification --test-path tests/test_service.py prepare-verification
-uv run repograph --root /absolute/repository --enable-verification --approve verify PLAN_ID
-uv run repograph --root /absolute/repository verification-result PLAN_ID
+.venv/bin/repograph --root /absolute/repository --enable-verification --test-path tests/test_service.py prepare-verification
+.venv/bin/repograph --root /absolute/repository --enable-verification --approve verify PLAN_ID
+.venv/bin/repograph --root /absolute/repository verification-result PLAN_ID
 ```
 
 The verify command exits 0 only for passed and 1 for other finished outcomes;
@@ -58,7 +61,7 @@ are distinct from success, and bad/missing reports are errors.
 Saved runs can be compared with compare_verifications or the CLI:
 
 ```sh
-uv run repograph --root /absolute/repository --before BEFORE_PLAN --after AFTER_PLAN verification-diff
+.venv/bin/repograph --root /absolute/repository --before BEFORE_PLAN --after AFTER_PLAN verification-diff
 ```
 
 Potential regression means a matched previously passed case now failed, not
