@@ -8,7 +8,8 @@
    immutable snapshots, and incremental node/edge publication.
 4. Git intelligence: complete. Persisted commit baselines, staged/working/commit
    comparisons, rename evidence, changed symbols, and graph snapshot deltas.
-5. Impact analysis: planned. Reverse traversal, confidence, evidence.
+5. Impact analysis: complete. Bounded reverse traversal, direct/transitive
+   classification, confidence, evidence, affected modules and snapshot context.
 6. Test intelligence: planned. Discovery, mapping, approved execution, timeouts.
 7. Developer experience: planned. Final tools, resources, installation and client guides.
 8. Benchmarking and security: planned. Malicious input, performance, compatibility matrix.

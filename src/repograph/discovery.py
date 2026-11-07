@@ -53,7 +53,7 @@ def is_link(path: Path) -> bool:
     )
 
 
-def safe_path(settings: Settings, relative: str) -> Path:
+def normalize_relative(relative: str) -> str:
     parts = relative.replace("\\", "/").split("/")
     reserved = getattr(ntpath, "isreserved", None)
     if (
@@ -66,6 +66,11 @@ def safe_path(settings: Settings, relative: str) -> Path:
         )
     ):
         raise RepositoryError("invalid_path", "Use a normalized repository-relative file path")
+    return "/".join(parts)
+
+
+def safe_path(settings: Settings, relative: str) -> Path:
+    parts = normalize_relative(relative).split("/")
     path = settings.root
     for part in parts:
         path = path / part

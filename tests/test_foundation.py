@@ -64,3 +64,6 @@ async def test_stdio_connectivity(tmp_path):
             node = json.loads(symbols.content[0].text)["nodes"][0]
             edges = await session.call_tool("get_dependencies", {"node_id": node["id"]})
             assert not edges.isError
+            impact = await session.call_tool("analyze_impact", {"paths": ["sample.py"]})
+            assert not impact.isError
+            assert json.loads(impact.content[0].text)["freshness"] == "current"

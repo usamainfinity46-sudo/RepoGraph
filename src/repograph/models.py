@@ -241,3 +241,40 @@ class ChangedSymbolPage(BaseModel):
     next_offset: int | None = None
     complete: bool = True
     diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class ImpactEvidence(BaseModel):
+    edge_id: str
+    snapshot_id: str
+    source: str
+    target: str
+    relation: str
+    path: str
+    line: int
+    confidence: Literal["static", "heuristic", "unresolved"]
+
+
+class ImpactedNode(BaseModel):
+    node: GraphNode
+    depth: int
+    classification: Literal["changed", "context", "direct", "transitive"]
+    confidence: Literal["static", "heuristic"]
+    origin: str
+    evidence: list[ImpactEvidence]
+
+
+class ImpactReport(BaseModel):
+    snapshot_ids: list[str]
+    baseline: str | None = None
+    target: str | None = None
+    changed_paths: list[str]
+    seeds: list[str]
+    affected: list[ImpactedNode]
+    total: int
+    next_offset: int | None = None
+    affected_modules: list[str]
+    total_modules: int
+    unresolved_dependencies: int
+    freshness: Literal["current", "stale", "unknown"]
+    complete: bool
+    diagnostics: list[Diagnostic] = Field(default_factory=list)

@@ -12,6 +12,7 @@ from repograph.config import Settings
 from repograph.discovery import RepositoryError
 from repograph.git_service import GitService
 from repograph.graph import GraphService
+from repograph.impact import ImpactService
 from repograph.models import (
     Baseline,
     ChangedSymbolPage,
@@ -19,6 +20,7 @@ from repograph.models import (
     EdgePage,
     FilePage,
     Health,
+    ImpactReport,
     IndexReport,
     NodePage,
     ParsePage,
@@ -150,5 +152,36 @@ def create_server(settings: Settings) -> FastMCP:
     ) -> SnapshotDelta:
         """Compare retained immutable graph snapshots without changing repository files."""
         return guarded(lambda: graph.compare_snapshots(before, after, offset, limit))
+
+    @server.tool()
+    def analyze_impact(
+        paths: list[str] | None = None,
+        node_ids: list[str] | None = None,
+        baseline: str | None = None,
+        snapshot_id: str | None = None,
+        before_snapshot_id: str | None = None,
+        max_depth: int = 10,
+        max_nodes: int = 5000,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> ImpactReport:
+        """Trace potential direct/transitive dependents with evidence and explicit limitations.
+
+        Omitted paths/node IDs use current Git changes. Explicit [] analyzes no changes.
+        File seeds conservatively include all symbols in the file. No code executes.
+        """
+        return guarded(
+            lambda: ImpactService(settings).analyze(
+                paths,
+                node_ids,
+                baseline,
+                snapshot_id,
+                before_snapshot_id,
+                max_depth,
+                max_nodes,
+                offset,
+                limit,
+            )
+        )
 
     return server

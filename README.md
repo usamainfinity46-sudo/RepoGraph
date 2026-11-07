@@ -51,7 +51,7 @@ certified. Protocol connectivity is tested using the official SDK client.
 
 ## Implemented scope
 
-Phases 1–4 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
+Phases 1–5 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
 SQLite migrations/cache, nested .gitignore discovery, SHA-256 hashing, and
 Tree-sitter extraction for Python, JavaScript/JSX, TypeScript, and TSX.
 MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
@@ -63,6 +63,9 @@ Phase 4 adds `set_baseline`, `get_changes`, `get_changed_symbols`, and
 `compare_snapshots`. Git analysis includes staged/unstaged and commit changes,
 rename evidence, changed symbols and bounded line ranges. Git must be installed
 on the host; configure its working-tree root as the repository boundary.
+Phase 5 adds `analyze_impact` and `repograph impact [PATH]`: direct/transitive
+potential dependents, evidence chains, affected modules, stale-graph checks and
+explicit uncertainty. Index first; retain a before snapshot for deleted code.
 
 ```sh
 uv run repograph --root /absolute/repository index
@@ -82,8 +85,8 @@ uv run repograph --root /absolute/repository --max-files 5000 --max-file-bytes 1
 
 Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
 are excluded. Dynamic imports are unresolved. Cross-file resolution supports
-the documented static patterns; runtime behavior remains uncertain. Impact
-reports and test execution belong to later phases. GUI clients have
+the documented static patterns; runtime behavior remains uncertain. Test
+execution belongs to Phase 6. GUI clients have
 not been manually certified.
 
 Change reports with complete=false contain explicit limitations. Filters are

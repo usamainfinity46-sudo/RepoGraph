@@ -8,6 +8,7 @@ from repograph import __version__
 from repograph.config import Settings
 from repograph.git_service import GitService
 from repograph.graph import GraphService
+from repograph.impact import ImpactService
 from repograph.logging import configure_logging
 from repograph.server import create_server
 from repograph.service import RepositoryService
@@ -28,6 +29,8 @@ def main() -> None:
     parser.add_argument("--target", default="WORKTREE", help="WORKTREE, INDEX, or local commit")
     parser.add_argument("--before", help="Old graph snapshot ID")
     parser.add_argument("--after", help="New graph snapshot ID")
+    parser.add_argument("--max-depth", type=int, default=10)
+    parser.add_argument("--max-nodes", type=int, default=5000)
     parser.add_argument(
         "command",
         choices=[
@@ -40,6 +43,7 @@ def main() -> None:
             "baseline",
             "changes",
             "snapshot-diff",
+            "impact",
         ],
         nargs="?",
         default="serve",
@@ -84,6 +88,19 @@ def main() -> None:
             print(
                 GraphService(settings)
                 .compare_snapshots(args.before, args.after)
+                .model_dump_json(indent=2)
+            )
+        elif args.command == "impact":
+            print(
+                ImpactService(settings)
+                .analyze(
+                    paths=[args.path] if args.path else None,
+                    baseline=args.baseline,
+                    snapshot_id=args.after,
+                    before_snapshot_id=args.before,
+                    max_depth=args.max_depth,
+                    max_nodes=args.max_nodes,
+                )
                 .model_dump_json(indent=2)
             )
         else:

@@ -75,3 +75,12 @@ and working-tree encodings produce uncertainty instead of being executed.
 Rename detection combines Git index/commit similarity with unique content
 matches and bounded heuristic line overlap for unstaged edited moves. Ordinary
 diff hunks are computed locally, so Git custom diff drivers cannot run.
+
+Phase 5 uses bounded reverse graph traversal. Calls/inheritance/imports add a
+semantic hop; containment adds ownership context at zero hops. File seeds include
+their declarations, while explicit symbol IDs allow narrower analysis. A visited
+best-distance/confidence map handles cycles and diamond dependencies, retaining
+one reproducible shortest witness per node. Historical and current snapshots may
+be combined to preserve dependencies of deleted/renamed code. Results expose
+freshness, unknown edges, limits and unindexed paths rather than implying safety.
+No LLM, source execution or automatic repository modification is involved.

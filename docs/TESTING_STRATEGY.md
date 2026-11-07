@@ -27,3 +27,8 @@ limits, timeouts, malicious filter prevention, and MCP tool calls. Graph tests
 also verify failed-publication rollback and snapshot retention/pagination.
 Executable-bit tests run on POSIX; Windows skips that test. Native symlinks may
 require Windows privilege; Windows junction protection runs without that privilege.
+
+Phase 5 verifies direct/transitive calls, reverse imports, evidence integrity,
+ownership context, cycles, pagination, depth/node limits, stale source inventories,
+deleted symbols with before snapshots, missing nodes, unresolved edges, bounded
+freshness checks, and SDK impact calls.

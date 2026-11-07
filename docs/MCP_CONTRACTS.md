@@ -90,5 +90,28 @@ git_byte_limit, unsupported_git_filter, unmerged_index, and change_not_found.
 Git operations require the configured root to be the working-tree root and a
 host-installed Git version supporting --end-of-options and SHA-256 repositories.
 
-Planned later: analyze_impact (Phase 5), suggest_tests and verify_changes
-(Phase 6). No tool edits source.
+Implemented Phase 5:
+
+- `analyze_impact(paths=null, node_ids=null, baseline=null, snapshot_id=null,
+  before_snapshot_id=null, max_depth=10, max_nodes=5000, offset=0, limit=100)`:
+  reverse dependencies from explicit file paths or graph node IDs. Omitted
+  seeds use Git working changes; explicit paths=[] requests no file changes.
+  File seeds conservatively include all indexed declarations in those files.
+  A before snapshot preserves deleted/renamed dependencies alongside the primary
+  graph. Primary node metadata wins when stable IDs appear in both snapshots.
+
+Results include changed/context/direct/transitive classifications, semantic hop
+depth, static/heuristic confidence, origin seed and one shortest evidence chain
+per node. Each witness edge identifies its source snapshot, path and line.
+Containment propagates ownership at zero semantic hops; it is not a call.
+Returned nodes paginate normally; module previews cap at 200 with total_modules.
+Traversal bounds are depth 0..100, nodes 1..200000 and 200 evidence steps.
+
+Freshness checks compare indexed source inventory/hashes with current files.
+Stale/unknown graphs, missing seeds and exhausted limits make complete=false.
+Unresolved edges are counted and diagnosed even when bounded traversal completes;
+complete never means exhaustive runtime knowledge. Node-ID seeds absent from
+both selected snapshots are rejected. Errors include invalid_impact_limit,
+too_many_seeds, impact_seed_limit and node_not_found.
+
+Planned later: suggest_tests and verify_changes (Phase 6). No tool edits source.
