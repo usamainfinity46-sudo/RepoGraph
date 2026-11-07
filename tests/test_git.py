@@ -356,7 +356,7 @@ def test_host_line_ending_setting_is_used_without_host_command_configuration(
     path = repository / "main.py"
     path.write_bytes(b"def stable(): return 1\ndef change(): return 2\n")
     git(repository, "add", "main.py")
-    git(repository, "commit", "-m", "normalized blob")
+    git(repository, "commit", "--allow-empty", "-m", "normalized blob")
     git(repository, "config", "--unset", "core.autocrlf")
     home = tmp_path.parent / (tmp_path.name + "-host-home")
     home.mkdir()

@@ -36,6 +36,8 @@ are disabled; opt into installed plugin modules with --pytest-plugin, for exampl
 --pytest-plugin pytest_asyncio.plugin. Standard fixtures/conftest still run.
 Python uses a fresh temporary bytecode-cache namespace with bytecode writes
 disabled, so same-size/same-timestamp edits cannot silently reuse an old .pyc.
+The invoked venv interpreter path is preserved on Unix; resolving its symlink
+to the base Python would discard the project's installed packages.
 
 For JS, use --framework jest or --framework vitest. Node defaults to a host
 installation; --node-executable overrides it. Runner entries default to

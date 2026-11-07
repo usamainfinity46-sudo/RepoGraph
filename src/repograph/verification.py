@@ -34,7 +34,7 @@ from repograph.reports import parse_report
 from repograph.service import pagination
 from repograph.testing import TestIntelligence
 
-VERIFIER_VERSION = "verification-2"
+VERIFIER_VERSION = "verification-3"
 
 
 class VerificationService:
@@ -93,6 +93,11 @@ class VerificationService:
                 "runner_unavailable",
                 "Runner executable/entry is unavailable; no packages are installed automatically",
             ) from error
+        if framework == "pytest":
+            # Following a Unix venv's python symlink selects the base interpreter
+            # and silently discards the venv site-packages. Validate the real target
+            # above, but invoke the host-selected lexical interpreter path.
+            return [os.path.abspath(entries[0])]
         return [str(path) for path in resolved]
 
     def _policy(self, framework: str) -> str:

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -44,6 +45,7 @@ def test_real_pytest_success_failure_skip_and_result_persistence(project):
     root, settings = project
     service = VerificationService(settings)
     plan = service.prepare("pytest", ["test_sample.py"])
+    assert plan.command[0] == os.path.abspath(sys.executable)
     result = service.verify(plan.id, approved=True)
     assert result.status == "passed", result.model_dump_json()
     assert result.exit_code == 0 and result.counts.passed == 1
