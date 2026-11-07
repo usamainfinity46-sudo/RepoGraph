@@ -18,3 +18,12 @@ Phase 3 covers multi-file Python/JS/TS/TSX resolution, aliases, re-export cycles
 inheritance, duplicates, shadowing, stable IDs, deletions, foreign-key integrity,
 partial-scan refusal, snapshot deltas, v1 migration, persistence, and MCP calls.
 A large-module subprocess regression test detects native parser crashes safely.
+
+Phase 4 uses real temporary Git repositories for saved baselines, commit/index/
+working comparisons, untracked ignores, additions/deletions, exact and edited
+renames, changed symbol pagination, decorator edits, CRLF normalization, binary
+and malformed inputs, unborn repositories, merge conflicts, SHA-256 object IDs,
+limits, timeouts, malicious filter prevention, and MCP tool calls. Graph tests
+also verify failed-publication rollback and snapshot retention/pagination.
+Executable-bit tests run on POSIX; Windows skips that test. Native symlinks may
+require Windows privilege; Windows junction protection runs without that privilege.

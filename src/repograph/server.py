@@ -10,8 +10,12 @@ from mcp.server.fastmcp.exceptions import ToolError
 from repograph import __version__
 from repograph.config import Settings
 from repograph.discovery import RepositoryError
+from repograph.git_service import GitService
 from repograph.graph import GraphService
 from repograph.models import (
+    Baseline,
+    ChangedSymbolPage,
+    ChangeReport,
     EdgePage,
     FilePage,
     Health,
@@ -19,6 +23,7 @@ from repograph.models import (
     NodePage,
     ParsePage,
     ScanSummary,
+    SnapshotDelta,
 )
 from repograph.service import RepositoryService
 from repograph.storage import SCHEMA_VERSION, Database
@@ -70,7 +75,7 @@ def create_server(settings: Settings) -> FastMCP:
         """Extract lexical symbols and import evidence from a root-relative UTF-8 file.
 
         Symbols and imports are independently sliced using the same offset and limit.
-        Imports are observations; cross-file resolution is not yet implemented.
+        Imports are observations; graph tools resolve supported static patterns.
         """
         try:
             return service.parse_file(path, offset, limit)
@@ -109,5 +114,41 @@ def create_server(settings: Settings) -> FastMCP:
     ) -> EdgePage:
         """Return direct graph edges with evidence; resolved calls remain heuristic candidates."""
         return guarded(lambda: graph.dependencies(node_id, direction, relation, offset, limit))
+
+    @server.tool()
+    def set_baseline(revision: str = "HEAD") -> Baseline:
+        """Save a resolved local commit as the repository comparison baseline."""
+        return guarded(lambda: GitService(settings).set_baseline(revision))
+
+    @server.tool()
+    def get_changes(
+        baseline: str | None = None, target: str = "WORKTREE", offset: int = 0, limit: int = 100
+    ) -> ChangeReport:
+        """Compare a baseline with WORKTREE, INDEX, or a commit, including changed symbols.
+
+        Defaults to saved baseline, else HEAD. No code, filters or external diffs run.
+        Per-file symbol and hunk previews are limited to 100 entries.
+        """
+        return guarded(lambda: GitService(settings).get_changes(baseline, target, offset, limit))
+
+    @server.tool()
+    def get_changed_symbols(
+        path: str,
+        baseline: str | None = None,
+        target: str = "WORKTREE",
+        offset: int = 0,
+        limit: int = 100,
+    ) -> ChangedSymbolPage:
+        """Paginate changed symbols for a file in a fresh Git comparison."""
+        return guarded(
+            lambda: GitService(settings).changed_symbols(path, baseline, target, offset, limit)
+        )
+
+    @server.tool()
+    def compare_snapshots(
+        before: str, after: str, offset: int = 0, limit: int = 100
+    ) -> SnapshotDelta:
+        """Compare retained immutable graph snapshots without changing repository files."""
+        return guarded(lambda: graph.compare_snapshots(before, after, offset, limit))
 
     return server

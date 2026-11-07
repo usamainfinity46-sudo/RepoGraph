@@ -6,7 +6,8 @@
    hashing, Tree-sitter extraction for Python, JavaScript, TypeScript/TSX.
 3. Graph engine: complete. Persistent graph, conservative resolution, cycles,
    immutable snapshots, and incremental node/edge publication.
-4. Git intelligence: planned. Baselines, diffs, renames, changed symbols.
+4. Git intelligence: complete. Persisted commit baselines, staged/working/commit
+   comparisons, rename evidence, changed symbols, and graph snapshot deltas.
 5. Impact analysis: planned. Reverse traversal, confidence, evidence.
 6. Test intelligence: planned. Discovery, mapping, approved execution, timeouts.
 7. Developer experience: planned. Final tools, resources, installation and client guides.

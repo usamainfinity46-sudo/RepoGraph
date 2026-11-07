@@ -6,6 +6,7 @@ from pathlib import Path
 
 from repograph import __version__
 from repograph.config import Settings
+from repograph.git_service import GitService
 from repograph.graph import GraphService
 from repograph.logging import configure_logging
 from repograph.server import create_server
@@ -23,9 +24,23 @@ def main() -> None:
     parser.add_argument("--max-file-bytes", type=int, default=2_000_000)
     parser.add_argument("--max-files", type=int, default=20_000)
     parser.add_argument("--max-total-bytes", type=int, default=100_000_000)
+    parser.add_argument("--baseline", help="Local commit revision to compare against")
+    parser.add_argument("--target", default="WORKTREE", help="WORKTREE, INDEX, or local commit")
+    parser.add_argument("--before", help="Old graph snapshot ID")
+    parser.add_argument("--after", help="New graph snapshot ID")
     parser.add_argument(
         "command",
-        choices=["serve", "init", "scan", "parse", "index", "symbols"],
+        choices=[
+            "serve",
+            "init",
+            "scan",
+            "parse",
+            "index",
+            "symbols",
+            "baseline",
+            "changes",
+            "snapshot-diff",
+        ],
         nargs="?",
         default="serve",
     )
@@ -55,6 +70,22 @@ def main() -> None:
             print(GraphService(settings).index().model_dump_json(indent=2))
         elif args.command == "symbols":
             print(GraphService(settings).query_symbols(args.path or "").model_dump_json(indent=2))
+        elif args.command == "baseline":
+            print(GitService(settings).set_baseline(args.path or "HEAD").model_dump_json(indent=2))
+        elif args.command == "changes":
+            print(
+                GitService(settings)
+                .get_changes(args.baseline, args.target)
+                .model_dump_json(indent=2)
+            )
+        elif args.command == "snapshot-diff":
+            if not args.before or not args.after:
+                parser.error("snapshot-diff requires --before and --after")
+            print(
+                GraphService(settings)
+                .compare_snapshots(args.before, args.after)
+                .model_dump_json(indent=2)
+            )
         else:
             create_server(settings).run(transport="stdio")
     except (OSError, ValueError, sqlite3.Error) as error:

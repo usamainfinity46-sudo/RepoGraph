@@ -1,6 +1,6 @@
 # Graph schema and extraction contract
 
-Current SQLite schema version: 2 (PRAGMA user_version).
+Current SQLite schema version: 3 (PRAGMA user_version).
 
 `repositories(id, root UNIQUE)` owns
 `files(repository_id, path, sha256, parser_version, data)`, whose composite
@@ -32,3 +32,13 @@ Extraction models separate symbols from import observations. Source spans have
 one-based lines and UTF-8 byte columns; end coordinates and byte offsets are
 exclusive. Qualified names encode lexical named scopes; they are not globally
 resolved identities. A SHA-256 identifies the exact source bytes parsed.
+
+Schema 3 adds `git_baselines(repository_id PRIMARY KEY, commit_sha)`. Baselines
+are resolved local commit object IDs, not mutable branch names, and are isolated
+when repository roots share a database. Migrations 1 -> 2 -> 3 preserve existing
+cache/graph data. Symbol hashes include Python decorators so decorator-only
+edits are detectable; coordinates still describe the declaration itself.
+
+Snapshot deltas report added/removed/modified node and edge IDs, paginated across
+one combined ordered list. Node modifications include span shifts. Git symbol
+reports separately detect declaration content changes, ignoring line shifts.

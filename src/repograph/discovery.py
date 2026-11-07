@@ -82,7 +82,7 @@ def safe_path(settings: Settings, relative: str) -> Path:
     return path
 
 
-def read_source(settings: Settings, relative: str) -> bytes:
+def read_content(settings: Settings, relative: str) -> bytes:
     path = safe_path(settings, relative)
     try:
         with path.open("rb") as stream:
@@ -91,6 +91,11 @@ def read_source(settings: Settings, relative: str) -> bytes:
         raise RepositoryError("read_error", "Could not read source file") from error
     if len(data) > settings.max_file_bytes:
         raise RepositoryError("file_too_large", "File exceeds configured byte limit")
+    return data
+
+
+def read_source(settings: Settings, relative: str) -> bytes:
+    data = read_content(settings, relative)
     if b"\x00" in data:
         raise RepositoryError("binary_file", "Binary source files are unsupported")
     try:

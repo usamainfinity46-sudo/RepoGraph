@@ -51,7 +51,7 @@ certified. Protocol connectivity is tested using the official SDK client.
 
 ## Implemented scope
 
-Phases 1–3 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
+Phases 1–4 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
 SQLite migrations/cache, nested .gitignore discovery, SHA-256 hashing, and
 Tree-sitter extraction for Python, JavaScript/JSX, TypeScript, and TSX.
 MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
@@ -59,6 +59,20 @@ MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
 Phase 3 adds `index_repository`, `query_symbols`, and `get_dependencies`, plus
 `repograph index` and `repograph symbols SEARCH`. Static graph publication is
 transactional and preserves unresolved references and cyclic dependencies.
+Phase 4 adds `set_baseline`, `get_changes`, `get_changed_symbols`, and
+`compare_snapshots`. Git analysis includes staged/unstaged and commit changes,
+rename evidence, changed symbols and bounded line ranges. Git must be installed
+on the host; configure its working-tree root as the repository boundary.
+
+```sh
+uv run repograph --root /absolute/repository index
+uv run repograph --root /absolute/repository symbols Invoice
+uv run repograph --root /absolute/repository baseline HEAD
+uv run repograph --root /absolute/repository changes
+uv run repograph --root /absolute/repository --target INDEX changes
+uv run repograph --root /absolute/repository --baseline HEAD~1 --target HEAD changes
+uv run repograph --root /absolute/repository --before SNAPSHOT_A --after SNAPSHOT_B snapshot-diff
+```
 
 Configure limits before the command, for example:
 
@@ -68,9 +82,14 @@ uv run repograph --root /absolute/repository --max-files 5000 --max-file-bytes 1
 
 Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
 are excluded. Dynamic imports are unresolved. Cross-file resolution supports
-the documented static patterns; runtime behavior remains uncertain. Git diffs,
-impact reports, and test execution belong to later phases. GUI clients have
+the documented static patterns; runtime behavior remains uncertain. Impact
+reports and test execution belong to later phases. GUI clients have
 not been manually certified.
+
+Change reports with complete=false contain explicit limitations. Filters are
+never executed, binary/unsupported data lacks symbol detail, and heuristic
+renames/call targets remain candidates. Git comparison honors local text/eol
+settings but deliberately ignores global/system Git configuration.
 
 See [architecture](docs/ARCHITECTURE.md), [contracts](docs/MCP_CONTRACTS.md),
 and [roadmap](docs/DEVELOPMENT_ROADMAP.md) for scope and limitations.

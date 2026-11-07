@@ -166,3 +166,39 @@ for _ in range(3):
     assert result.model_dump_json()
 """
     subprocess.run([sys.executable, "-X", "faulthandler", "-c", code], check=True, timeout=30)
+
+
+def test_failed_publication_rolls_back_entire_graph(tmp_path):
+    path = tmp_path / "a.py"
+    path.write_text("def a(): pass\n")
+    graph = GraphService(Settings.load(tmp_path))
+    first = graph.index()
+    with graph.database.connect() as connection:
+        connection.execute(
+            "CREATE TRIGGER reject_edges BEFORE INSERT ON graph_edges "
+            "BEGIN SELECT RAISE(ABORT, 'intentional failure'); END"
+        )
+    path.write_text("def a(): b()\ndef b(): pass\n")
+    with pytest.raises(sqlite3.IntegrityError, match="intentional failure"):
+        graph.index()
+    assert graph.snapshot().id == first.snapshot_id
+    with graph.database.connect() as connection:
+        assert connection.execute("SELECT count(*) FROM graph_nodes").fetchone()[0] == 2
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_snapshot_retention_and_delta_pagination(tmp_path):
+    path = tmp_path / "a.py"
+    path.write_text("def a(): return 0\n")
+    graph = GraphService(Settings.load(tmp_path))
+    first = graph.index().snapshot_id
+    previous = first
+    for value in range(1, 22):
+        path.write_text(f"def a(): return {value}\n")
+        current = graph.index().snapshot_id
+        delta = graph.compare_snapshots(previous, current, limit=1)
+        assert delta.total_changes == 2 and delta.next_offset == 1
+        assert graph.compare_snapshots(previous, current, offset=1, limit=1).modified_nodes
+        previous = current
+    with pytest.raises(RepositoryError, match="expired"):
+        graph.snapshot(first)

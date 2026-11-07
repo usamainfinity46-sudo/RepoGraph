@@ -178,5 +178,66 @@ class SnapshotDelta(BaseModel):
     modified_nodes: list[str]
     added_edges: list[str]
     removed_edges: list[str]
+    modified_edges: list[str] = Field(default_factory=list)
     total_changes: int
     next_offset: int | None = None
+
+
+class Baseline(BaseModel):
+    commit: str
+    saved: bool = True
+
+
+class DiffHunk(BaseModel):
+    old_start: int
+    old_count: int
+    new_start: int
+    new_count: int
+
+
+class SymbolChange(BaseModel):
+    name: str
+    qualified_name: str
+    kind: str
+    status: Literal["added", "modified", "deleted", "moved"]
+    old_line: int | None = None
+    new_line: int | None = None
+
+
+class FileChange(BaseModel):
+    path: str
+    old_path: str | None = None
+    old_sha256: str | None = None
+    new_sha256: str | None = None
+    status: Literal[
+        "added", "modified", "deleted", "renamed", "type_changed", "unmerged", "unknown"
+    ]
+    staged: bool = False
+    unstaged: bool = False
+    rename_confidence: Literal["git", "exact", "heuristic"] | None = None
+    symbols: list[SymbolChange] = Field(default_factory=list)
+    total_symbols: int = 0
+    hunks: list[DiffHunk] = Field(default_factory=list)
+    total_hunks: int = 0
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class ChangeReport(BaseModel):
+    baseline: str
+    target: str
+    changes: list[FileChange]
+    total: int
+    next_offset: int | None = None
+    complete: bool = True
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class ChangedSymbolPage(BaseModel):
+    baseline: str
+    target: str
+    path: str
+    symbols: list[SymbolChange]
+    total: int
+    next_offset: int | None = None
+    complete: bool = True
+    diagnostics: list[Diagnostic] = Field(default_factory=list)

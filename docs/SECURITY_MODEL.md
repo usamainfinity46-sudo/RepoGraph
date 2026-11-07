@@ -28,3 +28,24 @@ races under concurrent hostile filesystem mutation. Parsing has input bounds
 but no process-level memory/CPU isolation. Cached databases must be trusted
 local state. Repository output can contain malicious prompt text, which clients
 must treat as data. The root itself is chosen and resolved by the trusted host.
+
+Graph publication is transactional: partial scans or failed writes preserve the
+previous graph. Graph queries read persisted evidence, not live source. Graph
+snapshots are retained locally and may contain symbol/import names; the database
+is trusted local state and is not a sandbox for untrusted database files.
+
+Git commands use a host-installed executable outside the repository, argument
+arrays, no shell, disabled fsmonitor/hooks/network protocols, stripped inherited
+GIT_* overrides, and disabled global/system config. Diff commands inspect only
+stored commits/index blobs, with --no-ext-diff and --no-textconv. Working files
+are read directly to avoid clean/smudge filters. Repo-configured custom filters
+or encodings produce incomplete reports. Revision arguments are bounded and
+resolved with --verify --end-of-options before being reused as object IDs.
+
+Each Git subprocess has a 15-second timeout and a 16 MB metadata output cap;
+blob output uses the configured per-file cap. Git comparisons bound inventory
+by max_files and aggregate content reads by max_total_bytes. Line comparison is
+limited to 50000 lines per file, rename heuristics to 2500 candidate pairs, and
+returned diagnostics/previews are capped. There is no global process sandbox or
+overall repository-analysis deadline yet. Git's local metadata/object store is
+trusted; native Git/parser vulnerabilities and filesystem races remain risks.

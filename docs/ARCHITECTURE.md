@@ -23,7 +23,8 @@ Phase 2 uses separate discovery, parsing, and service modules. Discovery applies
 root and nested .gitignore files with Git-style negation and prunes ignored
 directories. Hard exclusions for dependencies, build outputs, VCS internals,
 and RepoGraph state cannot be negated. Global Git ignores and .git/info/exclude
-are not read. No Git executable or .git directory is required.
+are not read. Discovery, parsing and graph indexing do not require Git; Phase 4
+Git intelligence requires a host-installed Git executable and working tree.
 
 The parser uses precompiled Tree-sitter grammars, never compilation or repository
 code execution. Named declarations, bound arrow/function/class expressions,
@@ -53,3 +54,24 @@ Tree-sitter is constrained to 0.25.x after self-indexing reproduced a native
 access violation on 0.26.0. Upstream report:
 https://github.com/tree-sitter/py-tree-sitter/issues/472. A subprocess regression
 test repeatedly parses and serializes a large standard-library module.
+
+Phase 4 separates a bounded Git runner from the change-analysis service. Commit
+trees and staged index entries come from NUL-delimited Git plumbing. Historical
+contents come from raw blobs. Working files are read through the same root/link
+boundary as parsing, with file/aggregate limits. No checkout, index update,
+fetch, hooks, clean/smudge filter, textconv or external diff is needed.
+
+Baseline selection persists an immutable local commit ID. Working comparisons
+include tracked files, baseline paths and Git's non-ignored untracked files;
+hard exclusions still apply. Tracked files remain visible even if newly ignored.
+Commit/index comparisons use stored blobs. These comparisons include non-code
+files, while symbol extraction covers the supported languages. Git metadata and
+working content are not read as an atomic snapshot under concurrent edits.
+
+CRLF-to-LF normalization is enabled by repository-local text/eol attributes or
+core.autocrlf (unless text is unset); binary NUL content is not normalized.
+Global/system Git configuration is intentionally not loaded. Custom filters
+and working-tree encodings produce uncertainty instead of being executed.
+Rename detection combines Git index/commit similarity with unique content
+matches and bounded heuristic line overlap for unstaged edited moves. Ordinary
+diff hunks are computed locally, so Git custom diff drivers cannot run.

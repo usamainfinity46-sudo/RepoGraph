@@ -13,7 +13,7 @@ from repograph.discovery import EXTENSIONS, RepositoryError
 from repograph.models import Diagnostic, Import, ParsedFile, Symbol
 from repograph.relations import extract_relations
 
-PARSER_VERSION = "extractor-4:" + ":".join(
+PARSER_VERSION = "extractor-5:" + ":".join(
     version(package)
     for package in (
         "tree-sitter",
@@ -109,7 +109,11 @@ def parse_source(path: str, source: bytes) -> ParsedFile:
                     start_byte=node.start_byte,
                     end_byte=node.end_byte,
                     content_hash=hashlib.sha256(
-                        source[node.start_byte : node.end_byte]
+                        source[
+                            node.parent.start_byte
+                            if node.parent and node.parent.type == "decorated_definition"
+                            else node.start_byte : node.end_byte
+                        ]
                     ).hexdigest(),
                 )
             )

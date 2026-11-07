@@ -468,6 +468,11 @@ class GraphService:
             ),
             "added_edges": sorted(new_edges.keys() - old_edges.keys()),
             "removed_edges": sorted(old_edges.keys() - new_edges.keys()),
+            "modified_edges": sorted(
+                key
+                for key in old_edges.keys() & new_edges.keys()
+                if old_edges[key] != new_edges[key]
+            ),
         }
         changes = [(group, key) for group, keys in groups.items() for key in keys]
         page = {group: [] for group in groups}
