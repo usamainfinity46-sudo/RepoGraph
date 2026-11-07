@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "repograph-mcp"
+version = "0.1.0.dev0"
+description = "Local, model-agnostic repository intelligence over MCP"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "mcp>=1.28,<2",
+  "pydantic>=2.10,<3",
+  "pathspec>=0.12,<1",
+  "tree-sitter>=0.25,<0.27",
+  "tree-sitter-python>=0.25,<0.26",
+  "tree-sitter-javascript>=0.25,<0.26",
+  "tree-sitter-typescript>=0.23,<0.24",
+]
+
+[project.scripts]
+repograph = "repograph.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.25,<2", "ruff>=0.11,<1", "build>=1,<2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/repograph"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
