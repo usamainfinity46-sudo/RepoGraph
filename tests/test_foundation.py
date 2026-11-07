@@ -32,6 +32,7 @@ def test_reject_future_database(tmp_path):
 
 
 async def test_stdio_connectivity(tmp_path):
+    (tmp_path / "sample.py").write_text("def sample(): return 1\n")
     params = StdioServerParameters(
         command=sys.executable,
         args=["-m", "repograph", "--root", str(tmp_path), "serve"],
@@ -47,3 +48,12 @@ async def test_stdio_connectivity(tmp_path):
             assert json.loads(health.content[0].text)["status"] == "ok"
             resource = await session.read_resource("repograph://status")
             assert json.loads(resource.contents[0].text)["schema_version"] == 1
+            scan = await session.call_tool("scan_repository", {})
+            assert not scan.isError
+            assert json.loads(scan.content[0].text)["parsed"] == 1
+            files = await session.call_tool("list_files", {"limit": 1})
+            assert json.loads(files.content[0].text)["files"] == ["sample.py"]
+            parsed = await session.call_tool("parse_file", {"path": "sample.py"})
+            assert json.loads(parsed.content[0].text)["file"]["symbols"][0]["name"] == "sample"
+            unsafe = await session.call_tool("parse_file", {"path": "../secret.py"})
+            assert unsafe.isError and "invalid_path" in unsafe.content[0].text

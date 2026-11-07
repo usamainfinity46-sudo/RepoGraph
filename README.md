@@ -11,6 +11,8 @@ Install Python 3.11+ and [uv](https://docs.astral.sh/uv/), then:
 uv sync --group dev
 uv run repograph --root /absolute/repository init
 uv run repograph --root /absolute/repository serve
+uv run repograph --root /absolute/repository scan
+uv run repograph --root /absolute/repository parse src/main.py
 uv run pytest
 uv run ruff check .
 ```
@@ -46,6 +48,25 @@ args = ["run", "--directory", "/absolute/RepoGraph", "repograph", "--root", "/ab
 VS Code uses a `servers` mapping with `type: "stdio"`, `command`, and `args`.
 These are integration templates; specific GUI clients have not been manually
 certified. Protocol connectivity is tested using the official SDK client.
+
+## Implemented scope
+
+Phases 1 and 2 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
+SQLite migrations/cache, nested .gitignore discovery, SHA-256 hashing, and
+Tree-sitter extraction for Python, JavaScript/JSX, TypeScript, and TSX.
+MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
+`repograph://status`. Parse/list tools paginate with offset and limit (max 200).
+
+Configure limits before the command, for example:
+
+```sh
+uv run repograph --root /absolute/repository --max-files 5000 --max-file-bytes 1000000 scan
+```
+
+Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
+are excluded. Dynamic imports are reported as unresolved. Cross-file symbol
+resolution, dependency graphs, Git diffs, impact reports, and test execution
+belong to later phases. No GUI client compatibility certification is claimed.
 
 See [architecture](docs/ARCHITECTURE.md), [contracts](docs/MCP_CONTRACTS.md),
 and [roadmap](docs/DEVELOPMENT_ROADMAP.md) for scope and limitations.

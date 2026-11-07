@@ -2,7 +2,7 @@
 
 1. Foundation and MCP infrastructure: complete. Python package, configuration,
    logging, Pydantic contracts, SQLite migrations, CLI, stdio connectivity tests.
-2. Repository discovery and parsing: next. Ignore-aware bounded scanning,
+2. Repository discovery and parsing: complete. Ignore-aware bounded scanning,
    hashing, Tree-sitter extraction for Python, JavaScript, TypeScript/TSX.
 3. Graph engine: planned. Persistence of resolved nodes/edges and incremental graph updates.
 4. Git intelligence: planned. Baselines, diffs, renames, changed symbols.

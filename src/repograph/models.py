@@ -51,8 +51,27 @@ class Health(BaseModel):
     repository: str
 
 
-class ScanReport(BaseModel):
+class ScanSummary(BaseModel):
     schema_version: int = 1
-    files: list[ParsedFile] = Field(default_factory=list)
-    diagnostics: list[Diagnostic] = Field(default_factory=list)
+    discovered: int = 0
+    parsed: int = 0
+    cached: int = 0
+    failed: int = 0
+    source_bytes: int = 0
     complete: bool = True
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class FilePage(BaseModel):
+    files: list[str]
+    total: int
+    next_offset: int | None = None
+    complete: bool = True
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class ParsePage(BaseModel):
+    file: ParsedFile
+    total_symbols: int
+    total_imports: int
+    next_offset: int | None = None

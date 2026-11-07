@@ -8,5 +8,6 @@
 - Send structured logs to stderr; reserve stdout for MCP protocol messages.
 - Use parameterized SQL, transactional migrations, and repository-scoped keys.
 - Report parse errors and unresolved/dynamic constructs without invented certainty.
+- Bump the extractor revision when extraction behavior changes so cached results expire.
 - Test real protocol connectivity, failure paths, and language fixtures.
 - Commit and push completed, verified chunks when authorized by the user.
