@@ -32,3 +32,23 @@ Phase 5 verifies direct/transitive calls, reverse imports, evidence integrity,
 ownership context, cycles, pagination, depth/node limits, stale source inventories,
 deleted symbols with before snapshots, missing nodes, unresolved edges, bounded
 freshness checks, and SDK impact calls.
+
+Phase 6 tests prove discovery does not import repository modules, configuration
+and framework ambiguity are reported, graph/fixture mappings exclude unrelated
+tests where supported, and unknown coverage recommends broader execution. Real
+pytest processes cover pass/fail/skip, invalid collection, no tests, environment
+filtering, explicit async plugins, mutated inputs, expiry/replay/host gates,
+concurrent claims, output/timeout bounds and result pagination. Process tests
+check normal-exit and timeout descendant cleanup on Windows and POSIX.
+
+Machine-report tests reject DTDs, malformed data and count inconsistencies.
+An end-to-end real Git fixture goes from a passing baseline through changed
+code, refreshed graph, evidence-backed impact, automatic test selection and
+failed verification to a saved potential-regression comparison. SDK and CLI
+tests exercise review/approval and persisted results through actual stdio calls.
+
+Optional JS integration uses REPOGRAPH_JS_RUNNERS pointing to a development
+directory containing installed Jest 30.5.2 and Vitest 5.1.0. CI installs them
+with --ignore-scripts in runner temp, using Node 24 on Linux and Windows, and
+runs real pass/fail/no-test and exact/substring-selection checks. These runtimes
+are not production Python dependencies and are never installed by the MCP.

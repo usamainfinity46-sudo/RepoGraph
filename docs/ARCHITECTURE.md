@@ -70,7 +70,8 @@ working content are not read as an atomic snapshot under concurrent edits.
 
 CRLF-to-LF normalization is enabled by repository-local text/eol attributes or
 core.autocrlf (unless text is unset); binary NUL content is not normalized.
-Global/system Git configuration is intentionally not loaded. Custom filters
+Only core.autocrlf is read as a validated scalar from host/local configuration;
+other global/system Git configuration is suppressed for analysis commands. Custom filters
 and working-tree encodings produce uncertainty instead of being executed.
 Rename detection combines Git index/commit similarity with unique content
 matches and bounded heuristic line overlap for unstaged edited moves. Ordinary
@@ -84,3 +85,29 @@ one reproducible shortest witness per node. Historical and current snapshots may
 be combined to preserve dependencies of deleted/renamed code. Results expose
 freshness, unknown edges, limits and unindexed paths rather than implying safety.
 No LLM, source execution or automatic repository modification is involved.
+
+Phase 6 separates static test intelligence, prepared verification plans, process
+management and report parsing. Discovery reads naming conventions, pytest naming
+configuration, JS imports and nearest package dependencies without importing tests
+or executing JS configuration. Definitions are syntactic candidates, not runtime
+collection results; parameterization and dynamic/custom collection can differ.
+Selection ranks changed tests, reverse graph evidence, conftest fixture scopes,
+name heuristics and fallback candidates. Incomplete mapping recommends a broader
+suite; it never establishes that excluded tests cannot regress.
+
+Execution is disabled by default. A trusted host configures interpreter/runner
+paths and opts in before a client can execute an approved plan. Preparation
+generates fixed argument arrays, fingerprints non-ignored repository inputs and
+host policy, persists a single-use plan, and returns a ten-minute preview. No
+commands from package scripts, shell strings, npx, downloads or installations are
+used. Explicit test files are validated against static discovery. Suite scope is
+an intentional broader invocation. Runners require locally installed frameworks.
+
+The verifier serializes runs per repository, uses temporary HOME/report paths,
+minimal inherited environment, bounded combined output, deadlines and normal
+child cleanup through POSIX process groups or Windows Job Objects. Machine
+reports, not console summaries, determine counts/outcomes. Missing/inconsistent
+reports cannot pass, no-test/all-skipped runs are distinct, and repository changes
+during execution invalidate a passed assessment. Persisted per-case results can
+be compared for potential regressions, continuing failures and unverified tests.
+The model labels potential regressions; it does not infer causality or coverage.

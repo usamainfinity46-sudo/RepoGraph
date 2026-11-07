@@ -6,6 +6,7 @@ from typing import TypeVar
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
+from mcp.types import ToolAnnotations
 
 from repograph import __version__
 from repograph.config import Settings
@@ -26,9 +27,16 @@ from repograph.models import (
     ParsePage,
     ScanSummary,
     SnapshotDelta,
+    TestDiscoveryReport,
+    TestSuggestionReport,
+    VerificationDelta,
+    VerificationPlan,
+    VerificationResult,
 )
 from repograph.service import RepositoryService
 from repograph.storage import SCHEMA_VERSION, Database
+from repograph.testing import TestIntelligence
+from repograph.verification import VerificationService
 
 T = TypeVar("T")
 
@@ -183,5 +191,69 @@ def create_server(settings: Settings) -> FastMCP:
                 limit,
             )
         )
+
+    @server.tool()
+    def discover_tests(offset: int = 0, limit: int = 100) -> TestDiscoveryReport:
+        """Discover pytest/Jest/Vitest tests statically without importing or collecting them."""
+        return guarded(lambda: TestIntelligence(settings).discover(offset, limit))
+
+    @server.tool()
+    def suggest_tests(
+        paths: list[str] | None = None,
+        baseline: str | None = None,
+        snapshot_id: str | None = None,
+        before_snapshot_id: str | None = None,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> TestSuggestionReport:
+        """Rank tests using changed paths, graph evidence, fixtures and fallback uncertainty."""
+        return guarded(
+            lambda: TestIntelligence(settings).suggest(
+                paths, baseline, snapshot_id, before_snapshot_id, offset, limit
+            )
+        )
+
+    @server.tool()
+    def prepare_verification(
+        framework: str,
+        paths: list[str] | None = None,
+        scope: str = "auto",
+        timeout_seconds: float | None = None,
+    ) -> VerificationPlan:
+        """Prepare an expiring command preview without running tests.
+
+        Auto scope recommends a broader suite when static mapping is incomplete.
+        Tests execute repository code; inspect warnings and obtain user approval.
+        """
+        return guarded(
+            lambda: VerificationService(settings).prepare(framework, paths, scope, timeout_seconds)
+        )
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=True
+        )
+    )
+    def verify_changes(plan_id: str, approved: bool = False) -> VerificationResult:
+        """Execute a reviewed plan only with host opt-in and explicit approval.
+
+        The client must obtain actual user approval before setting approved=true.
+        Tests run with host permissions, not in an OS security sandbox.
+        """
+        return guarded(lambda: VerificationService(settings).verify(plan_id, approved))
+
+    @server.tool()
+    def get_verification_result(
+        plan_id: str, offset: int = 0, limit: int = 100
+    ) -> VerificationResult:
+        """Retrieve persisted verification output and paginate test-case outcomes."""
+        return guarded(lambda: VerificationService(settings).result(plan_id, offset, limit))
+
+    @server.tool()
+    def compare_verifications(
+        before: str, after: str, offset: int = 0, limit: int = 100
+    ) -> VerificationDelta:
+        """Compare saved runs for potential regressions, persistent failures and missing tests."""
+        return guarded(lambda: VerificationService(settings).compare(before, after, offset, limit))
 
     return server

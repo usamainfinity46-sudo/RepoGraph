@@ -16,7 +16,7 @@ from repograph.git_service import GitService
 def git(root, *args):
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
     env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
-    return (
+    result = (
         subprocess.run(
             [
                 "git",
@@ -39,6 +39,14 @@ def git(root, *args):
         .stdout.decode()
         .strip()
     )
+    if args and args[0] == "init":
+        subprocess.run(
+            ["git", "-C", str(root), "config", "core.autocrlf", "false"],
+            check=True,
+            capture_output=True,
+            env=env,
+        )
+    return result
 
 
 @pytest.fixture
@@ -295,3 +303,65 @@ def test_exec_bit_change(repository):
     path.chmod(path.stat().st_mode | 0o100)
     report = GitService(Settings.load(repository)).get_changes()
     assert report.total == 1 and report.changes[0].status == "type_changed"
+
+
+def test_end_to_end_change_impact_selection_and_regression_verification(repository):
+    import py_compile
+    import time
+
+    from repograph.graph import GraphService
+    from repograph.impact import ImpactService
+    from repograph.testing import TestIntelligence
+    from repograph.verification import VerificationService
+
+    (repository / "main.py").write_text("def add(a, b): return a + b\n")
+    stamp = int(time.time()) - 10
+    os.utime(repository / "main.py", (stamp, stamp))
+    py_compile.compile(
+        str(repository / "main.py"),
+        doraise=True,
+        invalidation_mode=py_compile.PycInvalidationMode.TIMESTAMP,
+    )
+    (repository / "test_main.py").write_text(
+        "from main import add\ndef test_add(): assert add(1, 2) == 3\n"
+    )
+    git(repository, "add", ".")
+    git(repository, "commit", "-m", "verified baseline")
+    settings = Settings.load(repository).model_copy(update={"verification_enabled": True})
+    graph = GraphService(settings)
+    before_snapshot = graph.index().snapshot_id
+    verifier = VerificationService(settings)
+    before = verifier.verify(verifier.prepare("pytest", ["test_main.py"]).id, approved=True)
+    assert before.status == "passed"
+    (repository / "main.py").write_text("def add(a, b): return a - b\n")
+    # The old .pyc still matches timestamp and byte size; use new source anyway.
+    os.utime(repository / "main.py", (stamp, stamp))
+    graph.index()
+    impact = ImpactService(settings).analyze(before_snapshot_id=before_snapshot)
+    assert impact.complete and "test_main.py" in impact.affected_modules
+    suggested = TestIntelligence(settings).suggest()
+    assert not suggested.broader_run_recommended
+    assert [test.path for test in suggested.tests] == ["test_main.py"]
+    plan = verifier.prepare("pytest")
+    assert plan.scope == "targeted" and plan.paths == ["test_main.py"]
+    after = verifier.verify(plan.id, approved=True)
+    assert after.status == "failed"
+    delta = verifier.compare(before.plan_id, after.plan_id)
+    assert delta.comparable and delta.changes[0].classification == "potential_regression"
+
+
+def test_host_line_ending_setting_is_used_without_host_command_configuration(
+    repository, tmp_path, monkeypatch
+):
+    path = repository / "main.py"
+    path.write_bytes(b"def stable(): return 1\ndef change(): return 2\n")
+    git(repository, "add", "main.py")
+    git(repository, "commit", "-m", "normalized blob")
+    git(repository, "config", "--unset", "core.autocrlf")
+    home = tmp_path.parent / (tmp_path.name + "-host-home")
+    home.mkdir()
+    (home / ".gitconfig").write_text("[core]\n autocrlf = true\n fsmonitor = NEVER_EXECUTE_THIS\n")
+    monkeypatch.setenv("HOME", str(home))
+    path.write_bytes(b"def stable(): return 1\r\ndef change(): return 2\r\n")
+    report = GitService(Settings.load(repository)).get_changes()
+    assert report.complete and report.changes == []

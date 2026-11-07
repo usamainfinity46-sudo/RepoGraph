@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Language = Literal["python", "javascript", "typescript", "tsx"]
+Framework = Literal["pytest", "jest", "vitest"]
 
 
 class Diagnostic(BaseModel):
@@ -277,4 +278,114 @@ class ImpactReport(BaseModel):
     unresolved_dependencies: int
     freshness: Literal["current", "stale", "unknown"]
     complete: bool
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class TestDefinition(BaseModel):
+    name: str
+    line: int
+
+
+class TestFile(BaseModel):
+    path: str
+    frameworks: list[Framework]
+    definitions: list[TestDefinition]
+    total_definitions: int
+    evidence: str
+
+
+class TestDiscoveryReport(BaseModel):
+    files: list[TestFile]
+    total: int
+    next_offset: int | None = None
+    complete: bool
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class TestRecommendation(BaseModel):
+    path: str
+    frameworks: list[Framework]
+    reason: Literal["changed_test", "graph_dependency", "fixture_scope", "name_match", "fallback"]
+    confidence: Literal["static", "heuristic"]
+    evidence: list[ImpactEvidence] = Field(default_factory=list)
+
+
+class TestSuggestionReport(BaseModel):
+    tests: list[TestRecommendation]
+    total: int
+    next_offset: int | None = None
+    snapshot_ids: list[str] = Field(default_factory=list)
+    changed_paths: list[str]
+    broader_run_recommended: bool
+    complete: bool
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class VerificationPlan(BaseModel):
+    id: str
+    framework: Framework
+    scope: Literal["targeted", "suite"]
+    paths: list[str]
+    command: list[str]
+    cwd: str
+    repository_fingerprint: str
+    policy_fingerprint: str
+    created_at: float
+    expires_at: float
+    timeout_seconds: float
+    output_limit_bytes: int
+    execution_enabled: bool
+    warnings: list[str]
+
+
+class TestCounts(BaseModel):
+    tests: int = Field(default=0, ge=0, le=1_000_000)
+    passed: int = Field(default=0, ge=0, le=1_000_000)
+    failed: int = Field(default=0, ge=0, le=1_000_000)
+    errors: int = Field(default=0, ge=0, le=1_000_000)
+    skipped: int = Field(default=0, ge=0, le=1_000_000)
+
+
+class TestOutcome(BaseModel):
+    id: str
+    name: str
+    path: str
+    status: Literal["passed", "failed", "error", "skipped"]
+    message: str = ""
+
+
+class VerificationResult(BaseModel):
+    plan_id: str
+    framework: Framework
+    status: Literal[
+        "passed", "failed", "error", "no_tests", "timeout", "output_limit", "inconclusive"
+    ]
+    exit_code: int | None
+    duration_seconds: float
+    counts: TestCounts
+    cases: list[TestOutcome]
+    total_cases: int
+    next_offset: int | None = None
+    output: str
+    output_truncated: bool
+    repository_changed: bool
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
+
+
+class VerificationCaseDelta(BaseModel):
+    case: TestOutcome
+    classification: Literal[
+        "potential_regression", "new_failure", "persistent_failure", "resolved", "not_verified"
+    ]
+    before_status: str | None
+    after_status: str | None
+
+
+class VerificationDelta(BaseModel):
+    before: str
+    after: str
+    comparable: bool
+    changes: list[VerificationCaseDelta]
+    total: int
+    next_offset: int | None = None
     diagnostics: list[Diagnostic] = Field(default_factory=list)

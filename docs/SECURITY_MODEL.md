@@ -11,8 +11,8 @@ SQLite and caches are local, and the package makes no telemetry calls.
 
 This is an in-process analyzer, not an OS sandbox. Concurrent filesystem changes
 and vulnerabilities in native parser libraries remain risks; use an OS sandbox
-for actively hostile repositories. Test execution isolation and explicit command
-approval are future Phase 6/8 work, not current functionality.
+for actively hostile repositories. Phase 6 adds approved process execution and
+cleanup controls; hostile-code sandbox validation remains Phase 8 work.
 
 Implemented defaults: 2,000,000 bytes per source file, 20,000 source files,
 100,000,000 aggregate bytes per scan, 10 times max_files traversal entries,
@@ -36,7 +36,10 @@ is trusted local state and is not a sandbox for untrusted database files.
 
 Git commands use a host-installed executable outside the repository, argument
 arrays, no shell, disabled fsmonitor/hooks/network protocols, stripped inherited
-GIT_* overrides, and disabled global/system config. Diff commands inspect only
+GIT_* overrides, and disabled global/system config for analysis commands. A
+config-only bootstrap reads core.autocrlf as a bounded, validated scalar so
+normal host CRLF checkouts remain clean; hooks/fsmonitor/protocols are disabled
+even during that data-only query. Diff commands inspect only
 stored commits/index blobs, with --no-ext-diff and --no-textconv. Working files
 are read directly to avoid clean/smudge filters. Repo-configured custom filters
 or encodings produce incomplete reports. Revision arguments are bounded and
@@ -49,3 +52,46 @@ limited to 50000 lines per file, rename heuristics to 2500 candidate pairs, and
 returned diagnostics/previews are capped. There is no global process sandbox or
 overall repository-analysis deadline yet. Git's local metadata/object store is
 trusted; native Git/parser vulnerabilities and filesystem races remain risks.
+
+Verification is a separate opt-in trust boundary. The server starts with execution
+disabled; only host configuration enables it and selects Python/Node/JS entries
+and explicit pytest plugins. MCP accepts an existing plan ID and approval flag,
+never arbitrary commands, environment values or shell arguments. The client must
+obtain real approval; RepoGraph cannot independently authenticate that a human
+clicked approval. Plans expire, bind to current input/policy fingerprints and
+are claimed once. A repository can have only one running verification per state
+database; separate databases do not coordinate execution.
+
+Pytest uses an isolated interpreter invocation, disables plugin autoload and
+config addopts, cuts conftest search off at the root, and permits host-approved
+plugin modules. Tests, fixtures and project configuration still execute. Pytest
+and ordinary Python imports use a fresh temporary bytecode-cache namespace
+with bytecode writes disabled to prevent stale repository .pyc reuse. Jest
+and Vitest use pinned local Node/entry paths, no package scripts or automatic
+downloads, non-watch runs and bounded workers. Native output is piped into a
+bounded reader; tests cannot write protocol messages directly to MCP stdout.
+
+Child environment inherits only PATH, SYSTEMROOT/WINDIR, PATHEXT and locale keys;
+HOME and temp directories are fresh, CI is set, and Python/Node loader overrides,
+test option variables and arbitrary inherited credentials are omitted. Projects
+requiring secret/environment setup may fail under this default policy. No claim
+is made that this blocks approved code from reading files or using the network.
+
+POSIX process groups and Windows kill-on-close jobs clean ordinary descendants
+on timeout, output overflow and normal parent exit. Deliberately escaping POSIX
+sessions, native code attacks, server crashes and concurrent filesystem mutation
+are not contained by an OS sandbox. Windows assignment occurs immediately after
+spawn; this is not an adversarial process-security boundary. CPU/memory/network
+quotas and full hostile-repository testing remain Phase 8 work. Runs after a
+server crash may require operator cleanup before a persisted running record can
+be recovered safely; do not blindly reset running state and replay commands.
+
+Plan input hashes cover bounded non-ignored repository files, not dependencies,
+ignored files, arbitrary external fixtures or every host package. Runner path/
+size/mtime and policy are pinned, not an entire immutable runtime image. Test
+reports and output remain untrusted data; JUnit DTD/entities, malformed/count-
+inconsistent reports, excessive reports and unknown JSON outcomes fail closed.
+Approved code can fabricate its own test results, so this is not attestation of
+untrusted tests. Detected repository mutation turns an otherwise passed run
+inconclusive. Verification can execute code that modifies source; analysis never
+does so automatically. Review commands and use an external sandbox as needed.

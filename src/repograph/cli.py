@@ -13,6 +13,8 @@ from repograph.logging import configure_logging
 from repograph.server import create_server
 from repograph.service import RepositoryService
 from repograph.storage import Database
+from repograph.testing import TestIntelligence
+from repograph.verification import VerificationService
 
 
 def main() -> None:
@@ -32,6 +34,22 @@ def main() -> None:
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--max-nodes", type=int, default=5000)
     parser.add_argument(
+        "--enable-verification", action="store_true", help="Host opt-in to approved test execution"
+    )
+    parser.add_argument("--python-executable", type=Path)
+    parser.add_argument("--node-executable", type=Path)
+    parser.add_argument("--jest-entry", type=Path)
+    parser.add_argument("--vitest-entry", type=Path)
+    parser.add_argument("--pytest-plugin", action="append", default=[])
+    parser.add_argument("--verification-timeout", type=float, default=60)
+    parser.add_argument("--verification-output-bytes", type=int, default=65_536)
+    parser.add_argument("--framework", choices=["pytest", "jest", "vitest"], default="pytest")
+    parser.add_argument("--scope", choices=["auto", "targeted", "suite"], default="auto")
+    parser.add_argument(
+        "--test-path", action="append", help="Test file to include in a prepared plan"
+    )
+    parser.add_argument("--approve", action="store_true", help="Approve the selected reviewed plan")
+    parser.add_argument(
         "command",
         choices=[
             "serve",
@@ -44,6 +62,12 @@ def main() -> None:
             "changes",
             "snapshot-diff",
             "impact",
+            "tests",
+            "suggest-tests",
+            "prepare-verification",
+            "verify",
+            "verification-result",
+            "verification-diff",
         ],
         nargs="?",
         default="serve",
@@ -59,6 +83,14 @@ def main() -> None:
                 "max_file_bytes": args.max_file_bytes,
                 "max_files": args.max_files,
                 "max_total_bytes": args.max_total_bytes,
+                "verification_enabled": args.enable_verification,
+                "python_executable": args.python_executable or settings.python_executable,
+                "node_executable": args.node_executable,
+                "jest_entry": args.jest_entry,
+                "vitest_entry": args.vitest_entry,
+                "pytest_plugins": args.pytest_plugin,
+                "verification_timeout": args.verification_timeout,
+                "verification_output_bytes": args.verification_output_bytes,
             }
         )
         if args.command == "init":
@@ -101,6 +133,45 @@ def main() -> None:
                     max_depth=args.max_depth,
                     max_nodes=args.max_nodes,
                 )
+                .model_dump_json(indent=2)
+            )
+        elif args.command == "tests":
+            print(TestIntelligence(settings).discover().model_dump_json(indent=2))
+        elif args.command == "suggest-tests":
+            print(
+                TestIntelligence(settings)
+                .suggest(
+                    paths=[args.path] if args.path else None,
+                    baseline=args.baseline,
+                    snapshot_id=args.after,
+                    before_snapshot_id=args.before,
+                )
+                .model_dump_json(indent=2)
+            )
+        elif args.command == "prepare-verification":
+            print(
+                VerificationService(settings)
+                .prepare(args.framework, args.test_path, args.scope)
+                .model_dump_json(indent=2)
+            )
+        elif args.command in {"verify", "verification-result"}:
+            if not args.path:
+                parser.error(args.command + " requires a prepared plan ID")
+            service = VerificationService(settings)
+            result = (
+                service.verify(args.path, args.approve)
+                if args.command == "verify"
+                else service.result(args.path)
+            )
+            print(result.model_dump_json(indent=2))
+            if args.command == "verify" and result.status != "passed":
+                parser.exit(1)
+        elif args.command == "verification-diff":
+            if not args.before or not args.after:
+                parser.error("verification-diff requires --before and --after plan IDs")
+            print(
+                VerificationService(settings)
+                .compare(args.before, args.after)
                 .model_dump_json(indent=2)
             )
         else:

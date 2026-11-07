@@ -132,3 +132,15 @@ def test_evidence_limit_does_not_create_unwitnessed_nodes(tmp_path, monkeypatch)
     report = impact.analyze(paths=[], node_ids=["0"], max_depth=0, limit=200)
     assert not report.complete and report.total == 201
     assert all(len(item.evidence) <= 200 for item in report.affected)
+
+
+def test_class_seed_includes_methods_and_their_callers(tmp_path):
+    (tmp_path / "app.py").write_text(
+        "class Service:\n @staticmethod\n def run(): return 1\ndef caller(): return Service.run()\n"
+    )
+    settings = Settings.load(tmp_path)
+    graph = GraphService(settings)
+    graph.index()
+    seed = next(node for node in graph.query_symbols("Service").nodes if node.kind == "class")
+    report = ImpactService(settings).analyze(paths=[], node_ids=[seed.id])
+    assert {item.node.name for item in report.affected} >= {"Service", "run", "caller"}

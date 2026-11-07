@@ -114,4 +114,51 @@ complete never means exhaustive runtime knowledge. Node-ID seeds absent from
 both selected snapshots are rejected. Errors include invalid_impact_limit,
 too_many_seeds, impact_seed_limit and node_not_found.
 
-Planned later: suggest_tests and verify_changes (Phase 6). No tool edits source.
+Implemented Phase 6:
+
+- `discover_tests(offset=0,limit=100)` returns conventional pytest/Jest/Vitest
+  file candidates, up to 100 syntactic definitions per file, full definition
+  counts and metadata/ambiguity diagnostics. It never executes collection.
+- `suggest_tests(paths=null,baseline=null,snapshot_id=null,
+  before_snapshot_id=null,offset=0,limit=100)` ranks changed tests, graph witness
+  paths, fixture scopes, names and broad fallbacks. Omitted paths use Git changes;
+  [] means no changed files. broader_run_recommended flags incomplete static
+  coverage. complete describes analysis completion, not exhaustive runtime coverage.
+- `prepare_verification(framework,paths=null,scope="auto",timeout_seconds=null)`
+  returns a persisted ten-minute plan, exact command template, host policy/input
+  fingerprints, limits, effective targeted/suite scope and execution warnings.
+  `{report}` and `{pycache}` are replaced only by verifier-owned temporary paths. Auto
+  uses suggestions and chooses suite scope if coverage is incomplete. Explicit
+  paths select at most 50 discovered test files. Suite scope takes no file list.
+- `verify_changes(plan_id,approved=false)` executes once only when the host has
+  enabled verification and the client supplies approved=true after actual user
+  approval. The flag is an attestation, not a trusted identity/GUI approval system.
+  MCP annotations mark this tool destructive, non-idempotent and open-world.
+- `get_verification_result(plan_id,offset=0,limit=100)` retrieves persisted output,
+  counts and paginated individual cases. It never reruns the command.
+- `compare_verifications(before,after,offset=0,limit=100)` compares saved plan IDs,
+  reporting potential regressions, new/persistent failures, resolved failures and
+  missing/skipped prior tests. It reports whether runner policy/selection and
+  execution completeness are comparable. Duplicate case identities are excluded
+  with diagnostics. A comparison never proves the code change caused a failure.
+
+Verification statuses: passed, failed, error, no_tests, timeout, output_limit and
+inconclusive. Passed requires at least one passed case, no errors/failures, a
+valid machine report, successful exit and no detected repository mutation. All
+skipped is inconclusive. A zero exit without a valid report is error. Failed
+tests do not automatically imply a newly introduced regression. Some runners
+emit no machine report when nothing is found; that is reported as error with
+missing_test_report rather than guessing from console text.
+
+Defaults: 60-second host timeout (configurable 0.1..600), 65536 captured raw output
+bytes (1024..1000000), 2 MB machine report, 5000 case outcomes, and one running plan
+per repository. Selected Vitest paths are substring filters; extra reported files
+make a passed targeted invocation inconclusive. Results repeat bounded output on
+each case page. Only supported-language declarations receive graph/test mapping.
+
+New error families include verification_disabled, verification_approval_required,
+verification_plan_not_found/expired/stale/consumed, verification_busy,
+verification_not_finished, invalid_test_selection, no_tests_selected,
+runner_unavailable, isolation_unavailable and invalid_test_report. Host policy
+cannot be changed through MCP arguments. Analysis tools never execute code;
+explicit verification executes repository code and can have its side effects.

@@ -51,7 +51,7 @@ certified. Protocol connectivity is tested using the official SDK client.
 
 ## Implemented scope
 
-Phases 1–5 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
+Phases 1–6 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
 SQLite migrations/cache, nested .gitignore discovery, SHA-256 hashing, and
 Tree-sitter extraction for Python, JavaScript/JSX, TypeScript, and TSX.
 MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
@@ -66,6 +66,9 @@ on the host; configure its working-tree root as the repository boundary.
 Phase 5 adds `analyze_impact` and `repograph impact [PATH]`: direct/transitive
 potential dependents, evidence chains, affected modules, stale-graph checks and
 explicit uncertainty. Index first; retain a before snapshot for deleted code.
+Phase 6 adds static test discovery, evidence-backed suggestions, reviewed
+verification plans, bounded pytest/Jest/Vitest runs and saved regression comparisons.
+Execution is disabled by default and requires host opt-in plus explicit approval.
 
 ```sh
 uv run repograph --root /absolute/repository index
@@ -85,14 +88,18 @@ uv run repograph --root /absolute/repository --max-files 5000 --max-file-bytes 1
 
 Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
 are excluded. Dynamic imports are unresolved. Cross-file resolution supports
-the documented static patterns; runtime behavior remains uncertain. Test
-execution belongs to Phase 6. GUI clients have
+the documented static patterns; runtime behavior remains uncertain. GUI clients have
 not been manually certified.
 
 Change reports with complete=false contain explicit limitations. Filters are
 never executed, binary/unsupported data lacks symbol detail, and heuristic
 renames/call targets remain candidates. Git comparison honors local text/eol
-settings but deliberately ignores global/system Git configuration.
+settings and the host's safe core.autocrlf scalar, while suppressing other
+global/system Git configuration during analysis.
+
+See [verification workflow](docs/VERIFICATION.md) for interpreter setup, reviewed
+commands, execution gates and limitations. Phases 7–9 (polish, formal security/
+performance benchmarking and release) remain separate work.
 
 See [architecture](docs/ARCHITECTURE.md), [contracts](docs/MCP_CONTRACTS.md),
 and [roadmap](docs/DEVELOPMENT_ROADMAP.md) for scope and limitations.

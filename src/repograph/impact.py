@@ -66,6 +66,8 @@ class ImpactService:
         max_nodes: int = 5000,
         offset: int = 0,
         limit: int = 100,
+        *,
+        _full: bool = False,
     ) -> ImpactReport:
         pagination(offset, limit)
         if not 0 <= max_depth <= 100 or not 1 <= max_nodes <= 200_000:
@@ -99,10 +101,13 @@ class ImpactService:
         changed_paths = sorted({normalize_relative(path) for path in changed_paths})
         nodes = {}
         reverse = defaultdict(list)
+        children = defaultdict(set)
         unresolved = set()
         for snapshot in reversed(snapshots):
             nodes.update({node.id: node for node in snapshot.nodes})
             for edge in snapshot.edges:
+                if edge.relation == "contains" and edge.target is not None:
+                    children[edge.source].add(edge.target)
                 if edge.target is None:
                     unresolved.add((snapshot.id, edge.id))
                     continue
@@ -123,6 +128,16 @@ class ImpactService:
             raise RepositoryError(
                 "node_not_found", "An impact seed is absent from the selected snapshots"
             )
+        pending = [seed for seed in seeds if nodes[seed].kind in {"file", "class", "interface"}]
+        while pending:
+            for child in children[pending.pop()]:
+                if child not in seeds:
+                    seeds.add(child)
+                    pending.append(child)
+                    if len(seeds) > max_nodes:
+                        raise RepositoryError(
+                            "impact_seed_limit", "Container members exceed the node limit"
+                        )
         for path in changed_paths:
             matches = {node.id for node in nodes.values() if node.path == path}
             if not matches:
@@ -220,10 +235,10 @@ class ImpactService:
             target=target,
             changed_paths=changed_paths,
             seeds=sorted(seeds),
-            affected=affected[offset : offset + limit],
+            affected=affected if _full else affected[offset : offset + limit],
             total=len(affected),
             next_offset=offset + limit if offset + limit < len(affected) else None,
-            affected_modules=modules[:200],
+            affected_modules=modules if _full else modules[:200],
             total_modules=len(modules),
             unresolved_dependencies=len(unresolved),
             freshness=freshness,

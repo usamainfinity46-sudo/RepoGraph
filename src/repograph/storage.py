@@ -4,7 +4,7 @@ import sqlite3
 from contextlib import closing, contextmanager
 from pathlib import Path
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 MIGRATIONS = [
     (
         "CREATE TABLE repositories (id INTEGER PRIMARY KEY, root TEXT NOT NULL UNIQUE)",
@@ -37,6 +37,14 @@ MIGRATIONS = [
     (
         "CREATE TABLE git_baselines (repository_id INTEGER PRIMARY KEY "
         "REFERENCES repositories(id) ON DELETE CASCADE, commit_sha TEXT NOT NULL)",
+    ),
+    (
+        "CREATE TABLE verification_plans (repository_id INTEGER NOT NULL "
+        "REFERENCES repositories(id) ON DELETE CASCADE, id TEXT NOT NULL, "
+        "state TEXT NOT NULL CHECK(state IN ('prepared','running','finished')), "
+        "data TEXT NOT NULL, result TEXT, PRIMARY KEY(repository_id,id))",
+        "CREATE UNIQUE INDEX verification_one_running ON verification_plans(repository_id) "
+        "WHERE state='running'",
     ),
 ]
 

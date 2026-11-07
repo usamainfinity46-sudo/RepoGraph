@@ -28,6 +28,29 @@ class GitRunner:
                 "unsafe_git_executable", "Git executable must be outside the repository"
             )
         self.environment = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+        self.text_configuration: list[str] = []
+        # Query only this safe scalar before suppressing host configuration. `git config`
+        # reads data; fsmonitor/hooks/protocols remain disabled by run() throughout.
+        text_mode = (
+            self.run("config", "--get", "core.autocrlf", max_bytes=100, allow_failure=True)
+            .strip()
+            .lower()
+        )
+        aliases = {
+            b"yes": b"true",
+            b"on": b"true",
+            b"1": b"true",
+            b"no": b"false",
+            b"off": b"false",
+            b"0": b"false",
+        }
+        text_mode = aliases.get(text_mode, text_mode)
+        if text_mode:
+            if text_mode not in {b"true", b"false", b"input"}:
+                raise RepositoryError(
+                    "unsupported_git_configuration", "Invalid core.autocrlf value"
+                )
+            self.text_configuration = ["-c", "core.autocrlf=" + text_mode.decode("ascii")]
         self.environment.update(
             {
                 "GIT_CONFIG_NOSYSTEM": "1",
@@ -67,6 +90,7 @@ class GitRunner:
             "core.untrackedCache=false",
             "-c",
             "protocol.allow=never",
+            *self.text_configuration,
             "-C",
             str(self.root),
             *args,

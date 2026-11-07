@@ -1,6 +1,6 @@
 # Graph schema and extraction contract
 
-Current SQLite schema version: 3 (PRAGMA user_version).
+Current SQLite schema version: 4 (PRAGMA user_version).
 
 `repositories(id, root UNIQUE)` owns
 `files(repository_id, path, sha256, parser_version, data)`, whose composite
@@ -42,3 +42,13 @@ edits are detectable; coordinates still describe the declaration itself.
 Snapshot deltas report added/removed/modified node and edge IDs, paginated across
 one combined ordered list. Node modifications include span shifts. Git symbol
 reports separately detect declaration content changes, ignoring line shifts.
+
+Schema 4 adds `verification_plans(repository_id,id,state,data,result)` with
+repository-scoped composite keys and a prepared/running/finished state constraint.
+A partial unique index permits only one running plan per repository. Claiming
+uses a conditional UPDATE in a transaction, so concurrent callers cannot replay
+a plan. JSON data stores the immutable command preview, input/policy fingerprints,
+limits and expiration; result stores bounded output and full bounded case outcomes.
+Retrieval paginates cases independently. Plans/results are local history and are
+not automatically pruned yet; expired prepared plans cannot execute. Operator
+recovery of a running record after a crash requires confirming processes stopped.

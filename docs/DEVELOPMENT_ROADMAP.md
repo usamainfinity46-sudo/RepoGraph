@@ -10,7 +10,8 @@
    comparisons, rename evidence, changed symbols, and graph snapshot deltas.
 5. Impact analysis: complete. Bounded reverse traversal, direct/transitive
    classification, confidence, evidence, affected modules and snapshot context.
-6. Test intelligence: planned. Discovery, mapping, approved execution, timeouts.
+6. Test intelligence: complete. Static pytest/Jest/Vitest discovery, graph/fixture
+   test selection, approved bounded execution, persisted results and comparisons.
 7. Developer experience: planned. Final tools, resources, installation and client guides.
 8. Benchmarking and security: planned. Malicious input, performance, compatibility matrix.
 9. Public release: planned. PyPI, release automation, demos, contribution guidelines.
