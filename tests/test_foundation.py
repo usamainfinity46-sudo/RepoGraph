@@ -7,7 +7,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 from repograph.config import Settings
-from repograph.storage import Database
+from repograph.storage import SCHEMA_VERSION, Database
 
 
 def test_settings_and_migrations(tmp_path):
@@ -16,7 +16,7 @@ def test_settings_and_migrations(tmp_path):
     database.migrate()
     database.migrate()
     with database.connect() as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         with pytest.raises(sqlite3.IntegrityError):
             connection.execute("INSERT INTO files VALUES(1, 'x', 'hash', 'v', '{}')")
     with pytest.raises(FileNotFoundError):
@@ -47,7 +47,7 @@ async def test_stdio_connectivity(tmp_path):
             assert not health.isError
             assert json.loads(health.content[0].text)["status"] == "ok"
             resource = await session.read_resource("repograph://status")
-            assert json.loads(resource.contents[0].text)["schema_version"] == 1
+            assert json.loads(resource.contents[0].text)["schema_version"] == SCHEMA_VERSION
             scan = await session.call_tool("scan_repository", {})
             assert not scan.isError
             assert json.loads(scan.content[0].text)["parsed"] == 1
@@ -57,3 +57,10 @@ async def test_stdio_connectivity(tmp_path):
             assert json.loads(parsed.content[0].text)["file"]["symbols"][0]["name"] == "sample"
             unsafe = await session.call_tool("parse_file", {"path": "../secret.py"})
             assert unsafe.isError and "invalid_path" in unsafe.content[0].text
+            indexed = await session.call_tool("index_repository", {})
+            assert not indexed.isError
+            assert json.loads(indexed.content[0].text)["published"]
+            symbols = await session.call_tool("query_symbols", {"query": "sample"})
+            node = json.loads(symbols.content[0].text)["nodes"][0]
+            edges = await session.call_tool("get_dependencies", {"node_id": node["id"]})
+            assert not edges.isError

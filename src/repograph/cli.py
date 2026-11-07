@@ -6,6 +6,7 @@ from pathlib import Path
 
 from repograph import __version__
 from repograph.config import Settings
+from repograph.graph import GraphService
 from repograph.logging import configure_logging
 from repograph.server import create_server
 from repograph.service import RepositoryService
@@ -23,7 +24,10 @@ def main() -> None:
     parser.add_argument("--max-files", type=int, default=20_000)
     parser.add_argument("--max-total-bytes", type=int, default=100_000_000)
     parser.add_argument(
-        "command", choices=["serve", "init", "scan", "parse"], nargs="?", default="serve"
+        "command",
+        choices=["serve", "init", "scan", "parse", "index", "symbols"],
+        nargs="?",
+        default="serve",
     )
     parser.add_argument("path", nargs="?", help="Root-relative source path for parse")
     args = parser.parse_args()
@@ -47,6 +51,10 @@ def main() -> None:
             if not args.path:
                 parser.error("parse requires a repository-relative path")
             print(RepositoryService(settings).parse_file(args.path).model_dump_json(indent=2))
+        elif args.command == "index":
+            print(GraphService(settings).index().model_dump_json(indent=2))
+        elif args.command == "symbols":
+            print(GraphService(settings).query_symbols(args.path or "").model_dump_json(indent=2))
         else:
             create_server(settings).run(transport="stdio")
     except (OSError, ValueError, sqlite3.Error) as error:

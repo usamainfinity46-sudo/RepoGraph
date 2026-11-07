@@ -13,3 +13,8 @@ cache invalidation, and bounded pagination. Run extraction on this repository.
 CI will exercise Python 3.11-3.13 on Linux and Windows. Unit/SDK compatibility
 does not prove GUI client certification or impact accuracy; those require later
 phase benchmarks and actual client runs. No mandatory network calls in tests.
+
+Phase 3 covers multi-file Python/JS/TS/TSX resolution, aliases, re-export cycles,
+inheritance, duplicates, shadowing, stable IDs, deletions, foreign-key integrity,
+partial-scan refusal, snapshot deltas, v1 migration, persistence, and MCP calls.
+A large-module subprocess regression test detects native parser crashes safely.

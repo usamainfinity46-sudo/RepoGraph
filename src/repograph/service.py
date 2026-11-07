@@ -83,11 +83,29 @@ class RepositoryService:
                 update={
                     "symbols": parsed.symbols[offset:end],
                     "imports": parsed.imports[offset:end],
+                    "references": parsed.references[offset:end],
+                    "bindings": parsed.bindings[offset:end],
+                    "exports": parsed.exports[offset:end],
+                    "shadows": parsed.shadows[offset:end],
                 }
             ),
             total_symbols=symbols,
             total_imports=imports,
-            next_offset=end if end < max(symbols, imports) else None,
+            total_references=len(parsed.references),
+            total_bindings=len(parsed.bindings),
+            total_exports=len(parsed.exports),
+            total_shadows=len(parsed.shadows),
+            next_offset=end
+            if end
+            < max(
+                symbols,
+                imports,
+                len(parsed.references),
+                len(parsed.bindings),
+                len(parsed.exports),
+                len(parsed.shadows),
+            )
+            else None,
         )
 
     def scan(self) -> ScanSummary:

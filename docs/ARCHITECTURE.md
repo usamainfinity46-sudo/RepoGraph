@@ -15,7 +15,7 @@ REPOGRAPH_DATABASE. A server handles one configured repository boundary.
 The default database is ROOT/.repograph/index.sqlite3. Source code remains local
 until a connected client elects to send tool output to its model provider.
 
-Future graph resolution and impact analysis will consume extraction models,
+Graph resolution and future impact analysis consume extraction models,
 without calling an LLM. Streamable HTTP can wrap the same services later; remote
 authentication and network policy must be designed before enabling it.
 
@@ -30,12 +30,26 @@ code execution. Named declarations, bound arrow/function/class expressions,
 methods, TS interfaces/types/namespaces, static imports/re-exports, and common
 require/dynamic import forms produce lexical evidence. Anonymous callbacks and
 object/class fields containing arrows are not modeled as named symbols yet.
-Aliases, module search paths, escaped module specifiers, computed imports,
-monkeypatching, and runtime resolution do not produce resolved dependency edges.
+Configured module search paths, escaped module specifiers, computed imports,
+monkeypatching, and runtime resolution do not produce certain dependency edges.
 Dynamic and require observations are explicitly unresolved, even with literals.
 
 SHA-256 plus extractor/grammar versions key SQLite extraction cache reuse. A
 scan reads each file to verify its current content; this is incremental extraction,
-not incremental graph updating. Each result is committed independently; only a
+and feeds incremental graph publication. Each result commits independently; only a
 complete scan prunes deleted entries. Incomplete scans preserve previous cache
 entries. Direct parsing always reads current source before consulting cache.
+
+Phase 3 adds graph construction, persistence, querying and snapshots. Python
+root/src modules, packages, relative imports and aliases can resolve. JS/TS
+relative modules, index files, named/default/namespace imports and explicit
+re-exports can resolve. Ambiguous modules, duplicate definitions, external
+packages, wildcard exports, dynamic imports and unknown instance types remain
+unresolved. Resolved calls/inheritance are heuristic candidates, not runtime
+proofs. Simple parameter/assignment shadowing is suppressed; full type and
+language-scope evaluation is out of scope.
+
+Tree-sitter is constrained to 0.25.x after self-indexing reproduced a native
+access violation on 0.26.0. Upstream report:
+https://github.com/tree-sitter/py-tree-sitter/issues/472. A subprocess regression
+test repeatedly parses and serializes a large standard-library module.

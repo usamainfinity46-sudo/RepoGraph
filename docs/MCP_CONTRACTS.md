@@ -31,6 +31,21 @@ invalid_path, unsafe_path, unavailable_file, excluded_file, invalid_pagination,
 file_too_large, binary_file, unsupported_encoding, and storage_error. Invalid
 argument types are rejected by the SDK before tool invocation.
 
-Planned later tools: index_repository and query_symbols (Phase 3), get_changes
-(Phase 4), analyze_impact (Phase 5), suggest_tests and verify_changes (Phase 6).
-These tools are not exposed until their engines exist. No tool edits source.
+Implemented Phase 3:
+
+- `index_repository()`: scan, transactional graph publication, snapshot ID,
+  graph/unresolved counts, changed/reused/removed files and rows written.
+  Incomplete reads return published=false and preserve the previous graph.
+- `query_symbols(query="", path=null, offset=0, limit=100)`: qualified-name
+  substring search and optional exact relative path against the last index.
+- `get_dependencies(node_id, direction="outgoing", relation=null, offset=0,
+  limit=100)`: direct edges with evidence and confidence. node_id also accepts
+  a relative file path to query module dependencies.
+
+Queries identify their snapshot and do not silently re-index. Errors include
+graph_not_indexed, snapshot_not_found, node_not_found, invalid_query, graph_limit.
+parse_file also paginates references, bindings, exports and shadows using the
+same offset/limit, with separate total counts.
+
+Planned later: get_changes (Phase 4), analyze_impact (Phase 5), suggest_tests and
+verify_changes (Phase 6). No tool edits source.

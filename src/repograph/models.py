@@ -24,6 +24,7 @@ class Symbol(BaseModel):
     end_column: int
     start_byte: int
     end_byte: int
+    content_hash: str = ""
 
 
 class Import(BaseModel):
@@ -34,6 +35,32 @@ class Import(BaseModel):
     confidence: Literal["syntactic", "unresolved"] = "syntactic"
 
 
+class Binding(BaseModel):
+    local: str
+    module: str
+    imported: str | None = None
+    scope: str = ""
+    line: int
+
+
+class Reference(BaseModel):
+    name: str
+    scope: str = ""
+    relation: Literal["calls", "inherits"]
+    line: int
+
+
+class Shadow(BaseModel):
+    name: str
+    scope: str
+
+
+class Export(BaseModel):
+    name: str
+    local: str
+    module: str | None = None
+
+
 class ParsedFile(BaseModel):
     path: str
     language: Language
@@ -42,6 +69,10 @@ class ParsedFile(BaseModel):
     symbols: list[Symbol] = Field(default_factory=list)
     imports: list[Import] = Field(default_factory=list)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
+    bindings: list[Binding] = Field(default_factory=list)
+    references: list[Reference] = Field(default_factory=list)
+    exports: list[Export] = Field(default_factory=list)
+    shadows: list[Shadow] = Field(default_factory=list)
 
 
 class Health(BaseModel):
@@ -74,4 +105,78 @@ class ParsePage(BaseModel):
     file: ParsedFile
     total_symbols: int
     total_imports: int
+    total_references: int = 0
+    total_bindings: int = 0
+    total_exports: int = 0
+    total_shadows: int = 0
+    next_offset: int | None = None
+
+
+class GraphNode(BaseModel):
+    id: str
+    path: str
+    kind: str
+    name: str
+    qualified_name: str
+    start_line: int = 1
+    end_line: int = 1
+    start_byte: int = 0
+    end_byte: int = 0
+    content_hash: str
+
+
+class GraphEdge(BaseModel):
+    id: str
+    source: str
+    target: str | None
+    relation: Literal["contains", "imports", "calls", "inherits"]
+    confidence: Literal["static", "heuristic", "unresolved"]
+    path: str
+    line: int
+    target_name: str
+
+
+class GraphSnapshot(BaseModel):
+    id: str
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+
+
+class IndexReport(BaseModel):
+    published: bool
+    snapshot_id: str | None = None
+    scan: ScanSummary
+    updated_files: int = 0
+    reused_files: int = 0
+    removed_files: int = 0
+    nodes: int = 0
+    edges: int = 0
+    unresolved_edges: int = 0
+    nodes_written: int = 0
+    edges_written: int = 0
+
+
+class NodePage(BaseModel):
+    snapshot_id: str
+    nodes: list[GraphNode]
+    total: int
+    next_offset: int | None = None
+
+
+class EdgePage(BaseModel):
+    snapshot_id: str
+    edges: list[GraphEdge]
+    total: int
+    next_offset: int | None = None
+
+
+class SnapshotDelta(BaseModel):
+    before: str
+    after: str
+    added_nodes: list[str]
+    removed_nodes: list[str]
+    modified_nodes: list[str]
+    added_edges: list[str]
+    removed_edges: list[str]
+    total_changes: int
     next_offset: int | None = None

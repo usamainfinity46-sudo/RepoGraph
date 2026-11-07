@@ -51,11 +51,14 @@ certified. Protocol connectivity is tested using the official SDK client.
 
 ## Implemented scope
 
-Phases 1 and 2 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
+Phases 1–3 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,
 SQLite migrations/cache, nested .gitignore discovery, SHA-256 hashing, and
 Tree-sitter extraction for Python, JavaScript/JSX, TypeScript, and TSX.
 MCP tools: `health`, `list_files`, `parse_file`, `scan_repository`; resource:
 `repograph://status`. Parse/list tools paginate with offset and limit (max 200).
+Phase 3 adds `index_repository`, `query_symbols`, and `get_dependencies`, plus
+`repograph index` and `repograph symbols SEARCH`. Static graph publication is
+transactional and preserves unresolved references and cyclic dependencies.
 
 Configure limits before the command, for example:
 
@@ -64,9 +67,10 @@ uv run repograph --root /absolute/repository --max-files 5000 --max-file-bytes 1
 ```
 
 Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
-are excluded. Dynamic imports are reported as unresolved. Cross-file symbol
-resolution, dependency graphs, Git diffs, impact reports, and test execution
-belong to later phases. No GUI client compatibility certification is claimed.
+are excluded. Dynamic imports are unresolved. Cross-file resolution supports
+the documented static patterns; runtime behavior remains uncertain. Git diffs,
+impact reports, and test execution belong to later phases. GUI clients have
+not been manually certified.
 
 See [architecture](docs/ARCHITECTURE.md), [contracts](docs/MCP_CONTRACTS.md),
 and [roadmap](docs/DEVELOPMENT_ROADMAP.md) for scope and limitations.
