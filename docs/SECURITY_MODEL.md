@@ -1,5 +1,13 @@
 # Security model
 
+The optional companion skill adds instructions, not execution permission. It cannot
+select a new server root through tool arguments, enable host verification or attest
+to approval on its own. Its text-only ZIP includes explicit files and Apache license
+notices, with no bundled runtime/dependencies or automatic install hook. Loading it
+does not connect a marketplace/cloud agent to local files. Setup and optional test
+execution remain separate actions within the user's authorization; tool output sent
+to a model follows the client's own privacy configuration.
+
 Static alias configuration is data only: no TypeScript compiler, Next/Vite config,
 plugin, extends target or repository code runs to resolve paths. Reads use existing
 root/link/ignore boundaries, a 262144-byte config cap and configured aggregate byte

@@ -1,5 +1,13 @@
 # Testing strategy
 
+Companion-skill packaging tests verify a deterministic text-only archive, exclusion
+of local extras and license consistency. scripts/check_skill.py validates the nine
+documented calls against live MCP schemas and exercises their static workflow on
+an import-canary fixture, plus empty seeds and host-disabled execution refusal.
+CI runs this check and the package build on the Python matrix and uploads a skill
+artifact. This validates contracts and observable outcomes, not model behavior or
+GUI-client certification; see SKILL_VALIDATION.md.
+
 Acceptance follow-ups cover monorepo-local static aliases (exact/wildcard patterns,
 JSONC, nearest-config isolation, ordered fallbacks, ambiguity, malicious/ignored
 targets, unsupported inheritance and config-only freshness). A subprocess tripwire

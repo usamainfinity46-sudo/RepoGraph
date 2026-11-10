@@ -32,6 +32,14 @@ See [Codex, Claude Code, Cursor and VS Code setup](docs/MCP_CLIENTS.md).
 Protocol connectivity is tested with the official SDK; GUI clients have not
 been manually certified.
 
+## Optional companion skill
+
+The Apache-2.0 [RepoGraph skill](skills/repograph/SKILL.md) teaches agents to explore
+dependencies, assess potential change impact and choose tests with evidence.
+It uses an existing local MCP connection; the server also works independently.
+See [packaging and installation](docs/REPOGRAPH_SKILL.md) for the installable ZIP,
+client skill locations and marketplace draft.
+
 ## Implemented scope
 
 Phases 1–7 are implemented: stdio MCP, CLI, configuration, JSON stderr logs,

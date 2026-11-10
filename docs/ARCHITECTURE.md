@@ -19,6 +19,12 @@ Graph resolution and impact analysis consume extraction models,
 without calling an LLM. Streamable HTTP can wrap the same services later; remote
 authentication and network policy must be designed before enabling it.
 
+The optional skills/repograph companion is a separate instructions-only Agent
+Skills folder. It orchestrates existing MCP capabilities and depends on a configured
+local server; the core does not import or depend on it. scripts/package_skill.py
+builds its versioned ZIP independently of the Python wheel, while scripts/check_skill.py
+checks its documented calls against live stdio schemas and a static fixture.
+
 Phase 2 uses separate discovery, parsing, and service modules. Discovery applies
 root and nested .gitignore files with Git-style negation and prunes ignored
 directories. Hard exclusions for dependencies, build outputs, VCS internals,

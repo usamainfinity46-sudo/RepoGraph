@@ -21,6 +21,14 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+      - run: uv run --no-sync python scripts/check_skill.py
+      - run: uv run --no-sync python scripts/package_skill.py
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        with:
+          name: repograph-skill
+          path: dist/skills/*
+          if-no-files-found: error
       - run: uv build
       - run: uv run --no-sync python scripts/release_check.py
       - run: uv run --no-sync python scripts/smoke_wheel.py

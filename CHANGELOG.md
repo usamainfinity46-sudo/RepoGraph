@@ -2,6 +2,9 @@
 
 ## 0.1.0rc2 — unreleased
 
+- Add the Apache-2.0 RepoGraph companion skill (skill version 1.0.0), reproducible
+  ZIP packaging, live example validation, installation guidance and listing draft.
+
 - Resolve bounded static tsconfig/jsconfig paths aliases in monorepo projects,
   with config-aware snapshot identity and freshness checks.
 - Fix Vitest positional filters so targeted plans no longer silently run the

@@ -1,0 +1,4 @@
+interface:
+  display_name: "RepoGraph"
+  short_description: "Trace repository impact and choose tests with evidence"
+  default_prompt: "Use $repograph to analyze this change, explain affected code, and recommend tests without running them."
