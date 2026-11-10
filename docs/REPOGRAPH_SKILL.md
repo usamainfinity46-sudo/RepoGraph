@@ -4,6 +4,8 @@ The Apache-2.0 `repograph` skill teaches an agent to use an existing local RepoG
 MCP connection for exploration, change impact, test selection and optionally
 approved verification. The MCP server is usable independently. The skill is
 instructions and references; it contains no server, executable or automatic installer.
+The separate [RepoGraph Kit npm installer](NPM_INSTALLATION.md) can configure both
+components from its tested tarball; public npm availability requires publication.
 
 Source: [skills/repograph](../skills/repograph/SKILL.md). Skill version: **1.0.0**,
 independent of the server's 0.1.0rc2 version. The setup reference pins the tested

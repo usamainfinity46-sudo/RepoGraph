@@ -25,6 +25,12 @@ local server; the core does not import or depend on it. scripts/package_skill.py
 builds its versioned ZIP independently of the Python wheel, while scripts/check_skill.py
 checks its documented calls against live stdio schemas and a static fixture.
 
+The separate npm/repograph-kit Node launcher installs a bundled Python wheel and
+hash-locked production dependency export, then adds project-scoped MCP configuration
+and skill files. Only explicit setup bootstraps anything. Client entries call the
+installed isolated Python directly; the MCP/core never imports Node or invokes a
+package manager on startup. The launcher has no target-analysis implementation.
+
 Phase 2 uses separate discovery, parsing, and service modules. Discovery applies
 root and nested .gitignore files with Git-style negation and prunes ignored
 directories. Hard exclusions for dependencies, build outputs, VCS internals,

@@ -1,5 +1,9 @@
 # Local installation
 
+For the combined npm installer candidate, see [RepoGraph Kit](NPM_INSTALLATION.md).
+Its tarball includes the server and companion skill. Registry publication must
+succeed before npm i repograph-kit becomes a valid public installation command.
+
 The published RepoGraph candidate is `0.1.0rc1`; this development checkout is
 `0.1.0rc2` with acceptance follow-up fixes. It runs on the same machine as
 the repository it analyzes. Python 3.11–3.13 and `uv` are exercised by CI;

@@ -32,6 +32,45 @@ jobs:
       - run: uv build
       - run: uv run --no-sync python scripts/release_check.py
       - run: uv run --no-sync python scripts/smoke_wheel.py
+  npm-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: uv sync --locked --group dev --python 3.12
+      - run: uv build --wheel
+      - run: uv run --no-sync python scripts/package_npm.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repograph-kit-npm
+          path: dist/npm/*
+          if-no-files-found: error
+  npm-kit:
+    needs: npm-package
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: uv sync --locked --group dev --python 3.12
+      - run: npm ci --prefix npm/repograph-kit --ignore-scripts --no-audit --no-fund
+      - run: npm test --prefix npm/repograph-kit
+      - uses: actions/download-artifact@v4
+        with:
+          name: repograph-kit-npm
+          path: dist/npm
+      - run: uv run --no-sync python scripts/smoke_npm.py
   javascript-verification:
     strategy:
       fail-fast: false

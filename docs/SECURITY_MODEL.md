@@ -1,5 +1,18 @@
 # Security model
 
+The optional npm kit has no installation lifecycle hooks. Its explicit setup reads
+only project configuration/skill destinations, bootstraps the bundled wheel and
+hash-locked binary dependencies in trusted local cache, and writes project-scoped
+entries. It skips repository-local host executable candidates, ignores uv project
+configuration and uses isolated pip with a fixed public index. It does not install
+application dependencies, index/execute application code, enable verification,
+change workspace trust or edit global agent approval/settings. Startup points
+directly to installed Python; no installation occurs during MCP connection.
+Configuration uses data-only JSONC/TOML parsers, bounded reads, duplicate/conflict
+checks, path/link checks, changed-input detection and file rollback. No force flag
+overwrites customized skill files or a conflicting server. Cache/runtime state is
+trusted host data; checks do not provide a hostile filesystem/process sandbox.
+
 The optional companion skill adds instructions, not execution permission. It cannot
 select a new server root through tool arguments, enable host verification or attest
 to approval on its own. Its text-only ZIP includes explicit files and Apache license

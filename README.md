@@ -8,6 +8,11 @@ for measured results and remaining limits.
 Local, model-agnostic repository intelligence using the Model Context Protocol.
 No LLM API key, cloud database, Docker, or telemetry is required.
 
+The combined **repograph-kit** npm installer candidate packages the server and
+skill with project setup for Codex, Claude Code, Cursor and VS Code Copilot. See
+[npm installation and release status](docs/NPM_INSTALLATION.md); use the tested
+tarball until registry publication succeeds.
+
 ## Get started
 
 Install Python 3.12 and [uv](https://docs.astral.sh/uv/), then from this checkout:

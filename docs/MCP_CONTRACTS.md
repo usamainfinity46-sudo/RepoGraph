@@ -12,6 +12,11 @@ rejection remain intact. Old verification-3 plans must be prepared and approved 
 Transport: local stdio. No authentication or network listener. Protocol versions
 are negotiated by the official SDK; tool contracts have schema version 1.
 
+The optional npm kit only installs/configures this existing transport. It adds no
+MCP methods, root-selection arguments, approval bypass or network listener. Its
+generated entries omit --enable-verification and invoke installed Python directly,
+keeping setup/downloads outside MCP startup and analysis operations.
+
 Implemented Phase 1:
 
 - `health()`: status, package version, SQLite schema version, configured root.

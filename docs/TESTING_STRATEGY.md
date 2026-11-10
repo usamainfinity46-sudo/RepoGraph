@@ -1,5 +1,13 @@
 # Testing strategy
 
+The npm kit has Node tests for preserving JSONC/TOML data, invalid/duplicate
+configuration, customized skill conflicts, all four layouts, idempotence, links,
+concurrent edits, rollback, payload checksums and incomplete runtime refusal.
+scripts/smoke_npm.py installs the packed artifact in disposable projects and tests
+uv and Python-only bootstrap plus SDK connectivity, import canaries and host opt-out.
+CI builds one Linux tarball and tests that same artifact on Node 22/24 across all
+three OSes. See NPM_INSTALLATION.md. This is not manual GUI certification.
+
 Companion-skill packaging tests verify a deterministic text-only archive, exclusion
 of local extras and license consistency. scripts/check_skill.py validates the nine
 documented calls against live MCP schemas and exercises their static workflow on

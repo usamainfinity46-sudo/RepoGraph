@@ -1,5 +1,32 @@
 # Release procedure
 
+## Separate npm kit release
+
+Kit 0.1.0 is a separate npm package bundling Python candidate 0.1.0rc2 and skill
+1.0.0. Building it does not publish a registry or complete production PyPI acceptance.
+Follow NPM_INSTALLATION.md to stage, pack and smoke-test it; check the shared-artifact
+OS/Node matrix. Bump npm/repograph-kit/package.json and its lock for each npm release;
+never overwrite a registry version. Review the exact artifact, npm-artifact.json
+and SHA256SUMS from the intended commit and successful CI.
+
+Preview publication without uploading, then authenticate and publish that exact
+tarball (substitute the intended version):
+
+```sh
+npm publish dist/npm/repograph-kit-0.1.0.tgz --access public --ignore-scripts --dry-run
+npm login
+npm whoami
+npm publish dist/npm/repograph-kit-0.1.0.tgz --access public --ignore-scripts
+```
+
+The first publication needs an authenticated npm account with publishing rights and
+required 2FA. No npm credentials go in the repository or package. Confirm the
+published name/version/integrity using npm view and install/test the actual registry
+artifact before claiming the public command works. A future npm trusted-publisher
+workflow requires separate npm account configuration; Python OIDC does not grant it.
+
+## Python release
+
 Current development candidate: **0.1.0rc2** (unreleased); the published candidate is
 0.1.0rc1. The commands below illustrate the existing release procedure; use the
 intended version's matching tag when preparing the next candidate.

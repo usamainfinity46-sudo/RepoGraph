@@ -2,6 +2,10 @@
 
 ## 0.1.0rc2 — unreleased
 
+- Add the separately versioned repograph-kit 0.1.0 npm installer candidate, bundled
+  server wheel/locked dependencies, project-level agent setup and shared-artifact
+  Node 22/24 OS acceptance checks. npm publication is an external release step.
+
 - Add the Apache-2.0 RepoGraph companion skill (skill version 1.0.0), reproducible
   ZIP packaging, live example validation, installation guidance and listing draft.
 

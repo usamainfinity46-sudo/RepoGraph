@@ -1,0 +1,21 @@
+{
+  "name": "repograph-kit",
+  "version": "0.1.0",
+  "description": "Set up RepoGraph MCP and its companion skill for your coding agent",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": { "repograph-kit": "bin/repograph-kit.mjs" },
+  "files": ["bin/", "lib/", "payload/", "README.md", "LICENSE", "NOTICE"],
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test" },
+  "dependencies": { "jsonc-parser": "3.3.1", "smol-toml": "1.9.1" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usamainfinity46-sudo/RepoGraph.git",
+    "directory": "npm/repograph-kit"
+  },
+  "homepage": "https://github.com/usamainfinity46-sudo/RepoGraph#readme",
+  "bugs": { "url": "https://github.com/usamainfinity46-sudo/RepoGraph/issues" },
+  "keywords": ["mcp", "repograph", "agent-skills", "static-analysis", "test-selection"],
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" }
+}

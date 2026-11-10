@@ -8,3 +8,4 @@ dist/
 .repograph/
 .coverage
 htmlcov/
+node_modules/

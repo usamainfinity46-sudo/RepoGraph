@@ -1,0 +1,188 @@
+"""Install the npm tarball in isolation; bootstrap both backend routes and negotiate real MCP."""
+
+import argparse
+import asyncio
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import tomllib
+from pathlib import Path
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from package_npm import npm_command
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def run(command, cwd, *, env=None):
+    result = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True, timeout=360)
+    if result.returncode:
+        raise RuntimeError(f"Command failed: {command[0]}\n{result.stdout}\n{result.stderr}")
+    return result.stdout
+
+
+async def protocol(entry, root, version):
+    params = StdioServerParameters(command=entry["command"], args=entry["args"])
+    async with stdio_client(params) as (reader, writer):
+        async with ClientSession(reader, writer) as session:
+            await session.initialize()
+            tools = await session.list_tools()
+            assert len(tools.tools) == 19
+            health = await session.call_tool("health", {})
+            payload = json.loads(health.content[0].text)
+            assert payload["version"] == version and Path(payload["repository"]).resolve() == root
+            indexed = await session.call_tool("index_repository", {})
+            assert not indexed.isError and json.loads(indexed.content[0].text)["published"]
+            denied = await session.call_tool(
+                "verify_changes", {"plan_id": "nonexistent", "approved": True}
+            )
+            assert denied.isError and "verification_disabled" in denied.content[0].text
+    assert not (root / "sample.executed").exists()
+    return {"tools": 19, "version": version, "indexed": True, "host_disabled_gate": "passed"}
+
+
+def smoke(artifact: Path):
+    npm = npm_command()
+    node = shutil.which("node")
+    assert npm and node
+    parent = ROOT / ".repograph/npm-smoke"
+    parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="install-", dir=parent) as directory:
+        temporary = Path(directory).resolve()
+        assert temporary.is_relative_to(parent.resolve())
+        root = temporary / "project with spaces"
+        root.mkdir()
+        (root / "sample.py").write_text(
+            'from pathlib import Path\nPath(__file__).with_suffix(".executed").write_text("ran")\n'
+            'raise RuntimeError("must never import target during setup or indexing")\n'
+            "def sample(): return 1\n",
+            encoding="utf-8",
+        )
+        print("Installing packed npm artifact", flush=True)
+        run([*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", str(artifact)], root)
+        package = root / "node_modules/repograph-kit"
+        metadata = json.loads((package / "package.json").read_text())
+        assert not any(
+            key in metadata.get("scripts", {})
+            for key in ("preinstall", "install", "postinstall", "prepare")
+        )
+        version = json.loads((package / "payload/release.json").read_text())["serverVersion"]
+        cli = package / "bin/repograph-kit.mjs"
+        cache = temporary / "backend-cache"
+        arguments = ["--root", str(root), "--cache-dir", str(cache), "--json"]
+        dry = json.loads(
+            run([node, str(cli), "setup", "--agent", "all", "--dry-run", *arguments], root)
+        )
+        assert dry["dryRun"] and not cache.exists() and not (root / ".mcp.json").exists()
+        (root / ".cursor").mkdir()
+        (root / ".cursor/mcp.json").write_text(
+            '// keep this comment\n{"mcpServers":{"other":{"url":"https://example.invalid"}}}',
+            encoding="utf-8",
+        )
+        print("Bootstrapping locked backend with uv", flush=True)
+        # npm exec uses the installed package's actual bin mapping, never a registry fetch.
+        setup = run(
+            [
+                *npm,
+                "exec",
+                "--offline",
+                "--",
+                "repograph-kit",
+                "setup",
+                "--agent",
+                "all",
+                *arguments,
+            ],
+            root,
+        )
+        report = json.loads(setup.strip().splitlines()[-1])
+        assert not report["verificationEnabled"]
+        assert "// keep this comment" in (root / ".cursor/mcp.json").read_text()
+        assert '"other"' in (root / ".cursor/mcp.json").read_text()
+        entry = json.loads((root / ".mcp.json").read_text())["mcpServers"]["repograph"]
+        codex = tomllib.loads((root / ".codex/config.toml").read_text())["mcp_servers"]["repograph"]
+        assert entry["command"] == codex["command"] and entry["args"] == codex["args"]
+        assert json.loads((root / ".vscode/mcp.json").read_text())["servers"]["repograph"] == entry
+        for prefix in (".agents", ".claude", ".cursor", ".github"):
+            assert (root / prefix / "skills/repograph/references/verification.md").is_file()
+        before = {
+            file: file.read_bytes()
+            for prefix in (".agents", ".claude", ".cursor", ".github", ".codex", ".vscode")
+            for file in (root / prefix).rglob("*")
+            if file.is_file()
+        }
+        repeat = json.loads(run([node, str(cli), "setup", "--agent", "all", *arguments], root))
+        assert repeat["files"] == [] and not repeat["backendInstallNeeded"]
+        assert all(file.read_bytes() == content for file, content in before.items())
+        assert json.loads(run([node, str(cli), "doctor", *arguments], root))["ready"]
+        actual_module = run(
+            [entry["command"], "-I", "-c", "import repograph; print(repograph.__file__)"], root
+        ).strip()
+        assert Path(actual_module).resolve().is_relative_to(cache)
+        print("Checking packed backend over real MCP stdio", flush=True)
+        uv_result = asyncio.run(asyncio.wait_for(protocol(entry, root, version), timeout=60))
+
+        print("Bootstrapping the Python-without-uv fallback", flush=True)
+        fallback_root = temporary / "fallback project"
+        fallback_root.mkdir()
+        (fallback_root / "sample.py").write_text((root / "sample.py").read_text(), encoding="utf-8")
+        fallback_environment = dict(os.environ)
+        # Expose a known Python but no uv executable; never rename a host-installed tool.
+        runtime_bins = [str(Path(sys.executable).parent), str(Path(node).parent)]
+        if os.name == "nt":
+            runtime_bins.append(str(Path(os.environ["SYSTEMROOT"]) / "System32"))
+        fallback_environment["PATH"] = os.pathsep.join(runtime_bins)
+        fallback_cache = temporary / "fallback-cache"
+        fallback = run(
+            [
+                node,
+                str(cli),
+                "setup",
+                "--agent",
+                "claude-code",
+                "--root",
+                str(fallback_root),
+                "--cache-dir",
+                str(fallback_cache),
+                "--json",
+            ],
+            fallback_root,
+            env=fallback_environment,
+        )
+        assert json.loads(fallback.strip().splitlines()[-1])["files"]
+        fallback_entry = json.loads((fallback_root / ".mcp.json").read_text())["mcpServers"][
+            "repograph"
+        ]
+        fallback_result = asyncio.run(
+            asyncio.wait_for(protocol(fallback_entry, fallback_root, version), timeout=60)
+        )
+        return {
+            "status": "passed",
+            "npm_version": metadata["version"],
+            "uv_backend": uv_result,
+            "python_fallback": fallback_result,
+            "agents": ["codex", "claude-code", "cursor", "copilot"],
+            "dry_run": "passed",
+            "repeat_setup": "unchanged",
+            "target_code_executed": False,
+            "gui_client_certification": "not performed",
+        }
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--artifact", type=Path, default=ROOT / "dist/npm/repograph-kit-0.1.0.tgz")
+    parser.add_argument("--output", type=Path, default=ROOT / ".repograph/npm-smoke.json")
+    args = parser.parse_args()
+    result = smoke(args.artifact.resolve(strict=True))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    print(json.dumps(result))
+
+
+if __name__ == "__main__":
+    main()
