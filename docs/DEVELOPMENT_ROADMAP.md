@@ -20,8 +20,9 @@
    history retention/recovery. Remote matrix results remain independently verifiable.
 9. Public release: GitHub 0.1.0rc1 prerelease published and installation verified.
    Apache-2.0 metadata, package validation, gated trusted publishing, demos and
-   contributor/security guides are delivered. TestPyPI rejected the valid workflow
-   identity with invalid-publisher; registry-side registration and TestPyPI/PyPI
-   publication remain incomplete. See PHASE_9_ACCEPTANCE.md for exact evidence.
+   contributor/security guides are delivered. TestPyPI publication and clean registry
+   installation passed. Production PyPI rejected the valid workflow identity with
+   invalid-publisher; production registry registration/publication remain incomplete.
+   See PHASE_9_ACCEPTANCE.md for exact evidence.
 
 The repository is 0.1.0rc1, not a completed stable v0.1.0 release.

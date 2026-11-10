@@ -86,8 +86,9 @@ commands, execution gates and limitations. Phase 8 adds reproducible
 
 Version **0.1.0rc1** is an Apache-2.0 release candidate, available as a
 [GitHub prerelease](https://github.com/usamainfinity46-sudo/RepoGraph/releases/tag/v0.1.0rc1).
-The full remote matrix and public-wheel installation passed. TestPyPI/PyPI
-publication remains pending registry-side trusted-publisher registration.
+The full remote matrix, public-wheel installation and
+[TestPyPI publication/installation](https://test.pypi.org/project/repograph-mcp/0.1.0rc1/)
+passed. Production PyPI still requires its separate trusted-publisher registration.
 See the [demo](docs/DEMO.md), [release procedure](docs/RELEASING.md),
 [changelog](CHANGELOG.md), [contributing guide](CONTRIBUTING.md) and
 [security policy](SECURITY.md).

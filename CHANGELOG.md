@@ -13,5 +13,6 @@
 - Apache-2.0 licensing, release checks, package metadata and trusted publishing workflow.
 
 The candidate retains the limitations in SECURITY_MODEL.md and COMPATIBILITY.md.
-The full remote matrix and GitHub asset installation passed. TestPyPI rejected
-the OIDC exchange with invalid-publisher; no TestPyPI/PyPI upload occurred.
+The full remote matrix, GitHub asset installation and TestPyPI publication/install
+checks passed. Production PyPI rejected the OIDC exchange with invalid-publisher;
+no production PyPI upload occurred.

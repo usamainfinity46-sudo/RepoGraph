@@ -9,8 +9,9 @@ or telemetry setup is needed.
 ## Published release candidate
 
 The [0.1.0rc1 GitHub prerelease](https://github.com/usamainfinity46-sudo/RepoGraph/releases/tag/v0.1.0rc1)
-contains the canonical wheel, source archive and SHA256SUMS. TestPyPI/PyPI upload
-is not complete; do not assume `pip install repograph-mcp` selects this project.
+contains the canonical wheel, source archive and SHA256SUMS. The same candidate is
+published and installation-tested on TestPyPI. Production PyPI upload is not complete;
+do not assume `pip install repograph-mcp` selects this project.
 In a new scratch directory, install the public candidate wheel:
 
 ```sh
