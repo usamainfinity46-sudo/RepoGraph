@@ -10,6 +10,7 @@ from repograph.git_service import GitService
 from repograph.graph import GraphService
 from repograph.impact import ImpactService
 from repograph.logging import configure_logging
+from repograph.maintenance import HistoryService
 from repograph.overview import OverviewService
 from repograph.server import create_server
 from repograph.service import RepositoryService
@@ -50,6 +51,13 @@ def main() -> None:
         "--test-path", action="append", help="Test file to include in a prepared plan"
     )
     parser.add_argument("--approve", action="store_true", help="Approve the selected reviewed plan")
+    parser.add_argument("--keep-finished", type=int, default=100, help="Finished runs to retain")
+    parser.add_argument("--apply", action="store_true", help="Apply the previewed history pruning")
+    parser.add_argument(
+        "--confirm-processes-stopped",
+        action="store_true",
+        help="Attest server and verification processes stopped before recovering a run",
+    )
     parser.add_argument(
         "command",
         choices=[
@@ -70,6 +78,8 @@ def main() -> None:
             "verify",
             "verification-result",
             "verification-diff",
+            "prune-history",
+            "recover-verification",
         ],
         nargs="?",
         default="serve",
@@ -95,7 +105,17 @@ def main() -> None:
                 "verification_output_bytes": args.verification_output_bytes,
             }
         )
-        if args.command == "init":
+        if args.command == "prune-history":
+            print(HistoryService(settings).prune(args.keep_finished, args.apply).model_dump_json())
+        elif args.command == "recover-verification":
+            if not args.path:
+                parser.error("recover-verification requires a running plan ID")
+            print(
+                HistoryService(settings)
+                .recover(args.path, args.confirm_processes_stopped)
+                .model_dump_json(indent=2)
+            )
+        elif args.command == "init":
             Database(settings.database).migrate()
             print(f"Initialized {settings.database}")
         elif args.command == "overview":

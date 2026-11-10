@@ -78,8 +78,17 @@ settings and the host's safe core.autocrlf scalar, while suppressing other
 global/system Git configuration during analysis.
 
 See [verification workflow](docs/VERIFICATION.md) for interpreter setup, reviewed
-commands, execution gates and limitations. Phases 8–9 (formal security/
-performance benchmarking and release) remain separate work.
+commands, execution gates and limitations. Phase 8 adds reproducible
+[benchmarks](docs/BENCHMARKS.md), adversarial regression tests,
+[container boundary validation](docs/SANDBOX_VALIDATION.md), a
+[compatibility matrix](docs/COMPATIBILITY.md) and host-only
+[history maintenance](docs/MAINTENANCE.md).
+
+Version **0.1.0rc1** is an Apache-2.0 release candidate. Release engineering is
+prepared; registry publication and remote release acceptance are pending.
+See the [demo](docs/DEMO.md), [release procedure](docs/RELEASING.md),
+[changelog](CHANGELOG.md), [contributing guide](CONTRIBUTING.md) and
+[security policy](SECURITY.md).
 
 See [architecture](docs/ARCHITECTURE.md), [contracts](docs/MCP_CONTRACTS.md),
 and [roadmap](docs/DEVELOPMENT_ROADMAP.md) for scope and limitations.

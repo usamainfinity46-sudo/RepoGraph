@@ -14,7 +14,13 @@
    test selection, approved bounded execution, persisted results and comparisons.
 7. Developer experience: complete. Persisted-state overview tool/resource/CLI,
    local installation and client guides, isolated installed-wheel stdio smoke.
-8. Benchmarking and security: planned. Malicious input, performance, compatibility matrix.
-9. Public release: planned. PyPI, release automation, demos, contribution guidelines.
+8. Benchmarking and security: implemented; local acceptance evidence is recorded in
+   PHASE_8_ACCEPTANCE.md. Reproducible performance/accuracy fixtures, adversarial
+   regression tests, external container probes, compatibility matrix and host-only
+   history retention/recovery. Remote matrix results remain independently verifiable.
+9. Public release: release-candidate engineering implemented. Apache-2.0 metadata,
+   package validation, gated trusted publishing, demos and contributor/security
+   guides. Actual TestPyPI/PyPI publication and remote release acceptance remain
+   pending external account configuration and a reviewed release tag; see PHASE_9_ACCEPTANCE.md.
 
-The repository is a development build, not the completed v0.1.0 release.
+The repository is 0.1.0rc1, not a published or completed stable v0.1.0 release.

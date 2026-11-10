@@ -1,0 +1,654 @@
+{
+  "schema_version": 1,
+  "repograph": "0.1.0rc1",
+  "python": "3.12.16",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "machine": "AMD64",
+  "dependencies": {
+    "tree-sitter": "0.25.2",
+    "mcp": "1.30.0",
+    "pydantic": "2.14.3"
+  },
+  "elapsed_seconds": 199.05673660011962,
+  "budget_seconds": 900.0,
+  "within_budget": true,
+  "profiles": {
+    "small": {
+      "samples": [
+        {
+          "source_files": 36,
+          "nodes": 69,
+          "edges": 109,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 0.562372200191021,
+            "python_peak_bytes": 2022163
+          },
+          "warm_index": {
+            "seconds": 0.15599430003203452,
+            "python_peak_bytes": 2020778
+          },
+          "edited_index": {
+            "seconds": 0.16088440013118088,
+            "python_peak_bytes": 2019134
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.10192209994420409,
+                "python_peak_bytes": 2372263
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.10172870010137558,
+                "python_peak_bytes": 2371493
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.09535859990864992,
+                "python_peak_bytes": 2371029
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.09464720007963479,
+                "python_peak_bytes": 2370548
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 36,
+          "nodes": 69,
+          "edges": 109,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 0.4659161998424679,
+            "python_peak_bytes": 2018871
+          },
+          "warm_index": {
+            "seconds": 0.15074059995822608,
+            "python_peak_bytes": 2018942
+          },
+          "edited_index": {
+            "seconds": 0.15269659995101392,
+            "python_peak_bytes": 2019030
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.09371710009872913,
+                "python_peak_bytes": 2370067
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.09816859988495708,
+                "python_peak_bytes": 2369979
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.08998449984937906,
+                "python_peak_bytes": 2369883
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.08963300008326769,
+                "python_peak_bytes": 2369779
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 36,
+          "nodes": 69,
+          "edges": 109,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 0.5624114000238478,
+            "python_peak_bytes": 2018783
+          },
+          "warm_index": {
+            "seconds": 0.14836630015634,
+            "python_peak_bytes": 2018862
+          },
+          "edited_index": {
+            "seconds": 0.159882300067693,
+            "python_peak_bytes": 2019054
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.09706549998372793,
+                "python_peak_bytes": 2369707
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.11389969987794757,
+                "python_peak_bytes": 2369643
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.08976639993488789,
+                "python_peak_bytes": 2369555
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.08984480006620288,
+                "python_peak_bytes": 2369491
+              }
+            }
+          ]
+        }
+      ],
+      "cold_median_seconds": 0.562372200191021
+    },
+    "medium": {
+      "samples": [
+        {
+          "source_files": 204,
+          "nodes": 405,
+          "edges": 613,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 2.8581271001603454,
+            "python_peak_bytes": 3516502
+          },
+          "warm_index": {
+            "seconds": 0.7570920002181083,
+            "python_peak_bytes": 3599111
+          },
+          "edited_index": {
+            "seconds": 0.8182534000370651,
+            "python_peak_bytes": 3617359
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.48139750002883375,
+                "python_peak_bytes": 4144206
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.5139963999390602,
+                "python_peak_bytes": 4142314
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.48827209998853505,
+                "python_peak_bytes": 4140246
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.4974764999933541,
+                "python_peak_bytes": 4138274
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 204,
+          "nodes": 405,
+          "edges": 613,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 2.9311023999471217,
+            "python_peak_bytes": 3492932
+          },
+          "warm_index": {
+            "seconds": 0.765522199915722,
+            "python_peak_bytes": 3599111
+          },
+          "edited_index": {
+            "seconds": 0.9769443001132458,
+            "python_peak_bytes": 3601175
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.4756707998458296,
+                "python_peak_bytes": 4136260
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.47889050003141165,
+                "python_peak_bytes": 4136260
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.5165122000034899,
+                "python_peak_bytes": 4136260
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.5536583999637514,
+                "python_peak_bytes": 4136260
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 204,
+          "nodes": 405,
+          "edges": 613,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 2.800345800118521,
+            "python_peak_bytes": 3492900
+          },
+          "warm_index": {
+            "seconds": 0.8914870999287814,
+            "python_peak_bytes": 3599111
+          },
+          "edited_index": {
+            "seconds": 0.8903405999299139,
+            "python_peak_bytes": 3617359
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 0.5390561998356134,
+                "python_peak_bytes": 4136260
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 0.49211240001022816,
+                "python_peak_bytes": 4136548
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 0.48574459995143116,
+                "python_peak_bytes": 4136260
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 0.505923300050199,
+                "python_peak_bytes": 4136260
+              }
+            }
+          ]
+        }
+      ],
+      "cold_median_seconds": 2.8581271001603454
+    },
+    "large": {
+      "samples": [
+        {
+          "source_files": 1004,
+          "nodes": 2005,
+          "edges": 3013,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 14.306252599926665,
+            "python_peak_bytes": 17417289
+          },
+          "warm_index": {
+            "seconds": 3.832897000014782,
+            "python_peak_bytes": 17957115
+          },
+          "edited_index": {
+            "seconds": 3.9779288000427186,
+            "python_peak_bytes": 17908219
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 2.685905900085345,
+                "python_peak_bytes": 12544981
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 2.4236018999945372,
+                "python_peak_bytes": 12535191
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 2.4196214000694454,
+                "python_peak_bytes": 12525737
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 2.447292699944228,
+                "python_peak_bytes": 12516379
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 1004,
+          "nodes": 2005,
+          "edges": 3013,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 13.918384899850935,
+            "python_peak_bytes": 17289589
+          },
+          "warm_index": {
+            "seconds": 4.0335158000234514,
+            "python_peak_bytes": 17844275
+          },
+          "edited_index": {
+            "seconds": 4.795864999992773,
+            "python_peak_bytes": 17906987
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 2.528771499870345,
+                "python_peak_bytes": 12511917
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 2.4482668000273407,
+                "python_peak_bytes": 12506437
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 2.5821592998690903,
+                "python_peak_bytes": 12506437
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 2.8617765998933464,
+                "python_peak_bytes": 12506341
+              }
+            }
+          ]
+        },
+        {
+          "source_files": 1004,
+          "nodes": 2005,
+          "edges": 3013,
+          "unresolved_edges": 12,
+          "cold_index": {
+            "seconds": 13.857146400026977,
+            "python_peak_bytes": 17401981
+          },
+          "warm_index": {
+            "seconds": 4.172098399838433,
+            "python_peak_bytes": 17844323
+          },
+          "edited_index": {
+            "seconds": 4.051101200049743,
+            "python_peak_bytes": 17906987
+          },
+          "warm_rows_written": 0,
+          "accuracy": [
+            {
+              "seed": "p0.py",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "test_chain.py"
+              ],
+              "impact": {
+                "seconds": 2.7488694000057876,
+                "python_peak_bytes": 12506533
+              }
+            },
+            {
+              "seed": "j0.js",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "jchain.test.js"
+              ],
+              "impact": {
+                "seconds": 2.670923599973321,
+                "python_peak_bytes": 12506437
+              }
+            },
+            {
+              "seed": "t0.ts",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "tchain.test.ts"
+              ],
+              "impact": {
+                "seconds": 2.5881767000537366,
+                "python_peak_bytes": 12506629
+              }
+            },
+            {
+              "seed": "x0.tsx",
+              "module_precision": 1.0,
+              "module_recall": 1.0,
+              "graph_tests": [
+                "xchain.test.tsx"
+              ],
+              "impact": {
+                "seconds": 2.4847045999486,
+                "python_peak_bytes": 12506341
+              }
+            }
+          ]
+        }
+      ],
+      "cold_median_seconds": 13.918384899850935
+    }
+  },
+  "memory_note": "tracemalloc Python heap only; native allocations/RSS excluded"
+}

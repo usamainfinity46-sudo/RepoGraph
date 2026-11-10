@@ -15,7 +15,7 @@ REPOGRAPH_DATABASE. A server handles one configured repository boundary.
 The default database is ROOT/.repograph/index.sqlite3. Source code remains local
 until a connected client elects to send tool output to its model provider.
 
-Graph resolution and future impact analysis consume extraction models,
+Graph resolution and impact analysis consume extraction models,
 without calling an LLM. Streamable HTTP can wrap the same services later; remote
 authentication and network policy must be designed before enabling it.
 
@@ -118,3 +118,19 @@ or asserting freshness. The MCP tool and resource and the CLI share this service
 Client configuration launches the already-installed executable over stdio, so
 MCP startup does not invoke a package manager. One server instance still binds
 to one host-selected repository root.
+
+Phase 8 adds offline engineering benchmarks and an optional external Linux
+container-validation harness, not a new production execution transport. A
+transport-independent HistoryService provides host-only CLI pruning and crash
+recovery. It uses repository-scoped write transactions in the existing schema.
+Pruning previews expired prepared records and finished history beyond a chosen
+retention count; live prepared and running records survive. Recovery requires a
+host attestation after process cleanup and terminates an interrupted record as
+error. It never resets a plan to prepared and is deliberately absent from MCP.
+
+Release engineering builds wheel and sdist, checks metadata/licenses/version and
+checksums, then exercises the installed wheel outside the checkout. Publication
+uses a manually dispatched version-tag workflow, the full reusable CI matrix,
+and a separate environment-gated OIDC job. Production startup never builds or
+downloads dependencies. Registry publication is external state, not implied by
+the presence of a workflow or local distribution files.

@@ -12,7 +12,8 @@ SQLite and caches are local, and the package makes no telemetry calls.
 This is an in-process analyzer, not an OS sandbox. Concurrent filesystem changes
 and vulnerabilities in native parser libraries remain risks; use an OS sandbox
 for actively hostile repositories. Phase 6 adds approved process execution and
-cleanup controls; hostile-code sandbox validation remains Phase 8 work.
+cleanup controls. Phase 8 adds concrete adversarial fixtures and external container
+boundary probes; these are not a general hostile-code sandbox certification.
 
 Implemented defaults: 2,000,000 bytes per source file, 20,000 source files,
 100,000,000 aggregate bytes per scan, 10 times max_files traversal entries,
@@ -85,9 +86,13 @@ on timeout, output overflow and normal parent exit. Deliberately escaping POSIX
 sessions, native code attacks, server crashes and concurrent filesystem mutation
 are not contained by an OS sandbox. Windows assignment occurs immediately after
 spawn; this is not an adversarial process-security boundary. CPU/memory/network
-quotas and full hostile-repository testing remain Phase 8 work. Runs after a
-server crash may require operator cleanup before a persisted running record can
-be recovered safely; do not blindly reset running state and replay commands.
+quotas are not provided by the native verifier. The optional external container
+harness configures CPU/memory/PID/network/filesystem controls and probes their
+documented boundaries; see SANDBOX_VALIDATION.md for exact coverage and exclusions.
+Runs after a server crash require operator cleanup before the host-only recovery
+command can terminate a persisted running record. Recovery records an error and
+never makes that plan replayable. Its cleanup flag is a host attestation, not
+automated proof that processes have stopped; stop the server before maintenance.
 
 Plan input hashes cover bounded non-ignored repository files, not dependencies,
 ignored files, arbitrary external fixtures or every host package. Runner path/
@@ -98,3 +103,11 @@ Approved code can fabricate its own test results, so this is not attestation of
 untrusted tests. Detected repository mutation turns an otherwise passed run
 inconclusive. Verification can execute code that modifies source; analysis never
 does so automatically. Review commands and use an external sandbox as needed.
+
+History pruning is explicit, repository-scoped and dry-run by default. It preserves
+running/unexpired prepared records but removes selected local evidence permanently
+when --apply is supplied. Back up the state database first if comparisons matter.
+It is not exposed through MCP. Release publishing requires a matching version tag,
+successful CI and configured PyPI trusted publisher; protect the pypi/testpypi
+GitHub environments with required reviewers. Neither local checks nor synthetic
+benchmarks prove general repository accuracy or absence of vulnerabilities.

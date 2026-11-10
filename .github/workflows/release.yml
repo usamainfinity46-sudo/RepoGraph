@@ -1,0 +1,77 @@
+name: release
+on:
+  workflow_dispatch:
+    inputs:
+      registry:
+        description: Registry (none builds reviewable artifacts only)
+        required: true
+        default: none
+        type: choice
+        options: [none, testpypi, pypi]
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require a version tag matching this exact commit
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os, subprocess, tomllib
+          from pathlib import Path
+          version = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+          assert os.environ['RELEASE_REF'] == 'refs/tags/v' + version
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert commit == os.environ['RELEASE_SHA']
+          PY
+  checks:
+    needs: validate-tag
+    uses: ./.github/workflows/ci.yml
+  build:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --group dev --python 3.12
+      - run: uv build
+      - run: uv run --no-sync python scripts/release_check.py --tag "${GITHUB_REF_NAME}"
+      - run: uv run --no-sync python scripts/smoke_wheel.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+          if-no-files-found: error
+  publish:
+    if: inputs.registry != 'none'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.registry }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+      - name: Preserve checksums alongside the review artifact, not as a PyPI upload
+        run: mv dist/SHA256SUMS SHA256SUMS
+      - name: Publish to TestPyPI using trusted publishing
+        if: inputs.registry == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+      - name: Publish to PyPI using trusted publishing
+        if: inputs.registry == 'pypi'
+        uses: pypa/gh-action-pypi-publish@release/v1

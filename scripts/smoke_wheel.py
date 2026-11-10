@@ -1,5 +1,6 @@
 """Install a built wheel in isolation and exercise its real stdio entry point."""
 
+import argparse
 import os
 import subprocess
 import sys
@@ -8,8 +9,13 @@ from pathlib import Path
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--wheel", type=Path, help="Exact wheel to install instead of dist discovery"
+    )
+    args = parser.parse_args()
     repository = Path(__file__).resolve().parents[1]
-    wheels = list((repository / "dist").glob("repograph_mcp-*.whl"))
+    wheels = [args.wheel] if args.wheel else list((repository / "dist").glob("repograph_mcp-*.whl"))
     if len(wheels) != 1:
         raise SystemExit("Build exactly one RepoGraph wheel with `uv build` first")
     wheel = wheels[0].resolve()

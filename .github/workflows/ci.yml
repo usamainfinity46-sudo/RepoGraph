@@ -1,5 +1,11 @@
 name: checks
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   test:
     strategy:
@@ -16,6 +22,7 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run pytest
       - run: uv build
+      - run: uv run --no-sync python scripts/release_check.py
       - run: uv run --no-sync python scripts/smoke_wheel.py
   javascript-verification:
     strategy:
@@ -34,3 +41,31 @@ jobs:
       - run: uv run pytest tests/test_javascript_verification.py -q
         env:
           REPOGRAPH_JS_RUNNERS: ${{ runner.temp }}/repograph-js-runners
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --group dev --python 3.12
+      - run: uv run --no-sync python scripts/benchmark.py --profile all --repeat 1 --max-seconds 300 --output benchmark.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-${{ matrix.os }}
+          path: benchmark.json
+          if-no-files-found: error
+  container-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --group dev --python 3.12
+      - run: uv build
+      - run: docker build -f scripts/security/Dockerfile -t repograph-security:dev .
+      - run: uv run --no-sync python scripts/security_check.py --approve

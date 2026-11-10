@@ -74,4 +74,7 @@ are controls, not an OS sandbox. Fingerprints exclude ignored/dependency/externa
 inputs, and passing selected tests does not prove exhaustive regression coverage.
 Review [security boundaries](SECURITY_MODEL.md) before enabling execution for
 untrusted repositories. History is local SQLite state; retention/crash-recovery
-operations and formal hostile-code isolation remain future hardening work.
+operations are available through the host-only commands in
+[maintenance](MAINTENANCE.md). Recovery never replays an interrupted plan.
+Optional external container probes are documented in
+[sandbox validation](SANDBOX_VALIDATION.md); the native verifier is not an OS sandbox.

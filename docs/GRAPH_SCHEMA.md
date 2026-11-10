@@ -50,5 +50,10 @@ uses a conditional UPDATE in a transaction, so concurrent callers cannot replay
 a plan. JSON data stores the immutable command preview, input/policy fingerprints,
 limits and expiration; result stores bounded output and full bounded case outcomes.
 Retrieval paginates cases independently. Plans/results are local history and are
-not automatically pruned yet; expired prepared plans cannot execute. Operator
-recovery of a running record after a crash requires confirming processes stopped.
+not automatically pruned. Host CLI pruning previews/removes expired prepared
+records and finished records beyond an explicit keep count, ordered by plan
+created_at descending then ID descending. Running and unexpired prepared records
+are never pruned. Recovery after confirmed process cleanup atomically changes a
+running record to finished with an error result and verification_interrupted
+diagnostic; it never permits replay. Both operations are repository-scoped and
+require no schema migration. Removing history also removes those comparison IDs.

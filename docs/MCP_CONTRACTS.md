@@ -173,3 +173,11 @@ Implemented Phase 7:
 - Resource `repograph://overview` returns the same JSON. CLI `overview` returns
   the same contract. Neither checks current source freshness, changes Git state,
   or executes repository code. Counts describe only the last published graph.
+
+Phase 8 history maintenance is host CLI only, deliberately not an MCP capability.
+`prune-history` is a dry-run unless `--apply` is supplied. `--keep-finished` accepts
+0..100000 and defaults to 100. `recover-verification PLAN_ID` requires
+`--confirm-processes-stopped` after stopping the server and its runner processes;
+it returns a terminal error result, not a replayable plan. New host-only errors
+include recovery_confirmation_required and recovery_not_running. No MCP tool
+can claim process cleanup or unlock an interrupted verification.

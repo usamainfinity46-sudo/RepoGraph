@@ -1,6 +1,6 @@
 # Local installation
 
-RepoGraph is a development build (`0.1.0.dev0`). It runs on the same machine as
+RepoGraph is a release candidate (`0.1.0rc1`). It runs on the same machine as
 the repository it analyzes. Python 3.11–3.13 and `uv` are exercised by CI;
 Python 3.12 is a good local default. Git is required only for change, baseline,
 and change-driven impact/test workflows. No Docker, database server, LLM key,
