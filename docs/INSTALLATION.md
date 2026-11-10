@@ -6,6 +6,22 @@ Python 3.12 is a good local default. Git is required only for change, baseline,
 and change-driven impact/test workflows. No Docker, database server, LLM key,
 or telemetry setup is needed.
 
+## Published release candidate
+
+The [0.1.0rc1 GitHub prerelease](https://github.com/usamainfinity46-sudo/RepoGraph/releases/tag/v0.1.0rc1)
+contains the canonical wheel, source archive and SHA256SUMS. TestPyPI/PyPI upload
+is not complete; do not assume `pip install repograph-mcp` selects this project.
+In a new scratch directory, install the public candidate wheel:
+
+```sh
+uv venv --python 3.12
+uv pip install --python .venv/bin/python https://github.com/usamainfinity46-sudo/RepoGraph/releases/download/v0.1.0rc1/repograph_mcp-0.1.0rc1-py3-none-any.whl
+```
+
+On Windows use `--python .venv/Scripts/python.exe`. The public wheel's SHA-256 is
+`68836051b0eeb55c26a17c1d29c9743e9c4152b4c611823caa364f97fd168a25`.
+Its clean-environment CLI/MCP smoke passed after downloading from the release URL.
+
 ## Install from this checkout
 
 From the RepoGraph checkout:

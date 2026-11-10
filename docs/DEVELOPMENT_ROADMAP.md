@@ -18,9 +18,10 @@
    PHASE_8_ACCEPTANCE.md. Reproducible performance/accuracy fixtures, adversarial
    regression tests, external container probes, compatibility matrix and host-only
    history retention/recovery. Remote matrix results remain independently verifiable.
-9. Public release: release-candidate engineering implemented. Apache-2.0 metadata,
-   package validation, gated trusted publishing, demos and contributor/security
-   guides. Actual TestPyPI/PyPI publication and remote release acceptance remain
-   pending external account configuration and a reviewed release tag; see PHASE_9_ACCEPTANCE.md.
+9. Public release: GitHub 0.1.0rc1 prerelease published and installation verified.
+   Apache-2.0 metadata, package validation, gated trusted publishing, demos and
+   contributor/security guides are delivered. TestPyPI rejected the valid workflow
+   identity with invalid-publisher; registry-side registration and TestPyPI/PyPI
+   publication remain incomplete. See PHASE_9_ACCEPTANCE.md for exact evidence.
 
-The repository is 0.1.0rc1, not a published or completed stable v0.1.0 release.
+The repository is 0.1.0rc1, not a completed stable v0.1.0 release.

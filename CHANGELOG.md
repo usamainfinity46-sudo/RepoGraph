@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0rc1 — release candidate, not yet published
+## 0.1.0rc1 — GitHub prerelease, 2026-11-10
 
 - Local stdio MCP and CLI for bounded Python, JS/JSX, TS and TSX analysis.
 - Persistent dependency graphs, incremental publication, snapshots and Git changes.
@@ -13,4 +13,5 @@
 - Apache-2.0 licensing, release checks, package metadata and trusted publishing workflow.
 
 The candidate retains the limitations in SECURITY_MODEL.md and COMPATIBILITY.md.
-Publication and remote CI evidence must be recorded separately from local checks.
+The full remote matrix and GitHub asset installation passed. TestPyPI rejected
+the OIDC exchange with invalid-publisher; no TestPyPI/PyPI upload occurred.
