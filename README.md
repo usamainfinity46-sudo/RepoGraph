@@ -1,19 +1,30 @@
 # RepoGraph MCP
 
-Development candidate: **0.1.0rc2** (unreleased), with static JS/TS aliases and
-corrected Vitest targeting. Published 0.1.0rc1 artifacts remain unchanged.
+Python candidate: **0.1.0rc2**, bundled in **repograph-kit 0.1.0** on npm, with static
+JS/TS aliases and corrected Vitest targeting. Standalone 0.1.0rc1 artifacts remain unchanged.
 See the [real-repository acceptance follow-up](docs/REAL_REPOSITORY_ACCEPTANCE_FOLLOWUP.md)
 for measured results and remaining limits.
 
 Local, model-agnostic repository intelligence using the Model Context Protocol.
 No LLM API key, cloud database, Docker, or telemetry is required.
 
-The combined **repograph-kit** npm installer candidate packages the server and
-skill with project setup for Codex, Claude Code, Cursor and VS Code Copilot. See
-[npm installation and release status](docs/NPM_INSTALLATION.md); use the tested
-tarball until registry publication succeeds.
+The published [repograph-kit](https://www.npmjs.com/package/repograph-kit) npm
+installer packages the server and skill with project setup for Codex, Claude Code,
+Cursor and VS Code Copilot. Public registry installation and setup passed;
+see [release acceptance](docs/NPM_RELEASE_ACCEPTANCE.md).
 
 ## Get started
+
+With Node 22+ and either uv or Python 3.11-3.13, run in the target repository:
+
+```sh
+npm i repograph-kit
+npx repograph-kit setup
+```
+
+Choose an agent, reload it, and approve its MCP connection if prompted.
+See [npm setup](docs/NPM_INSTALLATION.md) for options and requirements.
+To install the standalone Python server from this source checkout instead:
 
 Install Python 3.12 and [uv](https://docs.astral.sh/uv/), then from this checkout:
 

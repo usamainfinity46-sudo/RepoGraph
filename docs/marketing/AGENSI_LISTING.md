@@ -62,8 +62,9 @@ scripts/check_skill.py in the source repository.
 
 Requires an agent that can load Agent Skills text and call a configured local
 RepoGraph stdio MCP server. Python 3.11-3.13 are exercised; Git is needed for change
-workflows. Use the pinned rc2 development source for static aliases and corrected
-Vitest targeting; rc2 is not yet a registry release. Installed test runners are
+workflows. The published repograph-kit 0.1.0 npm installer bundles the rc2 server
+for static aliases and corrected Vitest targeting; pinned source is another option.
+A standalone rc2 Python registry release is pending. Installed test runners are
 needed only for optional verification. GUI-client certification is pending.
 
 ## Categories

@@ -1,10 +1,18 @@
 # Changelog
 
-## 0.1.0rc2 — unreleased
+## RepoGraph Kit 0.1.0 — npm, 2026-11-10
+
+- Public unscoped npm installer, bundling Python candidate 0.1.0rc2 and skill 1.0.0.
+- The exact shared artifact passed all 26 CI jobs, including six OS/Node install
+  combinations. Its public registry integrity and downloaded bytes match CI.
+- Registry installation and both backend setup routes passed real MCP checks.
+  See docs/NPM_RELEASE_ACCEPTANCE.md; GUI-client certification remains separate.
+
+## Python 0.1.0rc2 — bundled in npm kit; standalone release pending
 
 - Add the separately versioned repograph-kit 0.1.0 npm installer candidate, bundled
   server wheel/locked dependencies, project-level agent setup and shared-artifact
-  Node 22/24 OS acceptance checks. npm publication is an external release step.
+  Node 22/24 OS acceptance checks. npm publication is recorded above.
 
 - Add the Apache-2.0 RepoGraph companion skill (skill version 1.0.0), reproducible
   ZIP packaging, live example validation, installation guidance and listing draft.

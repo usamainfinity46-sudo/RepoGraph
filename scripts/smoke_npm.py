@@ -1,4 +1,4 @@
-"""Install the npm tarball in isolation; bootstrap both backend routes and negotiate real MCP."""
+"""Install the tarball or registry package; bootstrap both backends and negotiate real MCP."""
 
 import argparse
 import asyncio
@@ -45,7 +45,7 @@ async def protocol(entry, root, version):
     return {"tools": 19, "version": version, "indexed": True, "host_disabled_gate": "passed"}
 
 
-def smoke(artifact: Path):
+def smoke(source: Path | str):
     npm = npm_command()
     node = shutil.which("node")
     assert npm and node
@@ -62,10 +62,16 @@ def smoke(artifact: Path):
             "def sample(): return 1\n",
             encoding="utf-8",
         )
-        print("Installing packed npm artifact", flush=True)
-        run([*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", str(artifact)], root)
+        print(f"Installing {source}", flush=True)
+        run([*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", str(source)], root)
         package = root / "node_modules/repograph-kit"
         metadata = json.loads((package / "package.json").read_text())
+        expected_version = json.loads((ROOT / "npm/repograph-kit/package.json").read_text())[
+            "version"
+        ]
+        assert metadata["version"] == expected_version, (
+            "Installed kit differs from the intended release"
+        )
         assert not any(
             key in metadata.get("scripts", {})
             for key in ("preinstall", "install", "postinstall", "prepare")
@@ -162,6 +168,7 @@ def smoke(artifact: Path):
         )
         return {
             "status": "passed",
+            "install_source": str(source),
             "npm_version": metadata["version"],
             "uv_backend": uv_result,
             "python_fallback": fallback_result,
@@ -175,10 +182,20 @@ def smoke(artifact: Path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--artifact", type=Path, default=ROOT / "dist/npm/repograph-kit-0.1.0.tgz")
+    version = json.loads((ROOT / "npm/repograph-kit/package.json").read_text())["version"]
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--artifact", type=Path)
+    selection.add_argument(
+        "--registry", action="store_true", help="Install npm's default kit and check its version"
+    )
     parser.add_argument("--output", type=Path, default=ROOT / ".repograph/npm-smoke.json")
     args = parser.parse_args()
-    result = smoke(args.artifact.resolve(strict=True))
+    source = (
+        "repograph-kit"
+        if args.registry
+        else (args.artifact or ROOT / f"dist/npm/repograph-kit-{version}.tgz").resolve(strict=True)
+    )
+    result = smoke(source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result))

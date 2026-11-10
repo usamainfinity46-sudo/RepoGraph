@@ -1,11 +1,11 @@
 # Local installation
 
-For the combined npm installer candidate, see [RepoGraph Kit](NPM_INSTALLATION.md).
-Its tarball includes the server and companion skill. Registry publication must
-succeed before npm i repograph-kit becomes a valid public installation command.
+For the published combined npm installer, see [RepoGraph Kit](NPM_INSTALLATION.md).
+`npm i repograph-kit` installs kit 0.1.0, bundling the rc2 server and companion skill;
+run `npx repograph-kit setup` to configure a project. Public install/setup passed.
 
-The published RepoGraph candidate is `0.1.0rc1`; this development checkout is
-`0.1.0rc2` with acceptance follow-up fixes. It runs on the same machine as
+The standalone GitHub/TestPyPI candidate is `0.1.0rc1`; this source checkout and the
+npm kit's bundled server are `0.1.0rc2` with acceptance fixes. It runs on the same machine as
 the repository it analyzes. Python 3.11–3.13 and `uv` are exercised by CI;
 Python 3.12 is a good local default. Git is required only for change, baseline,
 and change-driven impact/test workflows. No Docker, database server, LLM key,

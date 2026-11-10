@@ -7,6 +7,8 @@ scripts/smoke_npm.py installs the packed artifact in disposable projects and tes
 uv and Python-only bootstrap plus SDK connectivity, import canaries and host opt-out.
 CI builds one Linux tarball and tests that same artifact on Node 22/24 across all
 three OSes. See NPM_INSTALLATION.md. This is not manual GUI certification.
+After publication, --registry installs the default npm package name and verifies
+the intended version using the same setup/protocol checks; see NPM_RELEASE_ACCEPTANCE.md.
 
 Companion-skill packaging tests verify a deterministic text-only archive, exclusion
 of local extras and license consistency. scripts/check_skill.py validates the nine
