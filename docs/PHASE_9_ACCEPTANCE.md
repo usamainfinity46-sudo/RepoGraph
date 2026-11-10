@@ -17,6 +17,11 @@ version, license, content and checksum checks. The isolated installed-wheel smok
 passed on Windows Python 3.12.16, including real MCP negotiation, indexing and
 overview tool/resource. The full suite passed 132 tests with two platform/privilege
 skips and real Jest/Vitest enabled. Ruff lint/format and actionlint passed.
+The full [16-job remote matrix](https://github.com/usamainfinity46-sudo/RepoGraph/actions/runs/42763419631)
+passed on 526fd30. GitHub environments `pypi` and `testpypi` are configured with
+the repository owner as required reviewer, admin bypass disabled, and `v*` tag-only
+deployment policies. Self-review is permitted for this single-owner repository;
+no existing protection was removed. Registry-side publisher mapping is separate.
 Distribution files and their SHA256SUMS manifest under .repograph/release/dist
 are development artifacts, not evidence of a registry upload.
 

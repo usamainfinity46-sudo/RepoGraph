@@ -46,6 +46,16 @@ Self-indexing the final checkout parsed 42 Python files without diagnostics into
 346 nodes and 3499 edges, with 2332 unresolved edges explicitly retained. An
 unchanged repeat reused all 42 extractions and wrote zero node/edge rows.
 
+## Remote evidence
+
+[CI run 42763419631](https://github.com/usamainfinity46-sudo/RepoGraph/actions/runs/42763419631)
+passed all 16 jobs on commit 526fd30: nine Python/OS combinations, three real
+JavaScript verification jobs, three benchmark jobs and Linux container security.
+Each Python job also built/validated distributions and ran the installed-wheel
+stdio smoke. Per-OS benchmark JSON artifacts are attached to that run. The initial
+container fixture needed POSIX directory permissions for its separate UID; that
+fix passed the complete matrix. Specific GUI clients remain unverified.
+
 ## Acceptance boundaries
 
 Synthetic exact scores apply to the generated supported patterns only, not arbitrary
