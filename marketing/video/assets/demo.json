@@ -1,0 +1,23 @@
+{
+  "example": "controlled pricing fixture",
+  "source_files": 4,
+  "nodes": 8,
+  "edges": 10,
+  "modules": [
+    "checkout.py",
+    "pricing.py",
+    "tests/test_checkout.py",
+    "tests/test_pricing.py"
+  ],
+  "tests": [
+    "tests/test_checkout.py",
+    "tests/test_pricing.py"
+  ],
+  "broader_run_recommended": false,
+  "baseline_passed": 2,
+  "changed_failed": 2,
+  "potential_regressions": 2,
+  "before_code": "return price * quantity",
+  "after_code": "return price + quantity",
+  "verification": "reviewed prepared plans; host opt-in; approved engineering fixture"
+}
