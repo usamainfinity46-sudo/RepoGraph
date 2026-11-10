@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -19,6 +20,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix="repograph-host-check-") as directory:
         sentinel = Path(directory) / "sentinel"
         sentinel.write_text("unchanged", encoding="utf-8")
+        if os.name != "nt":
+            # A POSIX TemporaryDirectory starts at 0700. The container's separate
+            # unprivileged UID must be able to read the synthetic bind mount.
+            Path(directory).chmod(0o755)
+            sentinel.chmod(0o644)
         command = [
             "docker",
             "create",
