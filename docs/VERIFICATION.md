@@ -47,9 +47,13 @@ installation; --node-executable overrides it. Runner entries default to
 ROOT/node_modules/jest/bin/jest.js and ROOT/node_modules/vitest/vitest.mjs.
 --jest-entry/--vitest-entry select explicit installed entries. RepoGraph never
 runs package scripts or installs dependencies. Real integration tests cover
-Jest 30.5.2, Vitest 5.1.0 and Node 24; arbitrary runner versions/configurations
+Jest 30.5.2, Vitest 4.1.10/5.1.0 and Node 24; arbitrary runner versions/configurations
 are not certified. Vitest positional filters can match extra files, which is
 reported as inconclusive for an otherwise passed targeted run.
+
+Targeted Vitest plans pass absolute paths directly as positional filters, without
+a standalone -- separator. Policy verification-4 invalidates plans prepared before
+this correction; review and approve a new plan rather than replaying an old preview.
 
 --verification-timeout sets the host ceiling (default 60 seconds, maximum 600).
 --verification-output-bytes bounds captured raw bytes (default 65536). MCP

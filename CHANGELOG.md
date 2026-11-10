@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0rc2 — unreleased
+
+- Resolve bounded static tsconfig/jsconfig paths aliases in monorepo projects,
+  with config-aware snapshot identity and freshness checks.
+- Fix Vitest positional filters so targeted plans no longer silently run the
+  entire suite; retain rejection of substring over-selection.
+- Bump graph resolver to graph-2 and verifier policy to verification-4. Old plans
+  require preparation and approval again. No extraction or SQLite schema change.
+- Extend real JavaScript CI to Vitest 4.1.10 and 5.1.0.
+
 ## 0.1.0rc1 — GitHub prerelease, 2026-11-10
 
 - Local stdio MCP and CLI for bounded Python, JS/JSX, TS and TSX analysis.

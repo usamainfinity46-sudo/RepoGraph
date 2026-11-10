@@ -116,7 +116,7 @@ class Discovery:
         self.diagnostics: list[Diagnostic] = []
         self.complete = True
 
-    def files(self, supported_only: bool = True) -> list[str]:
+    def files(self, supported_only: bool = True, *, names: set[str] | None = None) -> list[str]:
         found: list[str] = []
         visited = 0
         # Each scope carries its inherited ignore rules, evaluated root to leaf.
@@ -184,7 +184,9 @@ class Discovery:
                         else:
                             stack.append((path, rules, depth + 1))
                     elif (
-                        not supported_only or path.suffix.lower() in EXTENSIONS
+                        entry.name in names
+                        if names is not None
+                        else not supported_only or path.suffix.lower() in EXTENSIONS
                     ) and entry.is_file(follow_symlinks=False):
                         if path.resolve() == self.settings.database:
                             continue

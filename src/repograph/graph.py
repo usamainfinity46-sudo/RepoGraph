@@ -7,6 +7,7 @@ import time
 from collections import Counter, defaultdict
 from pathlib import PurePosixPath
 
+from repograph.aliases import AliasResolver
 from repograph.config import Settings
 from repograph.discovery import RepositoryError
 from repograph.models import (
@@ -22,7 +23,7 @@ from repograph.models import (
 from repograph.parsing import PARSER_VERSION
 from repograph.service import RepositoryService, pagination
 
-GRAPH_VERSION = "graph-1"
+GRAPH_VERSION = "graph-2"
 MAX_GRAPH_ITEMS = 200_000
 
 
@@ -31,12 +32,13 @@ def identity(*parts: str) -> str:
 
 
 class GraphBuilder:
-    def __init__(self, files: list[ParsedFile]):
+    def __init__(self, files: list[ParsedFile], aliases: AliasResolver | None = None):
         self.files = {file.path: file for file in files}
         self.nodes: dict[str, GraphNode] = {}
         self.edges: dict[str, GraphEdge] = {}
         self.symbols: dict[tuple[str, str], list[GraphNode]] = defaultdict(list)
         self.modules: dict[str, GraphNode] = {}
+        self.aliases = aliases
 
     def module(self, path: str, module: str) -> str | None:
         file = self.files[path]
@@ -54,25 +56,38 @@ class GraphBuilder:
                 stems = [module.replace(".", "/"), "src/" + module.replace(".", "/")]
             for stem in stems:
                 candidates.extend([stem + ".py", stem.rstrip("/") + "/__init__.py"])
-        elif module.startswith("."):
-            stem = posixpath.normpath(posixpath.join(posixpath.dirname(path), module))
-            if stem.startswith("../") or stem == "..":
-                return None
-            candidates = [stem]
-            if PurePosixPath(stem).suffix in {".js", ".jsx", ".mjs", ".cjs"}:
-                # TypeScript projects commonly import the eventual emitted JS path.
-                candidates += [
-                    str(PurePosixPath(stem).with_suffix(ext))
-                    for ext in (".ts", ".tsx", ".mts", ".cts")
-                ]
-            if not PurePosixPath(stem).suffix:
-                candidates += [
-                    stem + ext
-                    for ext in (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")
-                ]
-                candidates += [stem + "/index" + ext for ext in (".js", ".jsx", ".ts", ".tsx")]
+        else:
+            stems = (
+                [posixpath.normpath(posixpath.join(posixpath.dirname(path), module))]
+                if module.startswith(".")
+                else self.aliases.stems(path, module)
+                if self.aliases
+                else []
+            )
+            for stem in stems:
+                matches = self.js_matches(stem)
+                if matches:
+                    return matches[0] if len(matches) == 1 else None
         matches = sorted(set(candidates) & self.files.keys())
         return matches[0] if len(matches) == 1 else None
+
+    def js_matches(self, stem: str) -> list[str]:
+        if stem.startswith("../") or stem == "..":
+            return []
+        candidates = [stem]
+        if PurePosixPath(stem).suffix in {".js", ".jsx", ".mjs", ".cjs"}:
+            # TypeScript projects commonly import the eventual emitted JS path.
+            candidates += [
+                str(PurePosixPath(stem).with_suffix(ext)) for ext in (".ts", ".tsx", ".mts", ".cts")
+            ]
+        if not PurePosixPath(stem).suffix:
+            candidates += [
+                stem + ext for ext in (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")
+            ]
+            candidates += [
+                posixpath.normpath(stem + "/index" + ext) for ext in (".js", ".jsx", ".ts", ".tsx")
+            ]
+        return sorted(set(candidates) & self.files.keys())
 
     def unique(self, path: str, name: str) -> GraphNode | None:
         candidates = self.symbols.get((path, name), [])
@@ -258,10 +273,16 @@ class GraphBuilder:
         edges = sorted(self.edges.values(), key=lambda item: item.id)
         digest = identity(
             GRAPH_VERSION,
+            self.aliases.fingerprint if self.aliases else None,
             *(n.model_dump_json() for n in nodes),
             *(e.model_dump_json() for e in edges),
         )
-        return GraphSnapshot(id=digest, nodes=nodes, edges=edges)
+        return GraphSnapshot(
+            id=digest,
+            nodes=nodes,
+            edges=edges,
+            resolution_fingerprint=self.aliases.fingerprint if self.aliases else None,
+        )
 
 
 class GraphService:
@@ -290,7 +311,9 @@ class GraphService:
                     "SELECT data FROM files WHERE repository_id=? ORDER BY path", (repository_id,)
                 )
             ]
-        snapshot = GraphBuilder(files).build()
+        aliases = AliasResolver(self.settings, [file.path for file in files])
+        scan.diagnostics.extend(aliases.diagnostics[: max(0, 200 - len(scan.diagnostics))])
+        snapshot = GraphBuilder(files, aliases).build()
         report = IndexReport(
             published=True,
             snapshot_id=snapshot.id,
@@ -307,7 +330,8 @@ class GraphService:
                 )
             )
             current_files = {
-                file.path: identity(file.sha256, PARSER_VERSION, GRAPH_VERSION) for file in files
+                file.path: identity(file.sha256, PARSER_VERSION, GRAPH_VERSION, aliases.fingerprint)
+                for file in files
             }
             report.updated_files = sum(
                 old_files.get(path) != sha for path, sha in current_files.items()

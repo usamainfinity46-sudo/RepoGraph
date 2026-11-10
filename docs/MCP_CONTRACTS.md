@@ -1,5 +1,14 @@
 # MCP contracts
 
+Static JS/TS paths aliases are resolved from bounded nearest tsconfig/jsconfig
+data. Alias metadata participates in snapshot identity and freshness. Configuration
+warnings use alias_config_unresolved; inventory/aggregate failures use
+alias_inventory_incomplete and alias_byte_limit. Config-only drift is stale_alias_config.
+No tool executes project configuration to resolve imports. Inheritance and runtime
+plugins remain unresolved. Vitest targeted preparation uses positional paths without
+--, with verification-4 policy fingerprints; existing approval gates and extra-scope
+rejection remain intact. Old verification-3 plans must be prepared and approved again.
+
 Transport: local stdio. No authentication or network listener. Protocol versions
 are negotiated by the official SDK; tool contracts have schema version 1.
 

@@ -7,7 +7,7 @@
 | Languages | Python, JS/JSX, TS, TSX with pinned grammar ranges | Static supported patterns, not arbitrary runtime resolution |
 | Git | Host Git with `--end-of-options`, SHA-1/SHA-256 fixtures | Local working-tree root required; filters never execute |
 | pytest | Locked development runtime; isolated subprocess fixtures | Dynamic/custom collection and plugins need host setup |
-| Jest / Vitest | Jest 30.5.2, Vitest 5.1.0, Node 24 on all three OSes | Other combinations unverified |
+| Jest / Vitest | Jest 30.5.2, Vitest 4.1.10 and 5.1.0, Node 24 in the three-OS matrix | Local follow-up evidence is recorded separately; other combinations unverified |
 | Clients | Codex, Claude Code, Cursor, VS Code setup examples | Templates only; specific GUI releases unverified |
 | External isolation | Linux Docker boundary probes in CI | Optional engineering harness, not default verifier sandbox |
 

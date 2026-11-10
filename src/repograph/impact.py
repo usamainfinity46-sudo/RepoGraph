@@ -4,6 +4,7 @@ import hashlib
 import heapq
 from collections import defaultdict
 
+from repograph.aliases import AliasResolver
 from repograph.config import Settings
 from repograph.discovery import Discovery, RepositoryError, read_source
 from repograph.git_service import GitService
@@ -53,7 +54,18 @@ class ImpactService:
                     ]
             except RepositoryError as error:
                 return "unknown", [Diagnostic(code=error.code, message=str(error), path=path)]
-        return "current", diagnostics
+        try:
+            aliases = AliasResolver(self.settings, sorted(current))
+        except RepositoryError as error:
+            return "unknown", [Diagnostic(code=error.code, message=str(error))]
+        if aliases.fingerprint != snapshot.resolution_fingerprint:
+            return "stale", [
+                Diagnostic(
+                    code="stale_alias_config",
+                    message="Alias configuration changed; re-index required",
+                )
+            ]
+        return "current", diagnostics + aliases.diagnostics[:100]
 
     def analyze(
         self,

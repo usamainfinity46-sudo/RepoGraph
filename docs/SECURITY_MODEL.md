@@ -1,5 +1,18 @@
 # Security model
 
+Static alias configuration is data only: no TypeScript compiler, Next/Vite config,
+plugin, extends target or repository code runs to resolve paths. Reads use existing
+root/link/ignore boundaries, a 262144-byte config cap and configured aggregate byte
+budget. Patterns/targets are validated with Pydantic and bounded to 100 mappings,
+20 targets per mapping and one wildcard. Only indexed targets inside the root can
+resolve. An incomplete metadata inventory aborts publication; invalid/unsupported
+nearest configuration emits alias_config_unresolved and blocks parent fallback.
+Resolver inputs are fingerprinted so config-only edits make impact results stale.
+Vitest targeted paths are absolute positional arguments without a standalone --
+separator (which Vitest ignored). Absolute paths cannot become runner option flags;
+substring over-selection is still checked against machine-reported paths. This
+command change increments verifier policy to verification-4 and invalidates old plans.
+
 The host selects a repository root. Clients cannot select arbitrary roots per
 request. Traversal, absolute paths, symlinks, junctions, and filesystem escapes
 must be rejected for source reads. Ignore metadata is data, not configuration

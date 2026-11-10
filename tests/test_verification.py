@@ -103,6 +103,17 @@ def test_stale_expired_and_cross_repository_plans(project, tmp_path):
     assert caught.value.code == "verification_plan_not_found"
 
 
+def test_old_policy_revision_requires_a_new_reviewed_plan(project, monkeypatch):
+    _, settings = project
+    service = VerificationService(settings)
+    monkeypatch.setattr("repograph.verification.VERIFIER_VERSION", "verification-3")
+    plan = service.prepare("pytest", ["test_sample.py"])
+    monkeypatch.setattr("repograph.verification.VERIFIER_VERSION", "verification-4")
+    with pytest.raises(RepositoryError) as caught:
+        service.verify(plan.id, approved=True)
+    assert caught.value.code == "verification_plan_stale"
+
+
 def test_runner_policy_changes_invalidate_approval(project):
     _, settings = project
     plan = VerificationService(settings).prepare("pytest", ["test_sample.py"])

@@ -1,5 +1,13 @@
 # Testing strategy
 
+Acceptance follow-ups cover monorepo-local static aliases (exact/wildcard patterns,
+JSONC, nearest-config isolation, ordered fallbacks, ambiguity, malicious/ignored
+targets, unsupported inheritance and config-only freshness). A subprocess tripwire
+ensures configuration analysis never executes source. Real Vitest targeting must
+select one file even when an unrelated failing test exists. The dedicated JS matrix
+now covers Vitest 4.1.10 and 5.1.0 on Linux/Windows/macOS; tests still reject substring
+over-selection. Re-run the original Orkest cases and preserve before/after evidence.
+
 Use pytest for deterministic unit, integration, and SDK subprocess tests. Verify
 configuration validation, migration idempotence, foreign keys, and refusal of
 future schemas. Initialize a real stdio server subprocess, list and call tools,

@@ -31,7 +31,7 @@ code execution. Named declarations, bound arrow/function/class expressions,
 methods, TS interfaces/types/namespaces, static imports/re-exports, and common
 require/dynamic import forms produce lexical evidence. Anonymous callbacks and
 object/class fields containing arrows are not modeled as named symbols yet.
-Configured module search paths, escaped module specifiers, computed imports,
+Arbitrary runtime module search paths, escaped module specifiers, computed imports,
 monkeypatching, and runtime resolution do not produce certain dependency edges.
 Dynamic and require observations are explicitly unresolved, even with literals.
 
@@ -44,7 +44,17 @@ entries. Direct parsing always reads current source before consulting cache.
 Phase 3 adds graph construction, persistence, querying and snapshots. Python
 root/src modules, packages, relative imports and aliases can resolve. JS/TS
 relative modules, index files, named/default/namespace imports and explicit
-re-exports can resolve. Ambiguous modules, duplicate definitions, external
+re-exports can resolve. Static aliases read nearest tsconfig.json (preferred) or
+jsconfig.json in each source's ancestor directories, including monorepo subprojects.
+JSON comments/trailing commas are supported. Explicit compilerOptions.paths keys
+support exact matches and one wildcard; baseUrl anchors targets, otherwise the
+config directory does. Exact/longest-prefix patterns win, ordered target fallbacks
+use the first uniquely indexed match. Equal-prefix ties remain unresolved.
+Targets must stay inside the host root and refer to indexed non-ignored files.
+Configuration inheritance, runtime/bundler plugins and baseUrl-only bare-import
+resolution are unsupported. Invalid/ignored nearest configs block parent fallback.
+Metadata fingerprints participate in snapshots/publication and impact freshness.
+Ambiguous modules, duplicate definitions, external
 packages, wildcard exports, dynamic imports and unknown instance types remain
 unresolved. Resolved calls/inheritance are heuristic candidates, not runtime
 proofs. Simple parameter/assignment shadowing is suppressed; full type and

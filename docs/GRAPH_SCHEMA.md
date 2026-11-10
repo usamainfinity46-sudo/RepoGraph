@@ -23,6 +23,13 @@ incomplete scans never replace it. `graph_snapshots` stores content-addressed
 immutable JSON graphs. The latest 20 plus the current snapshot are retained.
 These are graph checkpoints, not atomic filesystem snapshots.
 
+Graph resolver revision graph-2 adds an optional resolution_fingerprint to snapshot
+JSON (old snapshots default to null). It hashes observed alias configuration paths
+and content/unavailable markers. Creating, changing or removing configuration can
+therefore produce a new snapshot even when source hashes or graph edges are unchanged.
+It also keys graph-file reuse and is checked by impact freshness. No SQLite schema
+migration is needed; extraction behavior/cache revision is unchanged.
+
 Relations: contains (static), imports (static file match or unresolved), calls
 and inherits (heuristic symbol candidate or unresolved). Cycles are preserved;
 resolution uses bounded visited sets. A 200,000 combined node/edge limit aborts

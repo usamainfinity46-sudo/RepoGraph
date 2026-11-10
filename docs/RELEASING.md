@@ -1,6 +1,9 @@
 # Release procedure
 
-Current candidate: **0.1.0rc1**. Building artifacts is not publication. Do not call
+Current development candidate: **0.1.0rc2** (unreleased); the published candidate is
+0.1.0rc1. The commands below illustrate the existing release procedure; use the
+intended version's matching tag when preparing the next candidate.
+Building artifacts is not publication. Do not call
 Phase 9 publicly released until registry installation and remote CI have passed.
 
 ## Prepare

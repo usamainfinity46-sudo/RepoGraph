@@ -154,6 +154,7 @@ class GraphSnapshot(BaseModel):
     id: str
     nodes: list[GraphNode]
     edges: list[GraphEdge]
+    resolution_fingerprint: str | None = None
 
 
 class IndexReport(BaseModel):

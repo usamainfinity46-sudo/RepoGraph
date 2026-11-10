@@ -27,7 +27,10 @@ def javascript_project(tmp_path):
             {
                 "private": True,
                 "type": "module",
-                "devDependencies": {"jest": "30.5.2", "vitest": "5.1.0"},
+                "devDependencies": {
+                    "jest": "30.5.2",
+                    "vitest": json.loads((modules / "vitest/package.json").read_text())["version"],
+                },
             }
         )
     )
@@ -69,3 +72,14 @@ def test_targeted_javascript_scope_is_checked(javascript_project, framework):
             result.model_dump_json()
         )
         assert any(d.code == "unexpected_test_scope" for d in result.diagnostics)
+
+
+def test_vitest_target_does_not_silently_run_unrelated_files(javascript_project):
+    root, service = javascript_project
+    prefix = 'import {test, expect} from "vitest";\n'
+    (root / "selected.test.mjs").write_text(prefix + 'test("ok",()=>expect(1).toBe(1));')
+    (root / "unrelated.test.mjs").write_text(prefix + 'test("fails",()=>expect(1).toBe(2));')
+    result = service.verify(service.prepare("vitest", ["selected.test.mjs"]).id, approved=True)
+    assert result.status == "passed", result.model_dump_json()
+    assert result.counts.tests == result.counts.passed == 1
+    assert {case.path for case in result.cases} == {"selected.test.mjs"}

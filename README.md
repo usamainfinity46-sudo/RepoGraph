@@ -1,5 +1,10 @@
 # RepoGraph MCP
 
+Development candidate: **0.1.0rc2** (unreleased), with static JS/TS aliases and
+corrected Vitest targeting. Published 0.1.0rc1 artifacts remain unchanged.
+See the [real-repository acceptance follow-up](docs/REAL_REPOSITORY_ACCEPTANCE_FOLLOWUP.md)
+for measured results and remaining limits.
+
 Local, model-agnostic repository intelligence using the Model Context Protocol.
 No LLM API key, cloud database, Docker, or telemetry is required.
 

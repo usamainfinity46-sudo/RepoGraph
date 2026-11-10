@@ -34,7 +34,7 @@ from repograph.reports import parse_report
 from repograph.service import pagination
 from repograph.testing import TestIntelligence
 
-VERIFIER_VERSION = "verification-3"
+VERIFIER_VERSION = "verification-4"
 
 
 class VerificationService:
@@ -176,7 +176,7 @@ class VerificationService:
             "--no-file-parallelism",
         ]
         return (
-            [*command, "--", *(str(self.settings.root / path) for path in paths)]
+            [*command, *(str(self.settings.root / path) for path in paths)]
             if scope == "targeted"
             else command
         )
