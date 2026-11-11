@@ -1,18 +1,12 @@
 # RepoGraph Kit npm installer
 
-Source candidate: kit 0.1.2-rc.1 / Python rc4 / skill 1.0.2. This is not npm latest.
-For a supplied candidate artifact, run npm i /absolute/path/repograph-kit-0.1.2-rc.1.tgz
-in the project, then setup --agent AGENT --upgrade and reload the client.
-It preserves client tool-policy tables and adds native Node verification/scoped
-analysis. See CANDIDATE_RC4_ACCEPTANCE.md for exact receipts and remaining trials.
-The published 0.1.1 instructions below describe the rc3 baseline.
-
-Published reliability release: kit 0.1.1, Python candidate 0.1.0rc3, skill 1.0.1.
-See [acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md) for registry/test receipts.
+Kit **0.1.2** bundles Python candidate **0.1.0rc4** and skill **1.0.2**.
+Public registry installation, native Node verification and stock upgrades passed;
+see [release acceptance](CANDIDATE_RC4_ACCEPTANCE.md) for exact receipts.
 Upgrade existing stock installs with:
 
 ```sh
-npm i repograph-kit@0.1.1
+npm i repograph-kit@0.1.2
 npx repograph-kit setup --agent codex --upgrade
 npx repograph-kit doctor --agent codex
 ```
@@ -30,19 +24,19 @@ Explicit --enable-verification opts in to execution. Use --python-executable for
 the project's installed Python/pytest, or --node-executable/--jest-entry/
 --vitest-entry for installed JS runners. Use --upgrade --disable-verification to
 remove opt-in. Reload the client. Each concrete plan still needs approval.
-Node built-in tests are discovery-only; unknown runners are not guessed.
+Use framework node:test for approved Node verification; unknown runners are not guessed.
 
 Exclude custom generated output with a Git-style rule such as /dist-reporting/
 in a root/nested .repographignore, then retry indexing. No Git initialization is
 needed for static analysis. Preflight does not validate syntax/source encoding.
 
 `repograph-kit` is the unscoped npm distribution for installing the local Python
-MCP server and companion skill together. Kit **0.1.1** bundles server candidate
-**0.1.0rc3** and skill **1.0.1**. The Python core remains independent of Node and
-model vendors. Version 0.1.1 is published on
+MCP server and companion skill together. Kit **0.1.2** bundles server candidate
+**0.1.0rc4** and skill **1.0.2**. The Python core remains independent of Node and
+model vendors. Version 0.1.2 is published on
 [npm](https://www.npmjs.com/package/repograph-kit); public installation, both Python
 bootstrap routes and real MCP connectivity passed. See
-[release acceptance and artifact hashes](ONBOARDING_RELEASE_ACCEPTANCE.md).
+[release acceptance and artifact hashes](CANDIDATE_RC4_ACCEPTANCE.md).
 
 ## User workflow
 
@@ -122,14 +116,14 @@ uv.lock without development dependencies, copies only the launcher, complete ski
 and license notices, and calls npm pack with scripts disabled. Unexpected archive
 members are rejected. Outputs:
 
-- dist/npm/repograph-kit-0.1.1.tgz
+- dist/npm/repograph-kit-0.1.2.tgz
 - dist/npm/npm-artifact.json (hash, npm integrity, sizes and versions)
 - dist/npm/SHA256SUMS
 
 To test a locally built candidate before its publication, install the actual tarball:
 
 ```sh
-npm i /absolute/path/repograph-kit-0.1.1.tgz
+npm i /absolute/path/repograph-kit-0.1.2.tgz
 npx repograph-kit setup --agent cursor
 ```
 
@@ -144,7 +138,7 @@ These are protocol/configuration checks, not manual GUI certification.
 
 After publication, use `uv run --no-sync python scripts/smoke_npm.py --registry`
 to install the unversioned npm package name and require the intended kit version.
-The 0.1.1 registry acceptance receipt is .repograph/onboarding-registry-smoke.json.
+The 0.1.2 registry acceptance receipt is .repograph/0.1.2-registry-smoke.json.
 
 ## Publish
 

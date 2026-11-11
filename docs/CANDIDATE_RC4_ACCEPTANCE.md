@@ -1,9 +1,9 @@
-# rc4 practical-efficiency candidate
+# RepoGraph Kit 0.1.2 release acceptance
 
-Kit 0.1.2, Python 0.1.0rc4, skill 1.0.2; prepared 2026-11-11.
-The user authorized publishing 0.1.2 after candidate checks. Registry publication
-is pending the exact final artifact/CI receipt below. Additional real-project
-trials still guide wider promotion; this is not a stable standalone Python release.
+Published 2026-11-11: kit 0.1.2, Python candidate 0.1.0rc4, skill 1.0.2.
+Additional real-project trials still guide wider promotion; this is not a stable
+standalone Python release. Historical provisional checks are recorded below;
+the canonical public artifact is identified separately.
 
 ## Changes under test
 
@@ -71,11 +71,46 @@ An explicit src/tests comparison took 1.01 seconds in a single follow-up, report
 scope=paths, excluded 150 paths, and completed with zero changes in that scope.
 It does not imply the repository as a whole is clean.
 
-## Remaining acceptance
+## Canonical artifact, CI and registry
 
-- Complete final source/artifact checks and cross-platform CI.
+Release source: 512b6143868ff7fa2fe141ba47c8e935eaf59d5e.
+[Final CI run 42972220434](https://github.com/usamainfinity46-sudo/RepoGraph/actions/runs/42972220434)
+passed all 26 jobs, including Python 3.11/3.12/3.13 across Linux/Windows/macOS,
+real JS runner combinations, six Node 22/24 install/native-execution jobs,
+three benchmark profiles and container boundary probes.
+
+- Tarball: repograph-kit-0.1.2.tgz; 118057 bytes; 19 files.
+- SHA-256: 8b78a96a657c90b99e22cafee26adc4939d380bd8555c9c30d9214e6c89cd854.
+- npm integrity: sha512-ZCvoREHSGk6ffl573ot9QwqW+2UHXC/7b8SO6Me6fELAylRqzG1vLzNTWvkMtttnSi05k0abd0yYw+GoNDpHdA==.
+- CI skill ZIP SHA-256: e5cc00206d5d2f341b06b880adefa4724f6968d418e2ebfb37b9114631eb5294.
+
+The downloaded CI tarball passed a separate Windows install, both bootstrap
+routes, all four configuration layouts, 20-tool MCP/indexing, disabled-host and
+approval/replay gates, approved pytest/Node fixtures and a real published 0.1.1
+upgrade preserving client tool policies. Receipt: .repograph/0.1.2-ci-smoke.json.
+
+npm accepted those exact bytes after publish authentication. Public latest is
+0.1.2, registry integrity matches CI, and an independent public tarball download
+matches the SHA-256 above. The unversioned public npm install passed the same
+end-to-end checks, including native Node execution and the stock upgrade.
+Receipts: .repograph/0.1.2-registry-smoke.json,
+.repograph/npm-registry-0.1.2-metadata.json and .repograph/npm-registry-0.1.2.tgz.
+No registry version or existing tag was overwritten.
+
+Public [npm package](https://www.npmjs.com/package/repograph-kit/v/0.1.2) and
+[GitHub release](https://github.com/usamainfinity46-sudo/RepoGraph/releases/tag/repograph-kit-v0.1.2)
+are available. GitHub targets the tested source and carries the same npm artifact,
+integrity/checksum receipts and matching skill ZIP. Standalone production PyPI
+publication remains separate.
+
+## Continuing trials and documentation note
+
 - Trial the candidate on additional user projects and inspect real client reconnects.
 - HIMS still needs its actual MCP entry upgraded/reconnected. A prepared application
   verification additionally needs host opt-in and approval of its exact command.
 - Parser recovery diagnostics and unresolved relationships remain documented limits;
   no new JSX parsing or general runtime-resolution certification is claimed.
+- The immutable bundled skill setup reference retains pre-release wording and
+  an older rc3 baseline install example. Use the current README/NPM_INSTALLATION.md
+  version-pinned 0.1.2 commands. Runtime/main skill verification guidance supports
+  rc4; this setup-reference correction is tracked for a future packaged update.

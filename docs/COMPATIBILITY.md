@@ -1,9 +1,9 @@
 # Compatibility matrix
 
-Unpublished rc4 candidate adds Node 22/24 built-in test execution with a bundled
-reporter. The six OS/Node npm jobs run real native-Node execution tests; successful
-CI receipts will be recorded in CANDIDATE_RC4_ACCEPTANCE.md. Local Node 24 checks
-are not proof of other runner/client versions. Published 0.1.1 remains rc3.
+The 0.1.2 bundle adds Node 22/24 built-in test execution with a bundled reporter.
+The six OS/Node npm jobs passed real native-Node execution tests; exact CI receipts
+are in CANDIDATE_RC4_ACCEPTANCE.md. These do not certify arbitrary runner/client
+versions. The historical 0.1.1 bundle remains rc3.
 
 rc3 detects Node built-in node:test for static recommendations only; verification
 still supports pytest/Jest/Vitest. Unknown JS runners remain unknown. Project

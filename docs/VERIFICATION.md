@@ -1,6 +1,6 @@
 # Verification workflow
 
-The unpublished rc4 candidate additionally supports --framework node:test on
+The 0.1.2 bundle's rc4 server additionally supports --framework node:test on
 Node 22/24. It uses the host Node executable (or --node-executable), fixed flags
 and the bundled trusted NDJSON reporter. Targeted paths must be discovered Node
 tests; suite scope pins the complete discovered list (maximum 200 files and a
@@ -74,7 +74,7 @@ disabled, so same-size/same-timestamp edits cannot silently reuse an old .pyc.
 The invoked venv interpreter path is preserved on Unix; resolving its symlink
 to the base Python would discard the project's installed packages.
 
-For JS, use --framework jest or --framework vitest. Node defaults to a host
+For Jest/Vitest, use --framework jest or --framework vitest. Node defaults to a host
 installation; --node-executable overrides it. Runner entries default to
 ROOT/node_modules/jest/bin/jest.js and ROOT/node_modules/vitest/vitest.mjs.
 --jest-entry/--vitest-entry select explicit installed entries. RepoGraph never

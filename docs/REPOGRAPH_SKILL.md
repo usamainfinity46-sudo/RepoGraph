@@ -7,11 +7,13 @@ instructions and references; it contains no server, executable or automatic inst
 The separate [RepoGraph Kit npm installer](NPM_INSTALLATION.md) can configure both
 components using `npm i repograph-kit` followed by `npx repograph-kit setup`.
 
-Source: [skills/repograph](../skills/repograph/SKILL.md). Candidate skill version:
-**1.0.2**, for server candidate 0.1.0rc4. Published npm 0.1.1 still bundles skill
-1.0.1/server rc3. The setup reference distinguishes reviewed local candidate
-artifacts from published installation. Standalone Python registry publication
-remains separate; see CANDIDATE_RC4_ACCEPTANCE.md and ONBOARDING_RELEASE_ACCEPTANCE.md.
+Source: [skills/repograph](../skills/repograph/SKILL.md). Published npm 0.1.2 bundles
+skill **1.0.2** and server candidate **0.1.0rc4**. The earlier 0.1.1 kit bundles
+skill 1.0.1/server rc3. The bundled setup reference retains pre-release wording
+and an rc3 baseline example; use [the current install guide](NPM_INSTALLATION.md)
+for version-pinned 0.1.2 setup. Runtime/verification guidance supports rc4.
+Standalone Python registry publication remains separate; see
+CANDIDATE_RC4_ACCEPTANCE.md for exact package and test receipts.
 
 ## Build and check
 

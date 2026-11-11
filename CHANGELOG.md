@@ -1,6 +1,6 @@
 # Changelog
 
-## Kit 0.1.2 / Python 0.1.0rc4 / skill 1.0.2 - release preparation
+## Kit 0.1.2 / Python 0.1.0rc4 / skill 1.0.2 - npm, 2026-11-11
 
 - Preserve client tool-policy tables when upgrading recognized runtime entries.
 - Add approved native Node test execution with a bundled, fingerprinted reporter,

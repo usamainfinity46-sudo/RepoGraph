@@ -1,6 +1,6 @@
 # MCP contracts
 
-Unpublished rc4 candidate changes:
+Changes in the 0.1.2 bundle / Python rc4:
 
 - Readiness distinguishes ready_for_indexing from verification_inventory_ready,
   with up to 200 verification_input_blockers. The latter stats all non-ignored

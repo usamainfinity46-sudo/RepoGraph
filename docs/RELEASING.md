@@ -1,9 +1,9 @@
 # Release procedure
 
-Current source work prepares unpublished kit 0.1.2 / Python rc4 / skill 1.0.2 for
-real-project trials. See CANDIDATE_RC4_ACCEPTANCE.md. Build/install a reviewed
-candidate tarball explicitly; do not overwrite 0.1.1 or change npm latest until
-candidate acceptance and publishing authorization cover that release.
+Kit 0.1.2 / Python rc4 / skill 1.0.2 was published from the exact tested CI
+artifact. See CANDIDATE_RC4_ACCEPTANCE.md. Continue real-project trials before
+wider promotion. Future releases require their own reviewed artifact, successful
+CI and publishing authorization; never overwrite an existing version.
 
 The 0.1.1 npm reliability candidate bundles Python 0.1.0rc3 and skill 1.0.1.
 Publication status and artifact/test receipts are in

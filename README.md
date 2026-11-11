@@ -1,9 +1,10 @@
 # RepoGraph MCP
 
-Published reliability release: **repograph-kit 0.1.1**, bundling Python candidate **0.1.0rc3** and
-skill **1.0.1**. Adds project preflight, stock-install upgrades, explicit execution
-setup, Node built-in test detection and a host Git ownership-trust fix. See
-[reliability acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md) for publication
+Published release: **repograph-kit 0.1.2**, bundling Python candidate **0.1.0rc4** and
+skill **1.0.2**. Adds native Node verification, upgrades preserving client tool
+policies, focused uncertainty candidates, batched/scoped Git comparison and
+separate verification-input readiness. See
+[release acceptance](docs/CANDIDATE_RC4_ACCEPTANCE.md) for publication
 status. Standalone 0.1.0rc1 artifacts remain unchanged.
 See the [real-repository acceptance follow-up](docs/REAL_REPOSITORY_ACCEPTANCE_FOLLOWUP.md)
 for measured results and remaining limits.
@@ -14,7 +15,7 @@ No LLM API key, cloud database, Docker, or telemetry is required.
 The published [repograph-kit](https://www.npmjs.com/package/repograph-kit) npm
 installer packages the server and skill with project setup for Codex, Claude Code,
 Cursor and VS Code Copilot. Public registry installation and setup passed;
-see [release acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md).
+see [release acceptance](docs/CANDIDATE_RC4_ACCEPTANCE.md).
 
 ## Latest practical review
 
@@ -40,12 +41,12 @@ Full Git comparison took 16.58 seconds and was incomplete on oversized tracked
 archives/bundles. Parser recovery and unresolved relationships remain limitations;
 the unresolved-edge percentage is not an accuracy/error rate.
 
-### 0.1.2 / Python rc4: release checks in progress
+### Improvements in 0.1.2 / Python rc4
 
 - Preserve client-added per-tool approval settings when upgrading the server path.
   Updating the npm package alone does not replace an active MCP connection.
 - Add approved, bounded Node built-in test execution with machine-readable results.
-  Local execution regressions pass; cross-platform candidate validation is pending.
+  Real execution checks passed on Node 22/24 across Linux, Windows and macOS.
 - Map literal dynamic imports and separate focused test evidence from specific
   uncertainty candidates. A local static follow-up now identifies two receipt test
   files plus four fallback candidates, rather than all 20 files. Broader testing
@@ -61,8 +62,8 @@ candidate median (three samples each), retaining the same incomplete 19-change
 report. This is a local observation, not a general latency guarantee. Doctor now
 also distinguishes source readiness from non-source verification-input blockers.
 
-Published **0.1.1** still has discovery-only Node support. Candidate changes must
-pass engineering checks and trials across additional real projects before wider
+Published **0.1.2** includes Node execution; 0.1.1 was discovery-only. All 26 release
+CI jobs passed. Trials across additional real projects continue before wider
 promotion. No GUI-client certification or general speed/accuracy claim is implied.
 
 ## Get started
@@ -76,14 +77,17 @@ npx repograph-kit setup
 
 Choose an agent, reload it, and approve its MCP connection if prompted.
 Setup checks source limits, Git availability and runner evidence without running
-tests. For an existing stock install, run `npm i repograph-kit@0.1.1`, then
+tests. For an existing stock install, run `npm i repograph-kit@0.1.2`, then
 `npx repograph-kit setup --agent codex --upgrade` and
 `npx repograph-kit doctor --agent codex` (replace codex with your agent).
 Optional --enable-verification opts in to reviewed test execution; each concrete
-plan still requires approval. Node built-in tests are discovery-only. Exclude
+plan still requires approval. Use framework node:test for native Node tests. Exclude
 custom generated output with Git-style rules in .repographignore before retrying
 an oversized-file failure. Doctor does not prove a successful index/GUI connection.
 See [npm setup](docs/NPM_INSTALLATION.md) for options and requirements.
+After upgrading, confirm health reports 0.1.0rc4 and re-index once for the new
+extractor/resolver policy. Doctor can report source indexing ready while deployment
+archives still block verification fingerprints; review their exclusions/limits.
 To install the standalone Python server from this source checkout instead:
 
 Install Python 3.12 and [uv](https://docs.astral.sh/uv/), then from this checkout:
@@ -134,7 +138,7 @@ Phase 5 adds `analyze_impact` and `repograph impact [PATH]`: direct/transitive
 potential dependents, evidence chains, affected modules, stale-graph checks and
 explicit uncertainty. Index first; retain a before snapshot for deleted code.
 Phase 6 adds static test discovery, evidence-backed suggestions, reviewed
-verification plans, bounded pytest/Jest/Vitest runs and saved regression comparisons.
+verification plans, bounded pytest/Jest/Vitest/Node runs and saved regression comparisons.
 Execution is disabled by default and requires host opt-in plus explicit approval.
 Phase 7 adds `get_repository_overview`, the `repograph://overview` resource and
 `repograph overview` CLI command, plus local installation and client guides.
@@ -156,7 +160,8 @@ Configure limits before the command, for example:
 ```
 
 Source must be UTF-8. Links, dependency/build directories, and RepoGraph state
-are excluded. Dynamic imports are unresolved. Cross-file resolution supports
+are excluded. Computed imports remain unresolved; literal JS dynamic imports add
+heuristic local-module evidence. Cross-file resolution supports
 the documented static patterns; runtime behavior remains uncertain. GUI clients have
 not been manually certified.
 
