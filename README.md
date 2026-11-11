@@ -1,6 +1,6 @@
 # RepoGraph MCP
 
-Reliability candidate: **repograph-kit 0.1.1**, bundling Python **0.1.0rc3** and
+Published reliability release: **repograph-kit 0.1.1**, bundling Python candidate **0.1.0rc3** and
 skill **1.0.1**. Adds project preflight, stock-install upgrades, explicit execution
 setup, Node built-in test detection and a host Git ownership-trust fix. See
 [reliability acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md) for publication
@@ -14,7 +14,7 @@ No LLM API key, cloud database, Docker, or telemetry is required.
 The published [repograph-kit](https://www.npmjs.com/package/repograph-kit) npm
 installer packages the server and skill with project setup for Codex, Claude Code,
 Cursor and VS Code Copilot. Public registry installation and setup passed;
-see [release acceptance](docs/NPM_RELEASE_ACCEPTANCE.md).
+see [release acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md).
 
 ## Get started
 

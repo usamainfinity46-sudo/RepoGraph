@@ -1,7 +1,6 @@
 # Reliability release acceptance
 
-Candidate: repograph-kit 0.1.1, Python 0.1.0rc3, skill 1.0.1. Prepared 2026-11-11.
-Publication is pending until the registry receipt below is recorded.
+Published 2026-11-11: repograph-kit 0.1.1, Python candidate 0.1.0rc3, skill 1.0.1.
 
 ## Reproduced issue
 
@@ -65,9 +64,21 @@ acceptance remains unperformed; do not advertise certified GUI compatibility.
 
 ## Publication
 
-Artifact and CI are ready. npm authentication is pending: the saved session
-returned E401; an interactive web login was started for the account owner.
-A GitHub draft release contains the exact CI tarball, integrity/checksum receipts
-and matching skill ZIP. It remains a draft until npm publication and registry
-installation checks pass. No registry publication has occurred for 0.1.1 yet.
+npm accepted the exact tested CI tarball after the account owner completed the
+required CLI login and publish authentication. The public registry reports 0.1.1
+as latest; its integrity matches the CI manifest. An independent download from
+the public tarball URL matches the SHA-256 above byte-for-byte (111895 bytes).
+No version or tag was overwritten. The unversioned public npm installation
+selected 0.1.1 and passed both bootstrap routes, all four project layouts, 20-tool
+MCP/indexing, default host-disabled refusal, explicit execution opt-in,
+approval/replay checks, a passing reviewed pytest fixture and a stock 0.1.0 upgrade.
+Application import canaries remained unexecuted. Registry receipt:
+.repograph/onboarding-registry-smoke.json; metadata/download receipts:
+.repograph/npm-registry-0.1.1-metadata.json and .repograph/npm-registry-0.1.1.tgz.
+
+Public package: [repograph-kit 0.1.1](https://www.npmjs.com/package/repograph-kit/v/0.1.1).
+[GitHub release](https://github.com/usamainfinity46-sudo/RepoGraph/releases/tag/repograph-kit-v0.1.1)
+is public, targets the tested source commit above, and contains the same npm
+tarball plus its integrity/checksum receipts and matching skill ZIP. GitHub's
+uploaded asset digests match the recorded SHA-256 values.
 Standalone production PyPI publication is outside this npm patch release.

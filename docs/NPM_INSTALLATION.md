@@ -1,7 +1,7 @@
 # RepoGraph Kit npm installer
 
-Reliability candidate: kit 0.1.1, Python 0.1.0rc3, skill 1.0.1. See
-[acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md) for actual publication status.
+Published reliability release: kit 0.1.1, Python candidate 0.1.0rc3, skill 1.0.1.
+See [acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md) for registry/test receipts.
 Upgrade existing stock installs with:
 
 ```sh
@@ -30,12 +30,12 @@ in a root/nested .repographignore, then retry indexing. No Git initialization is
 needed for static analysis. Preflight does not validate syntax/source encoding.
 
 `repograph-kit` is the unscoped npm distribution for installing the local Python
-MCP server and companion skill together. Kit **0.1.0** bundles server candidate
-**0.1.0rc2** and skill **1.0.0**. The Python core remains independent of Node and
-model vendors. Version 0.1.0 is published on
+MCP server and companion skill together. Kit **0.1.1** bundles server candidate
+**0.1.0rc3** and skill **1.0.1**. The Python core remains independent of Node and
+model vendors. Version 0.1.1 is published on
 [npm](https://www.npmjs.com/package/repograph-kit); public installation, both Python
 bootstrap routes and real MCP connectivity passed. See
-[release acceptance and artifact hashes](NPM_RELEASE_ACCEPTANCE.md).
+[release acceptance and artifact hashes](ONBOARDING_RELEASE_ACCEPTANCE.md).
 
 ## User workflow
 
@@ -115,14 +115,14 @@ uv.lock without development dependencies, copies only the launcher, complete ski
 and license notices, and calls npm pack with scripts disabled. Unexpected archive
 members are rejected. Outputs:
 
-- dist/npm/repograph-kit-0.1.0.tgz
+- dist/npm/repograph-kit-0.1.1.tgz
 - dist/npm/npm-artifact.json (hash, npm integrity, sizes and versions)
 - dist/npm/SHA256SUMS
 
 To test a locally built candidate before its publication, install the actual tarball:
 
 ```sh
-npm i /absolute/path/repograph-kit-0.1.0.tgz
+npm i /absolute/path/repograph-kit-0.1.1.tgz
 npx repograph-kit setup --agent cursor
 ```
 
@@ -137,7 +137,7 @@ These are protocol/configuration checks, not manual GUI certification.
 
 After publication, use `uv run --no-sync python scripts/smoke_npm.py --registry`
 to install the unversioned npm package name and require the intended kit version.
-The 0.1.0 registry acceptance receipt is .repograph/npm-registry-smoke.json.
+The 0.1.1 registry acceptance receipt is .repograph/onboarding-registry-smoke.json.
 
 ## Publish
 

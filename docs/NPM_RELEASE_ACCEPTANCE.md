@@ -1,5 +1,8 @@
 # RepoGraph Kit 0.1.0: public npm acceptance
 
+Historical 0.1.0 record. For the current 0.1.1 reliability release, see
+[reliability acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md).
+
 Verified on 2026-11-10. [repograph-kit@0.1.0](https://www.npmjs.com/package/repograph-kit/v/0.1.0)
 is publicly installable, with npm's latest tag set to 0.1.0. It bundles the
 0.1.0rc2 Python server candidate and companion skill 1.0.0. This is separate from
