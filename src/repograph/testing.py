@@ -245,16 +245,6 @@ class TestIntelligence:
                                 "No Jest/Vitest assumption is made.",
                             )
                         )
-                    if "node:test" in frameworks:
-                        diagnostics.append(
-                            Diagnostic(
-                                code="unsupported_test_runner",
-                                path=path,
-                                message="Node's built-in test runner detected. Static test "
-                                "recommendations are available; RepoGraph verification "
-                                "currently supports pytest, Jest and Vitest only.",
-                            )
-                        )
                     if len(frameworks) > 1:
                         diagnostics.append(
                             Diagnostic(
@@ -356,6 +346,8 @@ class TestIntelligence:
         witnesses = {}
         snapshot_ids = []
         broader = not complete
+        fallback_all = not complete
+        uncertain_modules = set()
         if changed:
             try:
                 impact = ImpactService(self.settings).analyze(
@@ -373,13 +365,21 @@ class TestIntelligence:
                     ):
                         witnesses[item.node.path] = item.evidence
                 complete = complete and impact.complete
-                broader = broader or not impact.complete or bool(impact.unresolved_dependencies)
+                fallback_all = fallback_all or not impact.complete
+                uncertain_modules.update(impact.uncertain_modules)
+                broader = (
+                    broader or not impact.complete or bool(impact.relevant_unresolved_dependencies)
+                )
+                broader = broader or any(
+                    d.code == "alias_config_unresolved" for d in impact.diagnostics
+                )
                 diagnostics.extend(impact.diagnostics[:100])
             except RepositoryError as error:
                 if error.code != "graph_not_indexed":
                     raise
                 complete = False
                 broader = True
+                fallback_all = True
                 diagnostics.append(
                     Diagnostic(
                         code=error.code,
@@ -414,7 +414,7 @@ class TestIntelligence:
                 else "name_match"
                 if test_stem in stems
                 else "fallback"
-                if changed and (broader or global_change)
+                if changed and (fallback_all or global_change or file.path in uncertain_modules)
                 else None
             )
             if reason:

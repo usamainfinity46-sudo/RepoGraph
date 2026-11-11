@@ -1,5 +1,23 @@
 # Changelog
 
+## Kit 0.1.2-rc.1 / Python 0.1.0rc4 / skill 1.0.2 - trial candidate
+
+- Preserve client tool-policy tables when upgrading recognized runtime entries.
+- Add approved native Node test execution with a bundled, fingerprinted reporter,
+  bounded explicit file lists, validated machine results and existing host gates.
+- Map literal JS dynamic/require module observations as heuristic local edges;
+  bump extraction to extractor-6 and resolution to graph-3. Older primary graphs
+  require re-indexing before current-tree impact claims.
+- Keep global unresolved counts while tracing relevant uncertainty separately;
+  include specific fallback test candidates without automatically adding all tests.
+  Broader-suite advice and automatic suite preparation remain intact.
+- Batch Git attributes/blob-size metadata and add explicit file/directory scopes
+  with scope/exclusion fields. Full reports retain oversized-file limitations.
+- Distinguish source indexing readiness from verification inventory blockers.
+- Advance verifier policy to verification-6 and package skill 1.0.2. Old plans
+  require fresh preparation, review and approval. SQLite schema remains 4.
+- Evidence and remaining real-project gates: docs/CANDIDATE_RC4_ACCEPTANCE.md.
+
 ## RepoGraph Kit 0.1.1 / Python 0.1.0rc3 / skill 1.0.1 - 2026-11-11
 
 - Add source/Git/test-runner preflight through setup, doctor and MCP readiness.

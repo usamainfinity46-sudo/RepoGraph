@@ -102,7 +102,10 @@ class GitRunner:
         max_bytes: int = 16_000_000,
         allow_failure: bool = False,
         timeout: float = 15,
+        input_data: bytes | None = None,
     ) -> bytes:
+        if input_data is not None and len(input_data) > 16_000_000:
+            raise RepositoryError("git_input_limit", "Git metadata input exceeds 16 MB")
         command = [
             self.executable,
             "--no-pager",
@@ -123,13 +126,14 @@ class GitRunner:
         ]
         chunks = []
         errors = []
+        input_errors = []
         overflow = threading.Event()
         try:
             with subprocess.Popen(
                 command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                stdin=subprocess.DEVNULL,
+                stdin=subprocess.PIPE if input_data is not None else subprocess.DEVNULL,
                 env=self.environment,
             ) as process:
 
@@ -152,6 +156,21 @@ class GitRunner:
                 error_reader = threading.Thread(target=read_errors, daemon=True)
                 reader.start()
                 error_reader.start()
+
+                def write_input() -> None:
+                    try:
+                        process.stdin.write(input_data)
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        input_errors.append(True)
+
+                writer = (
+                    threading.Thread(target=write_input, daemon=True)
+                    if input_data is not None
+                    else None
+                )
+                if writer:
+                    writer.start()
                 try:
                     process.wait(timeout=timeout)
                 except subprocess.TimeoutExpired as error:
@@ -159,12 +178,16 @@ class GitRunner:
                     process.wait()
                     reader.join(timeout=2)
                     error_reader.join(timeout=2)
+                    if writer:
+                        writer.join(timeout=2)
                     raise RepositoryError(
                         "git_timeout", "Git command exceeded its timeout"
                     ) from error
                 reader.join(timeout=2)
                 error_reader.join(timeout=2)
-                if reader.is_alive() or error_reader.is_alive():
+                if writer:
+                    writer.join(timeout=2)
+                if reader.is_alive() or error_reader.is_alive() or writer and writer.is_alive():
                     raise RepositoryError("git_timeout", "Git output stream did not close")
                 if overflow.is_set():
                     raise RepositoryError("git_output_limit", "Git output exceeded its byte limit")
@@ -176,6 +199,10 @@ class GitRunner:
                             "safe.directory settings; RepoGraph does not grant trust",
                         )
                     raise RepositoryError("git_error", "Read-only Git command failed")
+                if input_errors:
+                    raise RepositoryError(
+                        "git_metadata_error", "Git metadata input was not completely accepted"
+                    )
                 return chunks[0] if chunks else b""
         except OSError as error:
             raise RepositoryError(
@@ -191,6 +218,56 @@ class GitRunner:
         if not re.fullmatch(rb"[0-9a-f]{40}|[0-9a-f]{64}", result):
             raise RepositoryError("invalid_revision", "Revision does not identify a local commit")
         return result.decode("ascii")
+
+    def attributes(self, paths: list[str]) -> dict[str, dict[str, str]]:
+        if not paths:
+            return {}
+        fields = self.run(
+            "check-attr",
+            "-z",
+            "--stdin",
+            "text",
+            "eol",
+            "filter",
+            "working-tree-encoding",
+            input_data=b"\x00".join(path.encode("utf-8") for path in paths) + b"\x00",
+        ).split(b"\x00")
+        if fields[-1:] == [b""]:
+            fields.pop()
+        if len(fields) % 3:
+            raise RepositoryError("git_metadata_error", "Malformed Git attribute response")
+        result: dict[str, dict[str, str]] = {}
+        expected = {"text", "eol", "filter", "working-tree-encoding"}
+        requested = set(paths)
+        for i in range(0, len(fields), 3):
+            path, key, value = (self.path(item) for item in fields[i : i + 3])
+            if path not in requested or key not in expected or key in result.get(path, {}):
+                raise RepositoryError("git_metadata_error", "Unexpected or duplicate Git attribute")
+            result.setdefault(path, {})[key] = value
+        if result.keys() != requested or any(set(attrs) != expected for attrs in result.values()):
+            raise RepositoryError("git_metadata_error", "Git attribute response is incomplete")
+        return result
+
+    def object_sizes(self, oids: set[str]) -> dict[str, int]:
+        if not oids:
+            return {}
+        if any(not re.fullmatch(r"[a-f0-9]{40}|[a-f0-9]{64}", oid) for oid in oids):
+            raise RepositoryError("git_metadata_error", "Invalid object ID in Git inventory")
+        output = self.run(
+            "cat-file", "--batch-check", input_data=("\n".join(sorted(oids)) + "\n").encode("ascii")
+        )
+        result = {}
+        for row in output.splitlines():
+            fields = row.split()
+            if len(fields) != 3 or fields[1] != b"blob":
+                raise RepositoryError("git_metadata_error", "Expected regular Git blob metadata")
+            oid, size = fields[0].decode("ascii"), fields[2].decode("ascii")
+            if oid not in oids or not size.isdecimal():
+                raise RepositoryError("git_metadata_error", "Malformed Git object metadata")
+            result[oid] = int(size)
+        if result.keys() != oids:
+            raise RepositoryError("git_metadata_error", "Git object metadata is incomplete")
+        return result
 
     def tree(self, revision: str) -> dict[str, GitEntry]:
         result = {}

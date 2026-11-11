@@ -24,6 +24,7 @@ export function readinessText(report) {
   const lines = [
     `Source preflight: ${report.ready_for_indexing ? 'ready for indexing' : 'needs attention'} (${report.source_files} files). This is not a successful index.`,
     `Git: ${report.git_status}. Tests: ${report.tests_found}; runners: ${report.test_frameworks.join(', ') || 'not identified'}.`,
+    `Verification input preflight: ${report.verification_inventory_ready ? 'ready' : 'needs attention'} (includes non-source files; runner compatibility is checked separately).`,
     `RepoGraph test execution: ${report.verification_enabled ? 'enabled; each prepared command still needs approval' : 'disabled; analysis and recommendations remain available'}.`,
   ];
   if (!report.verification_enabled) lines.push('To opt in: rerun setup --agent AGENT --upgrade --enable-verification. For pytest, also set --python-executable to your project interpreter.');

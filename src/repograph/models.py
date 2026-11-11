@@ -5,8 +5,8 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Language = Literal["python", "javascript", "typescript", "tsx"]
-Framework = Literal["pytest", "jest", "vitest"]
-DiscoveredFramework = Literal["pytest", "jest", "vitest", "node:test"]
+Framework = Literal["pytest", "jest", "vitest", "node:test"]
+DiscoveredFramework = Framework
 
 
 class Diagnostic(BaseModel):
@@ -29,9 +29,11 @@ class RepositoryReadiness(BaseModel):
     test_discovery_complete: bool
     verification_enabled: bool
     supported_verification_frameworks: list[Framework] = Field(
-        default_factory=lambda: ["pytest", "jest", "vitest"]
+        default_factory=lambda: ["pytest", "jest", "vitest", "node:test"]
     )
     verification_readiness: dict[str, str] = Field(default_factory=dict)
+    verification_inventory_ready: bool = False
+    verification_input_blockers: list[str] = Field(default_factory=list)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
 
 
@@ -54,6 +56,7 @@ class Import(BaseModel):
     line: int
     kind: Literal["static", "dynamic", "require"] = "static"
     confidence: Literal["syntactic", "unresolved"] = "syntactic"
+    literal: bool = False
 
 
 class Binding(BaseModel):
@@ -168,6 +171,17 @@ class GraphEdge(BaseModel):
     path: str
     line: int
     target_name: str
+    unresolved_reason: (
+        Literal[
+            "unresolved_import",
+            "external_import",
+            "unsupported_import",
+            "dynamic_import",
+            "unresolved_calls",
+            "unresolved_inherits",
+        ]
+        | None
+    ) = None
 
 
 class GraphSnapshot(BaseModel):
@@ -175,6 +189,7 @@ class GraphSnapshot(BaseModel):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
     resolution_fingerprint: str | None = None
+    resolver_version: str | None = None
 
 
 class IndexReport(BaseModel):
@@ -265,6 +280,9 @@ class ChangeReport(BaseModel):
     next_offset: int | None = None
     complete: bool = True
     diagnostics: list[Diagnostic] = Field(default_factory=list)
+    scope: Literal["repository", "paths"] = "repository"
+    scope_paths: list[str] = Field(default_factory=list)
+    excluded_files: int = 0
 
 
 class ChangedSymbolPage(BaseModel):
@@ -310,6 +328,9 @@ class ImpactReport(BaseModel):
     affected_modules: list[str]
     total_modules: int
     unresolved_dependencies: int
+    relevant_unresolved_dependencies: int = 0
+    uncertain_modules: list[str] = Field(default_factory=list)
+    total_uncertain_modules: int = 0
     freshness: Literal["current", "stale", "unknown"]
     complete: bool
     diagnostics: list[Diagnostic] = Field(default_factory=list)

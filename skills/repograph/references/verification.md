@@ -19,8 +19,13 @@ npx repograph-kit setup --agent codex --upgrade --enable-verification
 Replace codex with the configured agent. For pytest, add `--python-executable`
 pointing to the installed project interpreter with pytest. Reload the agent after
 changing host configuration. This opts in to execution, not approval of a specific
-command; each concrete plan still needs review and approval. Node's built-in
-`node:test` runner is discovery-only in this version. Do not prepare it as Jest/Vitest.
+command; each concrete plan still needs review and approval. With rc4, use framework
+`node:test` for Node's built-in runner (Node 22/24). rc3 remains discovery-only.
+Do not prepare Node tests as Jest/Vitest. Node suite scope pins the discovered
+Node test file list and does not invoke package scripts. Limits are 200 suite files
+and a 24000-character command; narrow larger suites explicitly. Auto scope still
+honors broader-run recommendations. Machine results include source paths and
+validated counts; successful file execution with no tests is `no_tests`.
 
 Python defaults to the server interpreter; use host `--python-executable` to select
 the target environment. Plugin autoload is disabled; host `--pytest-plugin` can

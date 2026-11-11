@@ -7,6 +7,12 @@ The agent/client can have its own model, subscription and data handling policy.
 
 ## Version choice
 
+The 0.1.2-rc.1 kit candidate bundles rc4 and skill 1.0.2. Use only an
+explicitly provided/reviewed candidate tarball for Node execution and scoped
+uncertainty testing; do not assume public npm latest contains these changes.
+For a local candidate, install its absolute tarball path, then run setup with
+--upgrade. The published 0.1.1 path below remains the rc3 baseline.
+
 The npm kit bundles the Python candidate separately from standalone Python
 publication. Kit 0.1.1 bundles rc3 and the project-readiness tool; check its release
 acceptance before claiming public availability. Do not promise that an unqualified

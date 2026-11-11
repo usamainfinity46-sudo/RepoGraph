@@ -61,7 +61,9 @@ def package_npm(wheel: Path, output: Path):
     if project["version"] != __version__:
         raise ValueError("Project version mismatch")
     with zipfile.ZipFile(wheel) as archive:
-        for source in (ROOT / "src/repograph").glob("*.py"):
+        for source in (ROOT / "src/repograph").iterdir():
+            if source.suffix not in {".py", ".mjs"}:
+                continue
             if archive.read("repograph/" + source.name) != source.read_bytes():
                 raise ValueError(f"Wheel differs from the checkout: {source.name}")
     output = output.resolve()

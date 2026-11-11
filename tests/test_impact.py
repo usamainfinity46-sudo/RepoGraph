@@ -79,6 +79,13 @@ def test_unresolved_dependencies_are_explicit(tmp_path):
     assert report.complete
 
 
+def test_old_graph_policy_requires_reindexing(tmp_path):
+    graph, impact = setup_graph(tmp_path)
+    legacy = graph.snapshot().model_copy(update={"resolver_version": None})
+    freshness, diagnostics = impact._freshness(legacy)
+    assert freshness == "stale" and diagnostics[0].code == "stale_graph_policy"
+
+
 def test_invalid_seeds_and_empty_requests(tmp_path):
     _, impact = setup_graph(tmp_path)
     assert impact.analyze(paths=[]).total == 0

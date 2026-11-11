@@ -67,7 +67,7 @@ def test_node_builtin_runner_is_not_misidentified(tmp_path):
     report = TestIntelligence(Settings.load(tmp_path)).discover()
     assert report.complete and report.total == 2
     assert all(file.frameworks == ["node:test"] for file in report.files)
-    assert {d.code for d in report.diagnostics} == {"unsupported_test_runner"}
+    assert report.diagnostics == []
 
 
 def test_nearest_package_does_not_inherit_an_unrelated_runner(tmp_path):
@@ -124,3 +124,62 @@ def test_metadata_and_source_limits(tmp_path):
     settings = Settings.load(tmp_path).model_copy(update={"max_total_bytes": 1})
     report = TestIntelligence(settings).discover()
     assert not report.complete and report.diagnostics[0].code == "test_byte_limit"
+
+
+def test_literal_dynamic_import_maps_tests_without_global_call_fallback(tmp_path):
+    (tmp_path / "amount.js").write_text("export function amount() { return Number('1'); }")
+    (tmp_path / "direct.test.mjs").write_text(
+        "import test from 'node:test'; import {amount} from './amount.js'; "
+        "test('direct',()=>amount());"
+    )
+    (tmp_path / "dynamic.test.mjs").write_text(
+        "import test from 'node:test'; test('dynamic',async()=>{"
+        "const m=await import('./amount.js'); m.amount();});"
+    )
+    (tmp_path / "unrelated.test.mjs").write_text(
+        "import test from 'node:test'; test('other',()=>unknownApi());"
+    )
+    settings = Settings.load(tmp_path)
+    GraphService(settings).index()
+    report = TestIntelligence(settings).suggest(paths=["amount.js"])
+    assert [t.path for t in report.tests] == ["direct.test.mjs", "dynamic.test.mjs"]
+    assert all(t.reason == "graph_dependency" for t in report.tests)
+    assert not report.broader_run_recommended
+    assert any(d.code == "unresolved_dependencies" for d in report.diagnostics)
+
+
+def test_computed_import_adds_its_test_as_fallback_not_every_test(tmp_path):
+    (tmp_path / "amount.js").write_text("export function amount() {return 1;}")
+    (tmp_path / "mapped.test.mjs").write_text(
+        "import test from 'node:test'; import './amount.js'; test('mapped',()=>{});"
+    )
+    (tmp_path / "uncertain.test.mjs").write_text(
+        "import test from 'node:test'; test('computed',async()=>import(runtimePath));"
+    )
+    (tmp_path / "other.test.mjs").write_text("import test from 'node:test'; test('other',()=>{});")
+    settings = Settings.load(tmp_path)
+    GraphService(settings).index()
+    report = TestIntelligence(settings).suggest(paths=["amount.js"])
+    assert [(t.path, t.reason) for t in report.tests] == [
+        ("mapped.test.mjs", "graph_dependency"),
+        ("uncertain.test.mjs", "fallback"),
+    ]
+    assert report.broader_run_recommended
+
+
+def test_computed_call_keeps_uncertain_test_candidate(tmp_path):
+    (tmp_path / "amount.js").write_text("export function amount() {return 1;}")
+    (tmp_path / "mapped.test.mjs").write_text(
+        "import test from 'node:test'; import './amount.js'; test('mapped',()=>{});"
+    )
+    (tmp_path / "computed.test.mjs").write_text(
+        "import test from 'node:test'; test('computed',()=>registry[name]());"
+    )
+    settings = Settings.load(tmp_path)
+    GraphService(settings).index()
+    report = TestIntelligence(settings).suggest(paths=["amount.js"])
+    assert [(t.path, t.reason) for t in report.tests] == [
+        ("mapped.test.mjs", "graph_dependency"),
+        ("computed.test.mjs", "fallback"),
+    ]
+    assert report.broader_run_recommended

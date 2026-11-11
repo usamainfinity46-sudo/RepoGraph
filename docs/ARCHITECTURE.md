@@ -1,5 +1,36 @@
 # Architecture
 
+The rc4 candidate adds a bundled Node 22/24 reporter and execution adapter. Only
+approved verification loads the reporter; discovery/preparation never invokes
+Node or imports repository code. Fixed argv pins the host Node and trusted
+reporter file URI, one test-file worker, explicit test paths, bounded captured
+output and a verifier-owned NDJSON report destination. The existing approval,
+freshness, single-use, process cleanup and environment boundaries remain intact.
+
+Extractor-6 records whether dynamic import/require arguments are unescaped string
+literals. Graph-3 maps such JS module observations to indexed local files as
+heuristic import edges, without evaluating code or inventing dynamic symbol
+bindings. Computed imports remain unresolved. Snapshots record their resolver
+version; older primary snapshots require re-indexing before current-tree claims.
+
+Impact keeps the total unresolved count and additionally reports relevant
+unresolved relationships and uncertain consumer modules. This is a conservative
+heuristic: computed imports, unresolved internal imports and matching unknown
+call/inheritance names or computed callees outside known affected modules seed a separate bounded
+reverse traversal. Legacy edges remain conservative. Known graph-linked tests
+are distinguished from specific uncertainty fallbacks. Incomplete analysis or
+global configuration changes still permit all-suite fallback; broader advice is
+retained and automatic preparation still honors it. No exhaustive coverage claim
+is made from the focused test list.
+
+Git comparison batches NUL-delimited attribute queries and blob-size metadata
+through bounded stdin. Content reads retain their existing per-file/aggregate
+limits. Explicit path-prefix scope includes rename partners and reports excluded
+file counts; default full-repository comparison still exposes oversized tracked
+artifacts as incomplete rather than silently excluding them.
+Readiness separately stats the complete non-ignored verification inventory so
+source-ready projects can surface oversized non-source inputs before preparation.
+
 rc3 adds a transport-independent readiness service. CLI doctor and MCP
 get_repository_readiness inspect bounded discovery metadata, source sizes,
 safe read-only Git plumbing and static test evidence. No graph is published and

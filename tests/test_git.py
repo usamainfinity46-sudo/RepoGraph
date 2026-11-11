@@ -246,6 +246,61 @@ def test_limits_report_unknown_instead_of_false_clean(repository):
     assert not report.complete and all(c.status == "unknown" for c in report.changes)
 
 
+def test_scoped_changes_exclude_large_artifacts_and_keep_scope_explicit(repository):
+    (repository / "src").mkdir()
+    source = repository / "src/app.js"
+    source.write_text("export const value = 1;\n")
+    (repository / "archive.zip").write_bytes(b"x" * 1025)
+    git(repository, "add", ".")
+    git(repository, "commit", "-m", "source and artifact")
+    source.write_text("export const value = 2;\n")
+    settings = Settings.load(repository).model_copy(update={"max_file_bytes": 1024})
+    service = GitService(settings)
+    assert not service.get_changes().complete
+    scoped = service.get_changes(paths=["src"])
+    assert scoped.complete and scoped.scope == "paths" and scoped.scope_paths == ["src"]
+    assert scoped.excluded_files > 0
+    assert [change.path for change in scoped.changes] == ["src/app.js"]
+    assert service.get_changes(paths=[]).total == 0
+    with pytest.raises(RepositoryError, match="normalized repository-relative"):
+        service.get_changes(paths=["../outside"])
+    source.write_text("export const value = 1;\n")
+    git(repository, "mv", "src/app.js", "moved.js")
+    renamed = service.get_changes(paths=["src"])
+    assert renamed.complete and renamed.total == 1
+    assert renamed.changes[0].status == "renamed" and renamed.changes[0].old_path == "src/app.js"
+
+
+def test_git_metadata_batching_avoids_per_file_processes(repository, monkeypatch):
+    (repository / ".gitattributes").write_text("*.py text eol=crlf\n")
+    for i in range(30):
+        (repository / f"module{i}.py").write_bytes(b"value = 1\n")
+    git(repository, "add", ".")
+    git(repository, "commit", "-m", "many CRLF sources")
+    for i in range(30):
+        (repository / f"module{i}.py").write_bytes(b"value = 1\r\n")
+    service = GitService(Settings.load(repository))
+    run = service.git.run
+    calls = []
+
+    def counted(*args, **kwargs):
+        calls.append(args)
+        return run(*args, **kwargs)
+
+    monkeypatch.setattr(service.git, "run", counted)
+    assert service.get_changes().changes == []
+    assert sum(args[0] == "check-attr" for args in calls) == 1
+    assert sum(args[:2] == ("cat-file", "--batch-check") for args in calls) == 1
+    assert not any(args[:2] == ("cat-file", "-s") for args in calls)
+
+
+def test_partial_attribute_batch_cannot_silently_drop_policy(repository, monkeypatch):
+    runner = GitRunner(repository)
+    monkeypatch.setattr(runner, "run", lambda *args, **kwargs: b"main.py\0text\0set\0")
+    with pytest.raises(RepositoryError, match="incomplete"):
+        runner.attributes(["main.py"])
+
+
 def test_unmerged_index_is_reported(repository):
     branch = git(repository, "symbolic-ref", "--short", "HEAD")
     git(repository, "checkout", "-b", "other")

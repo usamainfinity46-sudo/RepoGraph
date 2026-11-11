@@ -7,11 +7,11 @@ instructions and references; it contains no server, executable or automatic inst
 The separate [RepoGraph Kit npm installer](NPM_INSTALLATION.md) can configure both
 components using `npm i repograph-kit` followed by `npx repograph-kit setup`.
 
-Source: [skills/repograph](../skills/repograph/SKILL.md). Skill version: **1.0.1**,
-independent of the server's 0.1.0rc3 version. The setup reference pins the tested
-rc2 source commit for alias and Vitest workflows; published rc1 remains available
-with the limitations described there. The npm kit bundles rc2; a standalone rc2
-Python registry release is still pending.
+Source: [skills/repograph](../skills/repograph/SKILL.md). Candidate skill version:
+**1.0.2**, for server candidate 0.1.0rc4. Published npm 0.1.1 still bundles skill
+1.0.1/server rc3. The setup reference distinguishes reviewed local candidate
+artifacts from published installation. Standalone Python registry publication
+remains separate; see CANDIDATE_RC4_ACCEPTANCE.md and ONBOARDING_RELEASE_ACCEPTANCE.md.
 
 ## Build and check
 
@@ -23,7 +23,7 @@ uv run --no-sync python scripts/check_skill.py
 uv run --no-sync pytest tests/test_skill_package.py -q
 ```
 
-The build creates `dist/skills/repograph-skill-1.0.1.zip` and a matching
+The candidate build creates `dist/skills/repograph-skill-1.0.2.zip` and a matching
 `.zip.sha256` file. The archive has one `repograph/` folder containing SKILL.md,
 optional OpenAI UI metadata, three references, LICENSE and NOTICE. Explicit file
 selection excludes local extras and dependencies. Line endings, ordering,

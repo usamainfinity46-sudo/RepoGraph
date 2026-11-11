@@ -21,6 +21,8 @@ def parse_report(path: Path, framework: str, root: Path, test_paths: list[str]):
     if len(raw) > 2_000_000:
         raise RepositoryError("test_report_limit", "Machine report exceeds 2 MB")
     try:
+        if framework == "node:test":
+            return _node(raw, root)
         return (
             _pytest(raw, test_paths) if framework == "pytest" else _javascript(raw, framework, root)
         )
@@ -35,6 +37,73 @@ def parse_report(path: Path, framework: str, root: Path, test_paths: list[str]):
         raise RepositoryError(
             "invalid_test_report", "Runner report is malformed or inconsistent"
         ) from error
+
+
+def _node(raw: bytes, root: Path):
+    records = [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
+    if not records or records[0] != {"type": "header", "schema": 1}:
+        raise ValueError("Missing Node report header")
+    if len(records) > MAX_CASES + 1000 or records[-1].get("type") != "summary":
+        raise ValueError("Missing or excessive Node report records")
+    cases, summary, errors, synthetic, seen_cases = [], None, 0, 0, 0
+    for record in records[1:]:
+        kind = record["type"]
+        if summary is not None:
+            raise ValueError("Data after Node summary")
+        if kind == "summary":
+            summary = record
+        elif kind == "suite_error":
+            errors += 1
+        elif kind == "case":
+            seen_cases += 1
+            if seen_cases > MAX_CASES:
+                raise RepositoryError("test_case_limit", "Report exceeds 5000 test cases")
+            if record["status"] not in {"passed", "failed", "skipped"}:
+                raise ValueError("Unknown Node outcome")
+            path = Path(record["file"])
+            if not path.is_absolute():
+                raise ValueError("Node report paths must be absolute")
+            path = path.resolve().relative_to(root).as_posix()
+            if type(record.get("synthetic", False)) is not bool:
+                raise ValueError("Invalid synthetic-case marker")
+            if record.get("synthetic") and record["status"] == "passed":
+                synthetic += 1
+                continue
+            cases.append(
+                _outcome(
+                    "node:test",
+                    record["name"],
+                    path,
+                    record["status"],
+                    record.get("message", ""),
+                    record.get("classname", ""),
+                )
+            )
+        else:
+            raise ValueError("Unknown Node record")
+    counts = TestCounts(
+        tests=len(cases),
+        passed=sum(c.status == "passed" for c in cases),
+        failed=sum(c.status == "failed" for c in cases),
+        skipped=sum(c.status == "skipped" for c in cases),
+        errors=errors,
+    )
+    totals = summary["counts"]
+    if any(
+        type(totals.get(k)) is not int or totals[k] < 0
+        for k in ("tests", "passed", "failed", "cancelled", "skipped", "todo")
+    ):
+        raise ValueError("Invalid Node counts")
+    if (
+        totals["tests"] != counts.tests + synthetic
+        or totals["passed"] != counts.passed + synthetic
+        or totals["failed"] + totals["cancelled"] != counts.failed
+        or totals["skipped"] + totals["todo"] != counts.skipped
+    ):
+        raise ValueError("Node summary mismatch")
+    if summary.get("success") is not True and not counts.failed and not counts.errors:
+        counts.errors += 1
+    return counts, cases
 
 
 def _outcome(framework, name, path, status, message="", classname=""):

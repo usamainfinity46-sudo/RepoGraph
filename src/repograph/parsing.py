@@ -13,7 +13,7 @@ from repograph.discovery import EXTENSIONS, RepositoryError
 from repograph.models import Diagnostic, Import, ParsedFile, Symbol
 from repograph.relations import extract_relations
 
-PARSER_VERSION = "extractor-5:" + ":".join(
+PARSER_VERSION = "extractor-6:" + ":".join(
     version(package)
     for package in (
         "tree-sitter",
@@ -168,6 +168,7 @@ def parse_source(path: str, source: bytes) -> ParsedFile:
                         line=node.start_point.row + 1,
                         kind="require",
                         confidence="unresolved",
+                        literal="\\" not in text(target),
                     )
                 )
         elif node.type in {"call_expression", "call"}:
@@ -195,6 +196,7 @@ def parse_source(path: str, source: bytes) -> ParsedFile:
                         line=node.start_point.row + 1,
                         kind="require" if function_name == "require" else "dynamic",
                         confidence="unresolved",
+                        literal=literal is not None and "\\" not in text(literal),
                     )
                 )
         if (node.type == "ERROR" or node.is_missing) and len(result.diagnostics) < 100:

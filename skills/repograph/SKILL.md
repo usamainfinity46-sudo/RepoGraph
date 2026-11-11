@@ -3,9 +3,9 @@ name: repograph
 description: "Use RepoGraph MCP to explore Python/JS/TS repositories, trace callers and dependencies, assess change impact, and select tests with source evidence. Apply when RepoGraph is requested or a connected RepoGraph server can help with repository impact or test planning. Optional verification requires a reviewed, approved plan. Not for general questions unrelated to repository code."
 license: Apache-2.0
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
   repository: "https://github.com/usamainfinity46-sudo/RepoGraph"
-  requires: "Local RepoGraph MCP; rc3 recommended for project readiness"
+  requires: "Local RepoGraph MCP; rc4 for Node execution and scoped uncertainty"
 ---
 
 # RepoGraph
@@ -91,12 +91,19 @@ Use `discover_tests` for static candidates and `suggest_tests` for ranked eviden
 Its `paths` are **changed source paths**. In `prepare_verification`, `paths` are
 **discovered test file paths**. Keep that distinction when moving between tools.
 Report why tests were selected and whether `broader_run_recommended` is true.
-`node:test` identifies Node's built-in runner, which this version discovers but
-cannot execute. An empty framework list means unknown, not Jest/Vitest. Explain
+`node:test` identifies Node's built-in runner. rc4 can prepare and execute its
+approved plans; rc3 and earlier only discover it. An empty framework list means
+unknown, not Jest/Vitest. Explain
 these limits before promising test execution. A broad request to test a repository
 does not imply all runners, scripts, lint commands or builds are supported by RepoGraph.
 Recommend broader verification when mappings are incomplete; don't equate a short
 test list with full coverage. A planning-only request ends with recommendations.
+Report graph-linked tests separately from specific uncertainty fallback candidates.
+`broader_run_recommended=true` still matters when the returned list is focused:
+automatic preparation can choose suite scope. Never silently turn broader advice
+into a targeted execution. Git `get_changes(paths=["src", "tests"])` in rc4 can
+inspect explicit prefixes; report `scope`, `scope_paths` and excluded file count.
+A scoped complete report does not establish a clean whole repository.
 
 For requested execution or saved-run comparisons, read
 [verification](references/verification.md). Preparation does not run tests; execution

@@ -1,5 +1,20 @@
 # Verification workflow
 
+The unpublished rc4 candidate additionally supports --framework node:test on
+Node 22/24. It uses the host Node executable (or --node-executable), fixed flags
+and the bundled trusted NDJSON reporter. Targeted paths must be discovered Node
+tests; suite scope pins the complete discovered list (maximum 200 files and a
+24000-character command). No package scripts, downloads or custom reporter paths
+are accepted. One test-file worker runs; test code may still create concurrency.
+Preparation is static and does not probe/execute Node. Machine report and process
+outcomes determine pass/fail/empty/skip/error status. Node still requires host
+opt-in and approval of the exact fresh plan; verification-6 invalidates old plans.
+
+Focused suggestions can include graph-linked tests and specific uncertainty
+fallback files. Broader advice remains explicit; automatic scope can still select
+the suite. Choosing a targeted subset requires an explicit review of its reduced
+coverage. Use the published rc3 instructions below only for its supported runners.
+
 For npm-managed hosts, explicitly opt in and reload the agent afterward:
 
 ```sh

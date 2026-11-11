@@ -13,5 +13,20 @@
       "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
       "NOTICE": "29eea376491290d02d111d7d30ce4655e22d63a2fc3024c68f73dc8e5417a2bb"
     }
+  },
+  {
+    "serverVersion": "0.1.0rc3",
+    "wheel": "repograph_mcp-0.1.0rc3-py3-none-any.whl",
+    "sha256": "05ba6a47f53d41c5f0e190ec05bbbdd346a4ae211680ec7fd35d912886c7467e",
+    "requirementsSha256": "c61fd61bee90be23411908192a2f7b90362765c6b4c869c1f8bccceeead2736b",
+    "skillFiles": {
+      "SKILL.md": "f8d8cd8d77c08763b02987b6a4da02f84f6e0f037b43f69a47b0dde586edef19",
+      "agents/openai.yaml": "eaadba0703b2cea23ad1bd88a0c0716a1da5f399363fc7a304d8665d3e61c5e3",
+      "references/setup.md": "dc25a41bae409baf298b6f9ce4dc0666b60fb4960b4e651a6515f41d17f947fb",
+      "references/verification.md": "9870febedfa32a89a2907fe2664dde7bd82486f1f690db47d2cb2cca09e11807",
+      "references/examples.md": "6765acfb49b42612e5e1b85dc221cbf01f2c6460ab2eab82a164800c2575a7dd",
+      "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "NOTICE": "29eea376491290d02d111d7d30ce4655e22d63a2fc3024c68f73dc8e5417a2bb"
+    }
   }
 ]

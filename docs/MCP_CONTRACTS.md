@@ -1,5 +1,41 @@
 # MCP contracts
 
+Unpublished rc4 candidate changes:
+
+- Readiness distinguishes ready_for_indexing from verification_inventory_ready,
+  with up to 200 verification_input_blockers. The latter stats all non-ignored
+  verification inputs, including non-source archives, without reading their
+  contents or executing code. It checks configured inventory/byte ceilings, not
+  runtime package compatibility or approval.
+
+- framework node:test is accepted by discovery, recommendations, plans and results.
+  Targeted Node runs accept up to 50 discovered test files. Suite scope pins all
+  discovered Node files (at most 200 and a 24000-character argv); incomplete
+  discovery cannot prepare a Node suite. Auto still chooses suite scope when
+  broader verification is recommended. Fixed commands use the bundled reporter;
+  no package script, shell command or repository reporter is accepted.
+- Node machine reports require a schema header, bounded case records, repository
+  paths and a consistent final summary. Missing/malformed/extra-scope data cannot
+  pass. File-wrapper success without actual tests produces no_tests. Node tests,
+  suite failures, cancellations, skipped/TODO tests and child exit status remain
+  distinct from successful verification. Policy is verification-6; older plans
+  require fresh preparation/review/approval.
+- Graph-3 resolves unescaped literal JS dynamic imports/requires as heuristic
+  module candidates; extraction is extractor-6. Computed imports remain unknown.
+  Edges expose optional unresolved_reason. Primary snapshot resolver-version drift
+  yields stale_graph_policy until re-indexed. SQLite schema remains 4.
+- Impact adds relevant_unresolved_dependencies, uncertain_modules (preview 200)
+  and total_uncertain_modules. Both known and uncertain traversals are bounded by
+  max_nodes. Suggestion fallbacks can be specific uncertain test files; a focused
+  list does not negate broader_run_recommended or establish exhaustive coverage.
+- get_changes gains paths=null: at most 200 literal root-relative file/directory
+  prefixes. Null preserves full comparison; [] explicitly compares no paths.
+  Results add scope (repository/paths), scope_paths and excluded_files. Renames
+  include both allowed endpoints. complete=true in path scope applies only to
+  that scope. No pattern expansion, root changes or source execution occurs.
+  CLI exposes repeated --change-path. New errors include invalid_change_scope,
+  git_input_limit and git_metadata_error. Git stdin/metadata are capped at 16 MB.
+
 rc3 adds get_repository_readiness(): repository, ready_for_indexing, bounded source
 counts/sizes and oversized paths, git_status, static test counts/frameworks,
 test_discovery_complete, verification_enabled, supported_verification_frameworks,

@@ -7,7 +7,14 @@ from difflib import SequenceMatcher
 from pathlib import PurePosixPath
 
 from repograph.config import Settings
-from repograph.discovery import EXCLUDED, EXTENSIONS, RepositoryError, read_content, safe_path
+from repograph.discovery import (
+    EXCLUDED,
+    EXTENSIONS,
+    RepositoryError,
+    normalize_relative,
+    read_content,
+    safe_path,
+)
 from repograph.git_runner import GitEntry, GitRunner
 from repograph.graph import GraphService
 from repograph.models import (
@@ -66,7 +73,15 @@ class GitService:
                 raise
             return "EMPTY"
 
-    def _analyze(self, baseline: str | None, target: str) -> ChangeReport:
+    def _analyze(
+        self, baseline: str | None, target: str, scope_paths: list[str] | None = None
+    ) -> ChangeReport:
+        if scope_paths is not None:
+            if len(scope_paths) > 200:
+                raise RepositoryError(
+                    "invalid_change_scope", "Choose at most 200 repository-relative path prefixes"
+                )
+            scope_paths = sorted({normalize_relative(path) for path in scope_paths})
         before = self.baseline(baseline)
         after = target if target in {"WORKTREE", "INDEX"} else self.git.resolve(target)
         old = self.git.tree(before) if before != "EMPTY" else {}
@@ -88,6 +103,29 @@ class GitService:
             for path in old:
                 new.setdefault(path, GitEntry("100644", ""))
         paths = sorted(path for path in old.keys() | new.keys() if allowed(path))
+        hints = self.git.renames(before, after) if before != "EMPTY" else {}
+        excluded = 0
+        if scope_paths is not None:
+            selected = {
+                path
+                for path in paths
+                if any(path == prefix or path.startswith(prefix + "/") for prefix in scope_paths)
+            }
+            # A scoped rename includes both sides; never turn it into a false add/delete.
+            for new_path, old_path in hints.items():
+                if (
+                    (new_path in selected or old_path in selected)
+                    and allowed(new_path)
+                    and allowed(old_path)
+                ):
+                    selected.update((new_path, old_path))
+            paths = [path for path in paths if path in selected]
+            excluded = len((old.keys() | new.keys()) - selected)
+            old = {path: entry for path, entry in old.items() if path in selected}
+            new = {path: entry for path, entry in new.items() if path in selected}
+            report.scope = "paths"
+            report.scope_paths = scope_paths
+            report.excluded_files = excluded
         if len(paths) > self.settings.max_files:
             raise RepositoryError("git_file_limit", "Git inventory exceeds configured file count")
         bytes_read = 0
@@ -95,6 +133,16 @@ class GitService:
         old_data: dict[str, bytes] = {}
         new_data: dict[str, bytes] = {}
         failures: dict[str, Diagnostic] = {}
+        attributes = self.git.attributes(paths) if after == "WORKTREE" else {}
+        selected_paths = set(paths)
+        sizes = self.git.object_sizes(
+            {
+                entry.oid
+                for entries in (old, new)
+                for path, entry in entries.items()
+                if path in selected_paths and entry.oid and entry.mode in {"100644", "100755"}
+            }
+        )
         autocrlf = (
             self.git.run("config", "--get", "core.autocrlf", allow_failure=True).strip().lower()
         )
@@ -122,7 +170,7 @@ class GitService:
                     "unsupported_git_entry", "Symlink, submodule or unmerged Git entry"
                 )
             if entry.oid not in blobs:
-                size = int(self.git.run("cat-file", "-s", entry.oid, max_bytes=100).strip())
+                size = sizes[entry.oid]
                 if size > self.settings.max_file_bytes:
                     raise RepositoryError("file_too_large", "Git blob exceeds configured file size")
                 blobs[entry.oid] = charge(
@@ -144,13 +192,7 @@ class GitService:
             # Only consult attributes if raw bytes differ. Never invoke conversion filters.
             if entry.oid and blob_oid(data, len(entry.oid)) == entry.oid:
                 return data
-            attributes = self.git.run(
-                "check-attr", "-z", "text", "eol", "filter", "working-tree-encoding", "--", path
-            ).split(b"\x00")
-            attrs = {
-                attributes[i + 1].decode(): attributes[i + 2].decode()
-                for i in range(0, len(attributes) - 2, 3)
-            }
+            attrs = attributes.get(path, {})
             if any(
                 attrs.get(key, "unspecified") not in {"unspecified", "unset"}
                 for key in ("filter", "working-tree-encoding")
@@ -213,7 +255,6 @@ class GitService:
             path for path in old if path not in new and path not in failures and allowed(path)
         }
         added = {path for path in new if path not in old and path not in failures and allowed(path)}
-        hints = self.git.renames(before, after) if before != "EMPTY" else {}
         renames: dict[str, tuple[str, str]] = {}
         for path, previous in hints.items():
             if path in added and previous in removed:
@@ -428,9 +469,10 @@ class GitService:
         target: str = "WORKTREE",
         offset: int = 0,
         limit: int = 100,
+        paths: list[str] | None = None,
     ) -> ChangeReport:
         pagination(offset, limit)
-        report = self._analyze(baseline, target)
+        report = self._analyze(baseline, target, paths)
         report.changes = report.changes[offset : offset + limit]
         for change in report.changes:
             change.symbols = change.symbols[:100]

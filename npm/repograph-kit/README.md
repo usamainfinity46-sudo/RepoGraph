@@ -1,5 +1,14 @@
 # RepoGraph Kit
 
+This source package is the **0.1.2-rc.1 candidate**, bundling Python
+0.1.0rc4 and skill 1.0.2. Public npm latest remains 0.1.1. Install a supplied,
+reviewed candidate tarball by its absolute path, then run setup --agent AGENT
+--upgrade and reload the client. The candidate preserves client-added tool policy
+tables, supports approved Node 22/24 test plans, maps literal dynamic imports,
+and exposes explicit Git comparison scopes. See
+[candidate acceptance](https://github.com/usamainfinity46-sudo/RepoGraph/blob/main/docs/CANDIDATE_RC4_ACCEPTANCE.md).
+Do not assume these candidate capabilities are present in public 0.1.1 below.
+
 The 0.1.1 reliability release bundles Python 0.1.0rc3 and skill 1.0.1.
 See [release acceptance](https://github.com/usamainfinity46-sudo/RepoGraph/blob/main/docs/ONBOARDING_RELEASE_ACCEPTANCE.md).
 

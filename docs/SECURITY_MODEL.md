@@ -1,5 +1,27 @@
 # Security model
 
+rc4 candidate Node verification uses a bundled, trusted reporter; its path/size/
+mtime joins Node in the host-policy fingerprint. Fixed argv uses a file URI for
+the reporter, explicit discovered test files, one test-file worker, and a private
+NDJSON destination. It accepts no caller-supplied reporter/arguments. Node loader
+environment overrides are omitted by the existing environment policy. Preparation
+never starts Node, imports tests or runs package scripts. Host opt-in, actual
+approval of a fresh single-use plan, report validation and process cleanup apply.
+Node suite lists are bounded to 200 files/24000 command characters; machine reports
+are capped at 2 MB/5000 cases and require a consistent final summary. These controls
+do not sandbox approved repository code or attest to test honesty.
+
+Literal dynamic import mapping is static, root/index-bound heuristic evidence.
+Computed/escaped targets stay unresolved. Scoped uncertainty is explicitly not
+proof that other tests are irrelevant; broader recommendations and automatic
+suite preparation remain available. Old graph policy is stale until re-indexed.
+
+Git attribute/object-size batching supplies bounded data through stdin, never a
+shell. OIDs are validated and NUL paths avoid argument interpretation. Both output
+streams, input bytes and process lifetime are bounded. Explicit path scopes never
+grant a different root; excluded files remain counted and complete applies only
+within the reported scope. Full comparison retains unknown/oversized diagnostics.
+
 rc3 setup/doctor preflight invokes only the installed isolated backend, never an
 arbitrary configured command, and never runs tests. It establishes neither GUI
 connection nor workspace trust. Explicit setup --enable-verification writes host

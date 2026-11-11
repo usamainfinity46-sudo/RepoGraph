@@ -23,7 +23,7 @@ from repograph.models import (
 from repograph.parsing import PARSER_VERSION
 from repograph.service import RepositoryService, pagination
 
-GRAPH_VERSION = "graph-2"
+GRAPH_VERSION = "graph-3"
 MAX_GRAPH_ITEMS = 200_000
 
 
@@ -189,6 +189,7 @@ class GraphBuilder:
         line: int,
         name: str,
         confidence: str,
+        unresolved_reason: str | None = None,
     ) -> None:
         key = identity(source.id, target.id if target else "", relation, str(line), name)
         self.edges[key] = GraphEdge(
@@ -200,6 +201,7 @@ class GraphBuilder:
             path=path,
             line=line,
             target_name=name,
+            unresolved_reason=unresolved_reason if target is None else None,
         )
         if len(self.nodes) + len(self.edges) > MAX_GRAPH_ITEMS:
             raise RepositoryError("graph_limit", "Graph exceeds the 200000 item safety limit")
@@ -247,7 +249,22 @@ class GraphBuilder:
                 parent = self.unique(path, parent_name) or module
                 self.add_edge(parent, node, "contains", path, node.start_line, node.name, "static")
             for item in file.imports:
-                target_path = self.module(path, item.module) if item.kind == "static" else None
+                literal_js = file.language != "python" and item.literal
+                target_path = (
+                    self.module(path, item.module) if item.kind == "static" or literal_js else None
+                )
+                reason = "unresolved_import"
+                if "\\" in item.module or item.kind != "static" and not literal_js:
+                    reason = "dynamic_import"
+                elif file.language != "python":
+                    if not item.module.startswith(".") and not (
+                        self.aliases and self.aliases.stems(path, item.module)
+                    ):
+                        reason = "external_import"
+                    elif PurePosixPath(item.module).suffix and PurePosixPath(
+                        item.module
+                    ).suffix not in {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts"}:
+                        reason = "unsupported_import"
                 self.add_edge(
                     module,
                     self.modules.get(target_path),
@@ -255,7 +272,12 @@ class GraphBuilder:
                     path,
                     item.line,
                     item.module,
-                    "static" if target_path else "unresolved",
+                    "static"
+                    if target_path and item.kind == "static"
+                    else "heuristic"
+                    if target_path
+                    else "unresolved",
+                    reason,
                 )
             for reference in file.references:
                 source = self.unique(path, reference.scope) or module
@@ -268,6 +290,7 @@ class GraphBuilder:
                     reference.line,
                     reference.name,
                     "heuristic" if target else "unresolved",
+                    "unresolved_" + reference.relation,
                 )
         nodes = sorted(self.nodes.values(), key=lambda item: item.id)
         edges = sorted(self.edges.values(), key=lambda item: item.id)
@@ -282,6 +305,7 @@ class GraphBuilder:
             nodes=nodes,
             edges=edges,
             resolution_fingerprint=self.aliases.fingerprint if self.aliases else None,
+            resolver_version=GRAPH_VERSION,
         )
 
 

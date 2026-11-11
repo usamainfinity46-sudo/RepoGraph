@@ -1,5 +1,12 @@
 # RepoGraph Kit npm installer
 
+Source candidate: kit 0.1.2-rc.1 / Python rc4 / skill 1.0.2. This is not npm latest.
+For a supplied candidate artifact, run npm i /absolute/path/repograph-kit-0.1.2-rc.1.tgz
+in the project, then setup --agent AGENT --upgrade and reload the client.
+It preserves client tool-policy tables and adds native Node verification/scoped
+analysis. See CANDIDATE_RC4_ACCEPTANCE.md for exact receipts and remaining trials.
+The published 0.1.1 instructions below describe the rc3 baseline.
+
 Published reliability release: kit 0.1.1, Python candidate 0.1.0rc3, skill 1.0.1.
 See [acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md) for registry/test receipts.
 Upgrade existing stock installs with:

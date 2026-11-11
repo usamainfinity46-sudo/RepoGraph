@@ -35,7 +35,9 @@ def main():
     with zipfile.ZipFile(wheel) as archive:
         names = archive.namelist()
         assert "repograph/maintenance.py" in names
-        for source in (root / "src" / "repograph").glob("*.py"):
+        for source in (root / "src" / "repograph").iterdir():
+            if source.suffix not in {".py", ".mjs"}:
+                continue
             assert archive.read("repograph/" + source.name) == source.read_bytes(), (
                 f"Wheel source differs from checkout: {source.name}"
             )

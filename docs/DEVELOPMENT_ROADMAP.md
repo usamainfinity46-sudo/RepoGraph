@@ -25,6 +25,8 @@
    invalid-publisher; production registry registration/publication remain incomplete.
    See PHASE_9_ACCEPTANCE.md for exact evidence.
 
-The current Python candidate is 0.1.0rc3, bundled with the published npm 0.1.1
-reliability release. It is not a completed stable Python v0.1.0 release. See
-ONBOARDING_RELEASE_ACCEPTANCE.md for npm publication status and first-use checks.
+Current source prepares Python 0.1.0rc4 / npm kit 0.1.2 / skill 1.0.2 as an
+unpublished practical-efficiency candidate. Published npm latest remains 0.1.1
+with rc3. See CANDIDATE_RC4_ACCEPTANCE.md for trial status and
+ONBOARDING_RELEASE_ACCEPTANCE.md for public release receipts. Neither candidate
+is a completed stable Python v0.1.0 release.

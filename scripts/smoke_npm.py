@@ -48,7 +48,7 @@ async def protocol(entry, root, version):
     return {"tools": 20, "version": version, "indexed": True, "host_disabled_gate": "passed"}
 
 
-async def approved_fixture(entry):
+async def approved_fixture(entry, framework="pytest", path="test_smoke.py"):
     """Authorized engineering check of a reviewed trivial test, never application code."""
     params = StdioServerParameters(command=entry["command"], args=entry["args"])
     async with stdio_client(params) as (reader, writer):
@@ -57,16 +57,20 @@ async def approved_fixture(entry):
             response = await session.call_tool(
                 "prepare_verification",
                 {
-                    "framework": "pytest",
-                    "paths": ["test_smoke.py"],
+                    "framework": framework,
+                    "paths": [path],
                     "scope": "targeted",
                 },
             )
             assert not response.isError
             plan = json.loads(response.content[0].text)
-            assert plan["execution_enabled"] and plan["paths"] == ["test_smoke.py"]
-            assert plan["command"][0] == os.path.abspath(sys.executable)
-            assert "pytest" in plan["command"] and plan["command"][-1] == "./test_smoke.py"
+            assert plan["execution_enabled"] and plan["paths"] == [path]
+            if framework == "pytest":
+                assert plan["command"][0] == os.path.abspath(sys.executable)
+                assert "pytest" in plan["command"] and plan["command"][-1] == "./" + path
+            else:
+                assert "--test" in plan["command"]
+                assert plan["command"][-1] == str(Path(plan["cwd"]) / path)
             denied = await session.call_tool("verify_changes", {"plan_id": plan["id"]})
             assert denied.isError and "verification_approval_required" in denied.content[0].text
             result = await session.call_tool(
@@ -191,6 +195,15 @@ def smoke(source: Path | str):
         )
         enabled = json.loads((root / ".mcp.json").read_text())["mcpServers"]["repograph"]
         execution = asyncio.run(asyncio.wait_for(approved_fixture(enabled), timeout=60))
+        (root / "native.test.mjs").write_text(
+            "import test from 'node:test'; test('native smoke',()=>{});"
+        )
+        (root / "unrelated.test.mjs").write_text(
+            "import test from 'node:test'; test('unrelated',()=>{throw Error('must not select');});"
+        )
+        native_execution = asyncio.run(
+            asyncio.wait_for(approved_fixture(enabled, "node:test", "native.test.mjs"), timeout=60)
+        )
         assert not (root / "sample.executed").exists()
 
         # Exercise the published previous install, then upgrade its exact stock
@@ -200,11 +213,16 @@ def smoke(source: Path | str):
         upgrade_cache = temporary / "upgrade-cache"
         upgrade_args = ["--root", str(upgrade_root), "--cache-dir", str(upgrade_cache), "--json"]
         run(
-            [*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "repograph-kit@0.1.0"],
+            [*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "repograph-kit@0.1.1"],
             upgrade_root,
         )
         upgrade_cli = upgrade_root / "node_modules/repograph-kit/bin/repograph-kit.mjs"
         run([node, str(upgrade_cli), "setup", "--agent", "all", *upgrade_args], upgrade_root)
+        client_policy = (
+            '\n# client policy\n[mcp_servers.repograph.tools.health]\napproval_mode = "approve"\n'
+        )
+        with (upgrade_root / ".codex/config.toml").open("a", encoding="utf-8") as handle:
+            handle.write(client_policy)
         run(
             [*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", str(source)],
             upgrade_root,
@@ -219,6 +237,7 @@ def smoke(source: Path | str):
         )
         assert upgraded["serverVersion"] == version and upgraded["files"]
         assert not upgraded["verificationEnabled"]
+        assert (upgrade_root / ".codex/config.toml").read_text().endswith(client_policy)
         assert json.loads(run([node, str(upgrade_cli), "doctor", *upgrade_args], upgrade_root))[
             "ready"
         ]
@@ -268,7 +287,8 @@ def smoke(source: Path | str):
             "repeat_setup": "unchanged",
             "application_canary_executed": False,
             "reviewed_engineering_fixture": execution,
-            "stock_0_1_0_upgrade": "passed",
+            "reviewed_node_fixture": native_execution,
+            "stock_0_1_1_upgrade_with_tool_policy": "passed",
             "gui_client_certification": "not performed",
         }
 

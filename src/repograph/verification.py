@@ -34,7 +34,7 @@ from repograph.reports import parse_report
 from repograph.service import pagination
 from repograph.testing import TestIntelligence
 
-VERIFIER_VERSION = "verification-5"
+VERIFIER_VERSION = "verification-6"
 
 
 class VerificationService:
@@ -65,8 +65,10 @@ class VerificationService:
         return identity(*hashes)
 
     def _runtime(self, framework: str) -> list[str]:
-        if framework not in {"pytest", "jest", "vitest"}:
-            raise RepositoryError("unsupported_test_framework", "Choose pytest, Jest or Vitest")
+        if framework not in {"pytest", "jest", "vitest", "node:test"}:
+            raise RepositoryError(
+                "unsupported_test_framework", "Choose pytest, Jest, Vitest or node:test"
+            )
         if framework == "pytest":
             executable = self.settings.python_executable
             entries = [executable]
@@ -80,6 +82,8 @@ class VerificationService:
                     )
                 executable = Path(found)
             entry = self.settings.jest_entry if framework == "jest" else self.settings.vitest_entry
+            if framework == "node:test":
+                entry = Path(__file__).with_name("node_reporter.mjs")
             entry = entry or self.settings.root / "node_modules" / framework / (
                 "bin/jest.js" if framework == "jest" else "vitest.mjs"
             )
@@ -115,6 +119,18 @@ class VerificationService:
 
     def _command(self, framework: str, paths: list[str], scope: str) -> list[str]:
         runtime = self._runtime(framework)
+        if framework == "node:test":
+            return [
+                runtime[0],
+                "--test",
+                "--test-concurrency=1",
+                "--test-reporter=spec",
+                "--test-reporter-destination=stdout",
+                "--test-reporter=" + Path(runtime[1]).as_uri(),
+                "--test-reporter-destination={report}",
+                "--",
+                *(str(self.settings.root / path) for path in paths),
+            ]
         if framework == "pytest":
             plugins = self.settings.pytest_plugins
             if any(not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", plugin) for plugin in plugins):
@@ -229,6 +245,19 @@ class VerificationService:
                 )
         if scope == "auto":
             scope = "targeted"
+        if framework == "node:test" and scope == "suite":
+            if not discovery.complete:
+                raise RepositoryError(
+                    "verification_inventory_incomplete",
+                    "Node suite requires complete static test discovery",
+                )
+            selected = sorted(file.path for file in discovery.files if framework in file.frameworks)
+            if not selected:
+                raise RepositoryError("no_tests_selected", "No Node test files were discovered")
+            warnings.append(
+                "Node suite scope runs the explicit discovered Node test files, "
+                "not package scripts or arbitrary runner discovery."
+            )
         if scope == "targeted":
             if not selected:
                 raise RepositoryError(
@@ -258,6 +287,13 @@ class VerificationService:
                 "matching extra test files makes the result inconclusive."
             )
         command = self._command(framework, selected, scope)
+        if framework == "node:test" and (
+            len(selected) > 200 or sum(len(arg) + 3 for arg in command) > 24_000
+        ):
+            raise RepositoryError(
+                "verification_selection_limit",
+                "Narrow the Node suite to at most 200 files and a 24000-character command",
+            )
         now = time.time()
         plan = VerificationPlan(
             id=uuid.uuid4().hex,
@@ -386,6 +422,8 @@ class VerificationService:
                 replacements = {
                     "--junitxml={report}": "--junitxml=" + str(report),
                     "--outputFile={report}": "--outputFile=" + str(report),
+                    "--test-reporter-destination={report}": "--test-reporter-destination="
+                    + str(report),
                     "pycache_prefix={pycache}": "pycache_prefix=" + str(directory / "pycache"),
                 }
                 command = [replacements.get(arg, arg) for arg in plan.command]

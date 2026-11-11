@@ -1,5 +1,10 @@
 # Release procedure
 
+Current source work prepares unpublished kit 0.1.2 / Python rc4 / skill 1.0.2 for
+real-project trials. See CANDIDATE_RC4_ACCEPTANCE.md. Build/install a reviewed
+candidate tarball explicitly; do not overwrite 0.1.1 or change npm latest until
+candidate acceptance and publishing authorization cover that release.
+
 The 0.1.1 npm reliability candidate bundles Python 0.1.0rc3 and skill 1.0.1.
 Publication status and artifact/test receipts are in
 [reliability acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md). Preserve historical
@@ -37,7 +42,7 @@ workflow requires separate npm account configuration; Python OIDC does not grant
 
 ## Python release
 
-Current Python candidate: **0.1.0rc3**, bundled in npm kit 0.1.1; the published
+Published npm bundle's Python candidate: **0.1.0rc3**, in kit 0.1.1; the published
 standalone GitHub/TestPyPI candidate is 0.1.0rc1. The commands below illustrate the existing release procedure; use the
 intended version's matching tag when preparing the next candidate.
 Building artifacts is not publication. Do not call

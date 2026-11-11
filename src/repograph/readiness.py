@@ -69,12 +69,48 @@ class ReadinessService:
                 )
             )
         tests = TestIntelligence(self.settings)._discover()
+        inventory = Discovery(self.settings)
+        input_paths = inventory.files(supported_only=False)
+        inventory_ready = inventory.complete
+        blockers = []
+        input_bytes = 0
+        for path in input_paths:
+            try:
+                size = safe_path(self.settings, path).stat().st_size
+                input_bytes += size
+                if size > self.settings.max_file_bytes:
+                    inventory_ready = False
+                    if len(blockers) < 200:
+                        blockers.append(path)
+                    if len(diagnostics) < 200:
+                        diagnostics.append(
+                            Diagnostic(
+                                code="verification_input_too_large",
+                                path=path,
+                                message="Verification fingerprints non-ignored inputs, including "
+                                "non-source files. Exclude generated artifacts in .repographignore "
+                                "or review the host byte limit before preparing a plan.",
+                            )
+                        )
+            except (OSError, RepositoryError):
+                inventory_ready = False
+                if len(blockers) < 200:
+                    blockers.append(path)
+        if input_bytes > self.settings.max_total_bytes:
+            inventory_ready = False
+            if len(diagnostics) < 200:
+                diagnostics.append(
+                    Diagnostic(
+                        code="verification_inventory_limit",
+                        message="Verification inputs exceed --max-total-bytes; "
+                        "review generated-artifact exclusions.",
+                    )
+                )
+        diagnostics.extend(inventory.diagnostics[: max(0, 200 - len(diagnostics))])
         frameworks = {f for file in tests.files for f in file.frameworks}
         runners = {}
         for framework in sorted(frameworks):
-            if framework == "node:test":
-                runners[framework] = "unsupported_execution"
-            elif framework == "pytest":
+            if framework == "pytest":
                 runners[framework] = (
                     "interpreter_present_pytest_not_probed"
                     if self.settings.python_executable.is_file()
@@ -89,6 +125,8 @@ class ReadinessService:
                 entry = (
                     self.settings.jest_entry if framework == "jest" else self.settings.vitest_entry
                 )
+                if framework == "node:test":
+                    entry = Path(__file__).with_name("node_reporter.mjs")
                 entry = entry or self.settings.root / "node_modules" / framework / (
                     "bin/jest.js" if framework == "jest" else "vitest.mjs"
                 )
@@ -110,5 +148,7 @@ class ReadinessService:
             test_discovery_complete=tests.complete,
             verification_enabled=self.settings.verification_enabled,
             verification_readiness=runners,
+            verification_inventory_ready=inventory_ready,
+            verification_input_blockers=blockers,
             diagnostics=diagnostics[:200],
         )

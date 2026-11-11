@@ -78,8 +78,8 @@ def create_server(settings: Settings) -> FastMCP:
     def get_repository_readiness() -> RepositoryReadiness:
         """Check source limits, Git availability and static test runner evidence.
 
-        No indexing or tests run. Inspect diagnostics before the first index. Node's
-        built-in runner is discovery-only; execution supports pytest/Jest/Vitest.
+        No indexing or tests run. Inspect diagnostics before the first index.
+        Execution supports pytest/Jest/Vitest and Node's built-in runner.
         """
         return guarded(lambda: ReadinessService(settings).get())
 
@@ -163,14 +163,20 @@ def create_server(settings: Settings) -> FastMCP:
 
     @server.tool()
     def get_changes(
-        baseline: str | None = None, target: str = "WORKTREE", offset: int = 0, limit: int = 100
+        baseline: str | None = None,
+        target: str = "WORKTREE",
+        offset: int = 0,
+        limit: int = 100,
+        paths: list[str] | None = None,
     ) -> ChangeReport:
         """Compare a baseline with WORKTREE, INDEX, or a commit, including changed symbols.
 
         Defaults to saved baseline, else HEAD. No code, filters or external diffs run.
         Per-file symbol and hunk previews are limited to 100 entries.
         """
-        return guarded(lambda: GitService(settings).get_changes(baseline, target, offset, limit))
+        return guarded(
+            lambda: GitService(settings).get_changes(baseline, target, offset, limit, paths)
+        )
 
     @server.tool()
     def get_changed_symbols(

@@ -1,5 +1,18 @@
 # Testing strategy
 
+rc4 candidate regressions cover real Node pass/fail/skip/nested/empty/hook/timeout
+runs, exact targeting with an unrelated failing file, explicit suites, host and
+approval/replay refusal, malformed counts/paths/summaries and static preparation.
+The npm Node 22/24 three-OS matrix also runs these execution tests. Artifact checks
+compare the bundled reporter bytes with the checkout, not just Python modules.
+
+Graph tests cover literal dynamic dependency evidence, unrelated global calls,
+specific computed-import fallbacks, retained broader advice and legacy policy
+freshness. Git tests cover batched CRLF attributes/blob sizes, bounded input,
+explicit empty/invalid/source scopes, oversized full reports and cross-scope
+renames. Real-project follow-ups are read-only engine measurements; execution of
+application tests remains a separate reviewed, approved plan.
+
 rc3 regression checks cover oversized custom-output recovery with .repographignore,
 invalid-ignore refusal, node:test/unknown runner classification, nearest package
 isolation, host-only Git ownership exceptions, readiness CLI/MCP, and npm execution

@@ -32,6 +32,11 @@ def main() -> None:
     parser.add_argument("--max-total-bytes", type=int, default=100_000_000)
     parser.add_argument("--baseline", help="Local commit revision to compare against")
     parser.add_argument("--target", default="WORKTREE", help="WORKTREE, INDEX, or local commit")
+    parser.add_argument(
+        "--change-path",
+        action="append",
+        help="Limit Git comparison to a repository-relative file/directory prefix",
+    )
     parser.add_argument("--before", help="Old graph snapshot ID")
     parser.add_argument("--after", help="New graph snapshot ID")
     parser.add_argument("--max-depth", type=int, default=10)
@@ -46,7 +51,9 @@ def main() -> None:
     parser.add_argument("--pytest-plugin", action="append", default=[])
     parser.add_argument("--verification-timeout", type=float, default=60)
     parser.add_argument("--verification-output-bytes", type=int, default=65_536)
-    parser.add_argument("--framework", choices=["pytest", "jest", "vitest"], default="pytest")
+    parser.add_argument(
+        "--framework", choices=["pytest", "jest", "vitest", "node:test"], default="pytest"
+    )
     parser.add_argument("--scope", choices=["auto", "targeted", "suite"], default="auto")
     parser.add_argument(
         "--test-path", action="append", help="Test file to include in a prepared plan"
@@ -142,7 +149,7 @@ def main() -> None:
         elif args.command == "changes":
             print(
                 GitService(settings)
-                .get_changes(args.baseline, args.target)
+                .get_changes(args.baseline, args.target, paths=args.change_path)
                 .model_dump_json(indent=2)
             )
         elif args.command == "snapshot-diff":

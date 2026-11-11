@@ -27,7 +27,7 @@ def test_preflight_explains_oversized_files_and_node_runner_without_execution(tm
     assert not report.ready_for_indexing
     assert report.oversized_files == ["dist-reporting/bundle.js"]
     assert report.test_frameworks == ["node:test"]
-    assert report.supported_verification_frameworks == ["pytest", "jest", "vitest"]
+    assert report.supported_verification_frameworks == ["pytest", "jest", "vitest", "node:test"]
     assert report.git_status == "not_git_repository"
     assert not settings.database.exists(), "preflight must not create a database"
     (tmp_path / ".repographignore").write_text("/dist-reporting/\n")
@@ -108,3 +108,14 @@ async def test_readiness_cli_and_stdio_report_limits_before_indexing(tmp_path):
             response = await session.call_tool("get_repository_readiness", {})
             assert not response.isError
             assert not json.loads(response.content[0].text)["ready_for_indexing"]
+
+
+def test_source_readiness_is_distinct_from_oversized_verification_inputs(tmp_path):
+    (tmp_path / "app.py").write_text("value = 1\n")
+    (tmp_path / "release.zip").write_bytes(b"x" * 1025)
+    settings = Settings.load(tmp_path).model_copy(update={"max_file_bytes": 1024})
+    before = ReadinessService(settings).get()
+    assert before.ready_for_indexing and not before.verification_inventory_ready
+    assert before.verification_input_blockers == ["release.zip"]
+    (tmp_path / ".repographignore").write_text("/release.zip\n")
+    assert ReadinessService(settings).get().verification_inventory_ready

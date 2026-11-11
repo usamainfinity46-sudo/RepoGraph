@@ -40,7 +40,7 @@ Full Git comparison took 16.58 seconds and was incomplete on oversized tracked
 archives/bundles. Parser recovery and unresolved relationships remain limitations;
 the unresolved-edge percentage is not an accuracy/error rate.
 
-### Next candidate: in development, not published
+### Next candidate: 0.1.2-rc.1 / Python rc4, not published to npm
 
 - Preserve client-added per-tool approval settings when upgrading the server path.
   Updating the npm package alone does not replace an active MCP connection.
@@ -50,8 +50,16 @@ the unresolved-edge percentage is not an accuracy/error rate.
   uncertainty candidates. A local static follow-up now identifies two receipt test
   files plus four fallback candidates, rather than all 20 files. Broader testing
   is still recommended; this is not proof that excluded tests cannot regress.
-- Profile/batch Git metadata work and add explicit comparison scopes for source
-  directories while keeping full-repository limitations visible.
+- Batch Git attribute/blob-size metadata and support explicit comparison scopes:
+  `get_changes(paths=["src", "tests"])`, or repeated CLI --change-path flags.
+  Full-repository limitations remain visible; scoped completeness covers only
+  the requested paths.
+
+See [candidate checks and real-project follow-up](docs/CANDIDATE_RC4_ACCEPTANCE.md).
+Repeated local Git profiling measured a 12.56-second rc3 median and a 1.61-second
+candidate median (three samples each), retaining the same incomplete 19-change
+report. This is a local observation, not a general latency guarantee. Doctor now
+also distinguishes source readiness from non-source verification-input blockers.
 
 Published **0.1.1** still has discovery-only Node support. Candidate changes must
 pass engineering checks and trials across additional real projects before wider

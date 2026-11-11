@@ -8,7 +8,7 @@ from repograph.aliases import AliasResolver
 from repograph.config import Settings
 from repograph.discovery import Discovery, RepositoryError, read_source
 from repograph.git_service import GitService
-from repograph.graph import GraphService
+from repograph.graph import GRAPH_VERSION, GraphService
 from repograph.models import Diagnostic, ImpactedNode, ImpactEvidence, ImpactReport
 from repograph.service import pagination
 
@@ -19,6 +19,13 @@ class ImpactService:
         self.graph = GraphService(settings)
 
     def _freshness(self, snapshot) -> tuple[str, list[Diagnostic]]:
+        if snapshot.resolver_version != GRAPH_VERSION:
+            return "stale", [
+                Diagnostic(
+                    code="stale_graph_policy",
+                    message="Graph resolver policy changed; re-index required",
+                )
+            ]
         discovery = Discovery(self.settings)
         current = set(discovery.files())
         indexed = {n.path: n.content_hash for n in snapshot.nodes if n.kind == "file"}
@@ -115,6 +122,7 @@ class ImpactService:
         reverse = defaultdict(list)
         children = defaultdict(set)
         unresolved = set()
+        unresolved_edges = []
         for snapshot in reversed(snapshots):
             nodes.update({node.id: node for node in snapshot.nodes})
             for edge in snapshot.edges:
@@ -122,6 +130,7 @@ class ImpactService:
                     children[edge.source].add(edge.target)
                 if edge.target is None:
                     unresolved.add((snapshot.id, edge.id))
+                    unresolved_edges.append(edge)
                     continue
                 evidence = ImpactEvidence(
                     edge_id=edge.id,
@@ -241,6 +250,55 @@ class ImpactService:
             key=lambda item: (item.depth, item.node.path, item.node.qualified_name, item.node.id)
         )
         modules = sorted({item.node.path for item in affected})
+        changed_names = {nodes[seed].name for seed in seeds if nodes[seed].kind != "file"}
+        relevant = {
+            edge.id
+            for edge in unresolved_edges
+            if edge.path not in modules
+            and (
+                edge.unresolved_reason in {None, "dynamic_import", "unresolved_import"}
+                or edge.unresolved_reason in {"unresolved_calls", "unresolved_inherits"}
+                and (
+                    edge.target_name.rsplit(".", 1)[-1] in changed_names
+                    or edge.target_name.rstrip().endswith(("]", ")"))
+                )
+            )
+        }
+        uncertain_nodes = {edge.source for edge in unresolved_edges if edge.id in relevant}
+        if len(uncertain_nodes) > max_nodes:
+            complete = False
+            uncertain_nodes = set(sorted(uncertain_nodes)[:max_nodes])
+            diagnostics.append(
+                Diagnostic(
+                    code="uncertainty_limit", message="Uncertain consumers exceed the node limit"
+                )
+            )
+        pending_uncertain = list(uncertain_nodes)
+        while pending_uncertain:
+            current = pending_uncertain.pop()
+            for evidence in reverse[current]:
+                if evidence.source not in uncertain_nodes:
+                    if len(uncertain_nodes) >= max_nodes:
+                        complete = False
+                        pending_uncertain.clear()
+                        diagnostics.append(
+                            Diagnostic(
+                                code="uncertainty_limit",
+                                message="Uncertain-consumer traversal reached its node limit",
+                            )
+                        )
+                        break
+                    uncertain_nodes.add(evidence.source)
+                    pending_uncertain.append(evidence.source)
+        uncertain_modules = sorted({nodes[node].path for node in uncertain_nodes} - set(modules))
+        if relevant:
+            diagnostics.append(
+                Diagnostic(
+                    code="relevant_unresolved_dependencies",
+                    message=f"{len(relevant)} unresolved relationships may hide additional "
+                    "consumers; broader testing is recommended",
+                )
+            )
         return ImpactReport(
             snapshot_ids=[s.id for s in snapshots],
             baseline=revision,
@@ -253,6 +311,9 @@ class ImpactService:
             affected_modules=modules if _full else modules[:200],
             total_modules=len(modules),
             unresolved_dependencies=len(unresolved),
+            relevant_unresolved_dependencies=len(relevant),
+            uncertain_modules=uncertain_modules if _full else uncertain_modules[:200],
+            total_uncertain_modules=len(uncertain_modules),
             freshness=freshness,
             complete=complete,
             diagnostics=diagnostics[:200],

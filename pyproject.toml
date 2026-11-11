@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "repograph-mcp"
-version = "0.1.0rc3"
+version = "0.1.0rc4"
 description = "Local, model-agnostic repository intelligence over MCP"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -1,5 +1,14 @@
 # Graph schema and extraction contract
 
+rc4 candidate: extractor-6 adds Import.literal (false on legacy records), and
+graph-3 adds GraphEdge.unresolved_reason plus GraphSnapshot.resolver_version.
+Existing records remain readable; an old primary resolver version is stale for
+current-tree impact. Literal JS dynamic/require module edges are heuristic,
+without resolved runtime symbol bindings. Snapshot identity/cache reuse changes
+with the extractor/resolver revisions; there is no SQLite migration. Impact's
+additional uncertainty fields are response data, not new tables. Verification-6
+binds Node commands/reporters and invalidates old prepared plans.
+
 Current SQLite schema version: 4 (PRAGMA user_version).
 
 rc3 adds readiness/test-discovery contracts without SQLite or extractor changes.
