@@ -40,7 +40,7 @@ Full Git comparison took 16.58 seconds and was incomplete on oversized tracked
 archives/bundles. Parser recovery and unresolved relationships remain limitations;
 the unresolved-edge percentage is not an accuracy/error rate.
 
-### Next candidate: 0.1.2-rc.1 / Python rc4, not published to npm
+### 0.1.2 / Python rc4: release checks in progress
 
 - Preserve client-added per-tool approval settings when upgrading the server path.
   Updating the npm package alone does not replace an active MCP connection.

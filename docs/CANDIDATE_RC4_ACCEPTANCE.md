@@ -1,8 +1,9 @@
 # rc4 practical-efficiency candidate
 
-Kit 0.1.2-rc.1 candidate, Python 0.1.0rc4, skill 1.0.2; 2026-11-11.
-Public npm latest remains 0.1.1. This candidate is prepared for additional
-real-project trials before wider promotion; it is not a new stable Python release.
+Kit 0.1.2, Python 0.1.0rc4, skill 1.0.2; prepared 2026-11-11.
+The user authorized publishing 0.1.2 after candidate checks. Registry publication
+is pending the exact final artifact/CI receipt below. Additional real-project
+trials still guide wider promotion; this is not a stable standalone Python release.
 
 ## Changes under test
 

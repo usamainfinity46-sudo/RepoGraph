@@ -1,6 +1,6 @@
 # RepoGraph Kit
 
-This source package is the **0.1.2-rc.1 candidate**, bundling Python
+This source package prepares **0.1.2**, bundling Python
 0.1.0rc4 and skill 1.0.2. Public npm latest remains 0.1.1. Install a supplied,
 reviewed candidate tarball by its absolute path, then run setup --agent AGENT
 --upgrade and reload the client. The candidate preserves client-added tool policy
