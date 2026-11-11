@@ -5,7 +5,7 @@ For the published combined npm installer, see [RepoGraph Kit](NPM_INSTALLATION.m
 run `npx repograph-kit setup` to configure a project. Public install/setup passed.
 
 The standalone GitHub/TestPyPI candidate is `0.1.0rc1`; this source checkout and the
-npm kit's bundled server are `0.1.0rc2` with acceptance fixes. It runs on the same machine as
+npm kit's bundled server are `0.1.0rc3` with reliability fixes. It runs on the same machine as
 the repository it analyzes. Python 3.11–3.13 and `uv` are exercised by CI;
 Python 3.12 is a good local default. Git is required only for change, baseline,
 and change-driven impact/test workflows. No Docker, database server, LLM key,

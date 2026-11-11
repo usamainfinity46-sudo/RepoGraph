@@ -108,7 +108,8 @@ working content are not read as an atomic snapshot under concurrent edits.
 
 CRLF-to-LF normalization is enabled by repository-local text/eol attributes or
 core.autocrlf (unless text is unset); binary NUL content is not normalized.
-Only core.autocrlf is read as a validated scalar from host/local configuration;
+core.autocrlf is read as a validated scalar from host/local configuration;
+protected-host safe.directory ownership exceptions are also preserved as above.
 other global/system Git configuration is suppressed for analysis commands. Custom filters
 and working-tree encodings produce uncertainty instead of being executed.
 Rename detection combines Git index/commit similarity with unique content

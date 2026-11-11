@@ -23,7 +23,7 @@ uv run --no-sync python scripts/check_skill.py
 uv run --no-sync pytest tests/test_skill_package.py -q
 ```
 
-The build creates `dist/skills/repograph-skill-1.0.0.zip` and a matching
+The build creates `dist/skills/repograph-skill-1.0.1.zip` and a matching
 `.zip.sha256` file. The archive has one `repograph/` folder containing SKILL.md,
 optional OpenAI UI metadata, three references, LICENSE and NOTICE. Explicit file
 selection excludes local extras and dependencies. Line endings, ordering,
