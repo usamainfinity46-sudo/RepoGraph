@@ -7,6 +7,9 @@ execution opt-in; interpreter/runner flags select installed host paths. Per-plan
 approval remains mandatory and client approval policy is unchanged. --upgrade
 replaces only recognized generated entries and known stock skill hashes, with
 existing path, concurrency and rollback checks.
+Recognized upgrades preserve client-owned per-tool settings verbatim and never
+interpret or relax their approval policies. Unknown execution fields still block
+automatic replacement.
 
 Root/nested .repographignore is bounded data like .gitignore, affecting inventory
 but not host execution policy. Hard exclusions/link rejection remain intact.

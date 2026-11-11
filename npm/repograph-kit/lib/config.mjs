@@ -86,7 +86,8 @@ const VALUE_FLAGS = ['--python-executable', '--node-executable', '--jest-entry',
 
 export function managedOptions(entry, root, pythons) {
   if (!object(entry) || !pythons.includes(entry.command) || !Array.isArray(entry.args)
-      || Object.keys(entry).some(key => !['command', 'args', 'type'].includes(key))
+      || Object.keys(entry).some(key => !['command', 'args', 'type', 'tools'].includes(key))
+      || (entry.tools !== undefined && !object(entry.tools))
       || (entry.type !== undefined && entry.type !== 'stdio')) return null;
   const args = entry.args;
   if (JSON.stringify(args.slice(0, 5)) !== JSON.stringify(['-I', '-m', 'repograph', '--root', root]) || args.at(-1) !== 'serve') return null;
@@ -164,7 +165,7 @@ export function planSetup(root, agents, python, skillFiles, options = {}) {
         flags.push(flag, options[flag]);
       }
     }
-    const entry = { command: python, args: ['-I', '-m', 'repograph', '--root', root, ...flags, 'serve'] };
+    const entry = { ...(existingFlags !== null && previous?.tools ? { tools: previous.tools } : {}), command: python, args: ['-I', '-m', 'repograph', '--root', root, ...flags, 'serve'] };
     const merged = agent === 'codex' ? mergeToml(text, entry, options.upgrade ? previous : null) : mergeJson(text, spec.key, { type: 'stdio', ...entry }, options.upgrade ? previous : null);
     writes.push({ root, relative: spec.config, target: config, before, after: Buffer.from(merged) });
     for (const [name, bytes] of Object.entries(skillFiles)) {

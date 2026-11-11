@@ -120,6 +120,28 @@ test('Codex upgrade treats dollar sequences in executable paths as literal text'
   assert.deepEqual({ ...parseToml(result).mcp_servers.repograph }, next);
 });
 
+test('stock upgrades preserve client-added per-tool approval policies verbatim', t => {
+  const root = fixture(t);
+  applySetup(planSetup(root, ['codex', 'cursor'], '/old-python', skill));
+  const codex = path.join(root, '.codex/config.toml');
+  const policy = '\n# client-owned approval\n[mcp_servers.repograph.tools.health]\napproval_mode = "approve"\n';
+  fs.appendFileSync(codex, policy);
+  const cursor = path.join(root, '.cursor/mcp.json');
+  const json = JSON.parse(fs.readFileSync(cursor, 'utf8'));
+  json.mcpServers.repograph.tools = { health: { approval_mode: 'approve' } };
+  fs.writeFileSync(cursor, JSON.stringify(json));
+  const options = { upgrade: true, previousPythons: ['/old-python'] };
+  applySetup(planSetup(root, ['codex', 'cursor'], '/new-python', skill, options));
+  assert.ok(fs.readFileSync(codex, 'utf8').endsWith(policy));
+  assert.equal(inspectConfiguration(root).codex.entry.command, '/new-python');
+  assert.deepEqual(JSON.parse(fs.readFileSync(cursor)).mcpServers.repograph.tools, json.mcpServers.repograph.tools);
+  assert.deepEqual(planSetup(root, ['codex', 'cursor'], '/new-python', skill), []);
+  const data = JSON.parse(fs.readFileSync(cursor));
+  data.mcpServers.repograph.env = { NODE_OPTIONS: 'custom' };
+  fs.writeFileSync(cursor, JSON.stringify(data));
+  assert.throws(() => planSetup(root, ['cursor'], '/new-python', skill, options), /Customized/);
+});
+
 test('destination junctions/symlinks and escaping paths are rejected', t => {
   const root = fixture(t);
   const outside = fixture(t);

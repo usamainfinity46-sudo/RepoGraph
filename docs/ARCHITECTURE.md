@@ -12,7 +12,9 @@ exclusions cannot be negated; ignored directories remain pruned. This permits
 custom output exclusions without guessing which source files to discard.
 
 npm --upgrade recognizes exact generated entry shapes and recorded runtime paths.
-Old skill files are replaceable only when normalized hashes match recorded stock
+Client-owned tools tables are preserved during recognized upgrades; only the
+generated command/args are replaced. Unknown execution/environment fields remain
+conflicts. Old skill files are replaceable only when normalized hashes match recorded stock
 files. Custom files, unknown flags and extra entry keys remain conflicts. Host
 execution choices survive upgrades unless explicitly changed.
 

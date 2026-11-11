@@ -6,6 +6,8 @@ isolation, host-only Git ownership exceptions, readiness CLI/MCP, and npm execut
 opt-in/disable/idempotence/stock upgrades/custom-file refusal. Packed-artifact smoke
 checks readiness through generated entries and real stdio. Manual GUI acceptance
 remains a separately recorded activity.
+Upgrade regressions include Codex TOML tool-policy tables and JSON tool metadata,
+preservation of their text/data, repeat setup, and refusal of arbitrary env fields.
 
 The npm kit has Node tests for preserving JSONC/TOML data, invalid/duplicate
 configuration, customized skill conflicts, all four layouts, idempotence, links,
