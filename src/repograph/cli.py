@@ -12,6 +12,7 @@ from repograph.impact import ImpactService
 from repograph.logging import configure_logging
 from repograph.maintenance import HistoryService
 from repograph.overview import OverviewService
+from repograph.readiness import ReadinessService
 from repograph.server import create_server
 from repograph.service import RepositoryService
 from repograph.storage import Database
@@ -64,6 +65,7 @@ def main() -> None:
             "serve",
             "init",
             "overview",
+            "doctor",
             "scan",
             "parse",
             "index",
@@ -120,6 +122,11 @@ def main() -> None:
             print(f"Initialized {settings.database}")
         elif args.command == "overview":
             print(OverviewService(settings).get().model_dump_json(indent=2))
+        elif args.command == "doctor":
+            report = ReadinessService(settings).get()
+            print(report.model_dump_json(indent=2))
+            if not report.ready_for_indexing:
+                parser.exit(1)
         elif args.command == "scan":
             print(RepositoryService(settings).scan().model_dump_json(indent=2))
         elif args.command == "parse":

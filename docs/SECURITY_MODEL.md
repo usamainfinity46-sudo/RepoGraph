@@ -1,11 +1,28 @@
 # Security model
 
-The optional npm kit has no installation lifecycle hooks. Its explicit setup reads
-only project configuration/skill destinations, bootstraps the bundled wheel and
+rc3 setup/doctor preflight invokes only the installed isolated backend, never an
+arbitrary configured command, and never runs tests. It establishes neither GUI
+connection nor workspace trust. Explicit setup --enable-verification writes host
+execution opt-in; interpreter/runner flags select installed host paths. Per-plan
+approval remains mandatory and client approval policy is unchanged. --upgrade
+replaces only recognized generated entries and known stock skill hashes, with
+existing path, concurrency and rollback checks.
+
+Root/nested .repographignore is bounded data like .gitignore, affecting inventory
+but not host execution policy. Hard exclusions/link rejection remain intact.
+verification-5 invalidates old plans for changed inventory semantics.
+
+Git bootstrap preserves bounded safe.directory values from protected host
+global/system scopes, in order, including resets. Repository-local exceptions
+are discarded. No exception is invented for the root. Existing host ownership
+trust is honored while unrelated host configuration remains suppressed.
+
+The optional npm kit has no installation lifecycle hooks. Its explicit setup checks
+project configuration/skill destinations and static readiness, bootstraps the bundled wheel and
 hash-locked binary dependencies in trusted local cache, and writes project-scoped
 entries. It skips repository-local host executable candidates, ignores uv project
 configuration and uses isolated pip with a fixed public index. It does not install
-application dependencies, index/execute application code, enable verification,
+application dependencies, index/execute application code, implicitly enable verification,
 change workspace trust or edit global agent approval/settings. Startup points
 directly to installed Python; no installation occurs during MCP connection.
 Configuration uses data-only JSONC/TOML parsers, bounded reads, duplicate/conflict

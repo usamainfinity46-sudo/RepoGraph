@@ -197,9 +197,14 @@ class TestIntelligence:
                     imported = {item.module for item in parsed.imports}
                     frameworks = [
                         name
-                        for name, package in (("vitest", "vitest"), ("jest", "@jest/globals"))
+                        for name, package in (
+                            ("node:test", "node:test"),
+                            ("vitest", "vitest"),
+                            ("jest", "@jest/globals"),
+                        )
                         if package in imported
                     ]
+                    frameworks = sorted(set(frameworks))
                     if not frameworks:
                         for parent in (pure.parent, *pure.parent.parents):
                             package_path = (parent / "package.json").as_posix()
@@ -210,9 +215,13 @@ class TestIntelligence:
                                         data = json.loads(self._metadata(package_path))
                                         if not isinstance(data, dict):
                                             raise ValueError("Package metadata must be an object")
-                                        deps = set(data.get("dependencies", {})) | set(
-                                            data.get("devDependencies", {})
-                                        )
+                                        dependency_groups = [
+                                            data.get("dependencies", {}),
+                                            data.get("devDependencies", {}),
+                                        ]
+                                        if not all(isinstance(g, dict) for g in dependency_groups):
+                                            raise ValueError("Dependencies must be objects")
+                                        deps = set().union(*dependency_groups)
                                         package_cache[package_path] = sorted(
                                             deps & {"jest", "vitest"}
                                         )
@@ -224,11 +233,28 @@ class TestIntelligence:
                                                 message="Could not read test dependencies",
                                             )
                                         )
-                            if package_cache[package_path]:
+                            if (self.settings.root / package_path).exists():
                                 frameworks = package_cache[package_path]
                                 break
                     if not frameworks:
-                        frameworks = ["jest", "vitest"]
+                        diagnostics.append(
+                            Diagnostic(
+                                code="unknown_test_framework",
+                                path=path,
+                                message="Test naming found, but no supported runner evidence. "
+                                "No Jest/Vitest assumption is made.",
+                            )
+                        )
+                    if "node:test" in frameworks:
+                        diagnostics.append(
+                            Diagnostic(
+                                code="unsupported_test_runner",
+                                path=path,
+                                message="Node's built-in test runner detected. Static test "
+                                "recommendations are available; RepoGraph verification "
+                                "currently supports pytest, Jest and Vitest only.",
+                            )
+                        )
                     if len(frameworks) > 1:
                         diagnostics.append(
                             Diagnostic(

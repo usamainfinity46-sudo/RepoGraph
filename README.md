@@ -1,7 +1,10 @@
 # RepoGraph MCP
 
-Python candidate: **0.1.0rc2**, bundled in **repograph-kit 0.1.0** on npm, with static
-JS/TS aliases and corrected Vitest targeting. Standalone 0.1.0rc1 artifacts remain unchanged.
+Reliability candidate: **repograph-kit 0.1.1**, bundling Python **0.1.0rc3** and
+skill **1.0.1**. Adds project preflight, stock-install upgrades, explicit execution
+setup, Node built-in test detection and a host Git ownership-trust fix. See
+[reliability acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md) for publication
+status. Standalone 0.1.0rc1 artifacts remain unchanged.
 See the [real-repository acceptance follow-up](docs/REAL_REPOSITORY_ACCEPTANCE_FOLLOWUP.md)
 for measured results and remaining limits.
 
@@ -23,6 +26,14 @@ npx repograph-kit setup
 ```
 
 Choose an agent, reload it, and approve its MCP connection if prompted.
+Setup checks source limits, Git availability and runner evidence without running
+tests. For an existing stock install, run `npm i repograph-kit@0.1.1`, then
+`npx repograph-kit setup --agent codex --upgrade` and
+`npx repograph-kit doctor --agent codex` (replace codex with your agent).
+Optional --enable-verification opts in to reviewed test execution; each concrete
+plan still requires approval. Node built-in tests are discovery-only. Exclude
+custom generated output with Git-style rules in .repographignore before retrying
+an oversized-file failure. Doctor does not prove a successful index/GUI connection.
 See [npm setup](docs/NPM_INSTALLATION.md) for options and requirements.
 To install the standalone Python server from this source checkout instead:
 

@@ -1,5 +1,22 @@
 # Verification workflow
 
+For npm-managed hosts, explicitly opt in and reload the agent afterward:
+
+```sh
+npx repograph-kit setup --agent codex --upgrade --enable-verification
+```
+
+Replace codex with your agent. For pytest, add --python-executable pointing to
+the installed project interpreter containing pytest. The server environment does
+not install pytest/project dependencies. Installed JS runners can be selected with
+--node-executable/--jest-entry/--vitest-entry. To remove opt-in, use setup --agent
+AGENT --upgrade --disable-verification. This approves no concrete command and
+changes no client permission policy.
+
+Node's built-in node:test runner is discovery-only in this version; unknown runners
+are not assumed to be Jest/Vitest. Root/nested .repographignore can exclude custom
+output from inventories; verification-5 invalidates older plans for this change.
+
 Examples use the installed macOS/Linux executable. On Windows use
 `.venv/Scripts/repograph.exe`; see [installation](INSTALLATION.md).
 

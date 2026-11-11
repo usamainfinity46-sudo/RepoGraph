@@ -7,17 +7,31 @@ The agent/client can have its own model, subscription and data handling policy.
 
 ## Version choice
 
-The published candidate is 0.1.0rc1. Static tsconfig/jsconfig aliases and corrected
-Vitest targeting require the tested rc2 development implementation, which is not
-yet a published registry release. Prefer the pinned source below for those workflows.
-Do not promise that an unqualified PyPI install provides this project or rc2.
+The npm kit bundles the Python candidate separately from standalone Python
+publication. Kit 0.1.1 bundles rc3 and the project-readiness tool; check its release
+acceptance before claiming public availability. Do not promise that an unqualified
+PyPI install provides this project or the bundled candidate.
+
+For npm setup or a recognized stock upgrade, when authorized:
+
+```sh
+npm i repograph-kit@0.1.1
+npx repograph-kit setup --agent codex --upgrade
+npx repograph-kit doctor --agent codex
+```
+
+Replace codex with the user's agent. Setup preserves custom files by refusing to
+overwrite them. Doctor checks project readiness and current configuration, not
+whether the GUI accepted the connection. Reload the client and verify `health`.
+Generated files can be excluded with a root or nested `.repographignore`; for
+example `/dist-reporting/`. No Git initialization or source execution is required.
 
 When installation is within the user's requested scope, use a separate tooling
 directory, not the untrusted target repository. Example (replace the path):
 
 ```sh
 git clone https://github.com/usamainfinity46-sudo/RepoGraph.git /absolute/tooling/RepoGraph
-git -C /absolute/tooling/RepoGraph checkout 838705c0221364e9d78f5520ed80d12dd2c3a525
+git -C /absolute/tooling/RepoGraph checkout repograph-kit-v0.1.1
 uv sync --locked --no-dev --python 3.12 --project /absolute/tooling/RepoGraph
 ```
 
@@ -70,7 +84,7 @@ through a marketplace does not create that connection.
 | indexed=false / graph_not_indexed | Index that root and check published=true. |
 | Index published=false / metadata inventory error | Inspect diagnostics and host limits; previous graph remains saved but is not a refreshed result. |
 | Impact freshness stale/unknown | Refresh once for a current-tree request, then disclose remaining diagnostics. |
-| not_git_root | Configure the Git working-tree root; single-file parsing can work without Git. |
+| not_git_root / not_git_repository | Check the working-tree root and host ownership trust; indexing works without Git. Use explicit change paths instead of repeating Git calls. |
 | Alias consumers missing | Check health version and alias diagnostics; rc1, extends, runtime/plugin resolution are limited. |
 | verification_disabled / runner_unavailable | Planning still works. Host setup is separate; follow verification.md if execution was requested. |
 

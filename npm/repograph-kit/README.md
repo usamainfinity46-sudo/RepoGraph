@@ -1,5 +1,33 @@
 # RepoGraph Kit
 
+The 0.1.1 reliability release bundles Python 0.1.0rc3 and skill 1.0.1.
+See [release acceptance](https://github.com/usamainfinity46-sudo/RepoGraph/blob/main/docs/ONBOARDING_RELEASE_ACCEPTANCE.md).
+
+Upgrade a stock installation (replace codex with your agent):
+
+```sh
+npm i repograph-kit@0.1.1
+npx repograph-kit setup --agent codex --upgrade
+npx repograph-kit doctor --agent codex
+```
+
+Setup now reports source-limit blockers, Git availability, test runner evidence
+and execution capability. Doctor separates backend installation from current
+project entries and source readiness. Neither proves the GUI connected or a graph
+was published. Custom entries and edited skill files remain protected conflicts.
+
+Test execution remains off by default. Opt in explicitly with setup --agent AGENT
+--upgrade --enable-verification; for pytest add --python-executable pointing to
+the project's installed Python with pytest. Installed JS runner flags are
+--node-executable/--jest-entry/--vitest-entry. Remove opt-in with --upgrade
+--disable-verification. Reload the client. Each concrete plan still needs approval.
+Node built-in node:test is discovery-only; unknown runners are no longer guessed
+as Jest/Vitest. Setup/doctor never run tests or install project dependencies.
+
+For custom generated output, add /dist-reporting/ (or the relevant Git-style rule)
+to a root/nested .repographignore, then retry indexing. No Git setup is needed for
+static analysis. Source preflight does not validate syntax/encoding.
+
 Install RepoGraph MCP and its companion skill for your coding agent.
 Apache-2.0. The analyzer needs no LLM API key, cloud database or Docker.
 
@@ -26,7 +54,7 @@ Reload the agent, approve its MCP connection if prompted, then ask:
 > Use RepoGraph to explain what this change affects and recommend tests. Don't run them.
 
 The MCP server and skill are separate components; RepoGraph MCP works on its own.
-The bundled server is the tested 0.1.0rc2 candidate, independently versioned from
+The bundled server is the 0.1.0rc3 candidate, independently versioned from
 this npm launcher. This package does not imply a production PyPI release.
 
 ## What setup does
@@ -41,7 +69,7 @@ this npm launcher. This package does not imply a production PyPI release.
   or modified skill files stop setup before installation; edits are never forced.
 
 `npm install` has no install hooks. Setup is explicit. It does not index your source,
-install your application's dependencies, run tests, enable verification, change agent
+install your application's dependencies, run tests, implicitly enable verification, change agent
 approval policy or change global agent settings. Tests require separate host opt-in,
 installed runners and approval of a reviewed prepared plan.
 

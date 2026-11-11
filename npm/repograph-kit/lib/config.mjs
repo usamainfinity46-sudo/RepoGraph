@@ -18,7 +18,7 @@ function object(value) {
 
 function sameEntry(value, entry) {
   // Parsers intentionally return null-prototype records; compare their data.
-  return object(value) && isDeepStrictEqual({ ...value }, entry);
+  return object(value) && isDeepStrictEqual({ ...value }, { ...entry });
 }
 
 function jsonConfig(text) {
@@ -40,13 +40,13 @@ function jsonConfig(text) {
   return getNodeValue(tree);
 }
 
-export function mergeJson(text, key, entry) {
+export function mergeJson(text, key, entry, previous = null) {
   const data = jsonConfig(text);
   if (Object.hasOwn(data, key) && !object(data[key])) throw new Error(`MCP ${key} must be an object`);
   const servers = Object.hasOwn(data, key) ? data[key] : {};
   if (Object.hasOwn(servers, 'repograph')) {
     if (sameEntry(servers.repograph, entry)) return text;
-    throw new Error('A different repograph MCP entry already exists; review it before replacing it');
+    if (!previous || !sameEntry(servers.repograph, previous)) throw new Error('A different repograph MCP entry already exists; review it before replacing it');
   }
   const result = applyEdits(text || '{}', modify(text || '{}', [key, 'repograph'], entry, {
     formattingOptions: { insertSpaces: true, tabSize: 2, eol: text.includes('\r\n') ? '\r\n' : '\n' },
@@ -55,22 +55,64 @@ export function mergeJson(text, key, entry) {
   return result;
 }
 
-export function mergeToml(text, entry) {
+export function mergeToml(text, entry, previous = null) {
   let data;
   try { data = parseToml(text); } catch { throw new Error('Codex config is invalid TOML; resolve it first'); }
   if (Object.hasOwn(data, 'mcp_servers') && !object(data.mcp_servers)) throw new Error('mcp_servers must be a table');
   if (data.mcp_servers && Object.hasOwn(data.mcp_servers, 'repograph')) {
     if (sameEntry(data.mcp_servers.repograph, entry)) return text;
-    throw new Error('A different repograph MCP entry already exists; review it before replacing it');
+    if (!previous || !sameEntry(data.mcp_servers.repograph, previous)) throw new Error('A different repograph MCP entry already exists; review it before replacing it');
+    // Replace only an exact launcher-generated block, preserving the rest verbatim.
+    const oldBlock = tomlBlock(previous);
+    const normalized = text.replaceAll('\r\n', '\n');
+    if (!normalized.includes(oldBlock) || normalized.indexOf(oldBlock) !== normalized.lastIndexOf(oldBlock)) throw new Error('Customized Codex entry cannot be upgraded automatically');
+    const result = normalized.replace(oldBlock, () => tomlBlock(entry));
+    parseToml(result);
+    return text.includes('\r\n') ? result.replaceAll('\n', '\r\n') : result;
   }
-  const block = '\n[mcp_servers.repograph]\n'
-    + `command = ${JSON.stringify(entry.command)}\n`
-    + `args = ${JSON.stringify(entry.args)}\n`;
+  const block = '\n' + tomlBlock(entry);
   const result = text + (text.endsWith('\n') || !text ? '' : '\n') + block;
   try { parseToml(result); } catch {
     throw new Error('Cannot extend this Codex TOML layout without rewriting it; add the MCP entry manually');
   }
   return result;
+}
+
+function tomlBlock(entry) {
+  return '[mcp_servers.repograph]\n' + `command = ${JSON.stringify(entry.command)}\n` + `args = ${JSON.stringify(entry.args)}\n`;
+}
+
+const VALUE_FLAGS = ['--python-executable', '--node-executable', '--jest-entry', '--vitest-entry'];
+
+export function managedOptions(entry, root, pythons) {
+  if (!object(entry) || !pythons.includes(entry.command) || !Array.isArray(entry.args)
+      || Object.keys(entry).some(key => !['command', 'args', 'type'].includes(key))
+      || (entry.type !== undefined && entry.type !== 'stdio')) return null;
+  const args = entry.args;
+  if (JSON.stringify(args.slice(0, 5)) !== JSON.stringify(['-I', '-m', 'repograph', '--root', root]) || args.at(-1) !== 'serve') return null;
+  const flags = args.slice(5, -1);
+  const seen = new Set();
+  for (let i = 0; i < flags.length; i++) {
+    const flag = flags[i];
+    if (seen.has(flag)) return null;
+    seen.add(flag);
+    if (flag === '--enable-verification') continue;
+    if (!VALUE_FLAGS.includes(flag) || typeof flags[++i] !== 'string' || !path.isAbsolute(flags[i])) return null;
+  }
+  return flags;
+}
+
+export function inspectConfiguration(root) {
+  return Object.fromEntries(Object.entries(AGENTS).map(([agent, spec]) => {
+    try {
+      const file = projectPath(root, spec.config);
+      const bytes = readOptional(file);
+      if (!bytes) return [agent, { configured: false }];
+      const data = agent === 'codex' ? parseToml(bytes.toString('utf8')) : jsonConfig(bytes.toString('utf8'));
+      const entry = data[agent === 'codex' ? 'mcp_servers' : spec.key]?.repograph;
+      return [agent, { configured: !!entry, entry }];
+    } catch (error) { return [agent, { configured: false, error: error.message }]; }
+  }));
 }
 
 export function projectPath(root, relative) {
@@ -98,23 +140,42 @@ function readOptional(target) {
   } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
-export function planSetup(root, agents, python, skillFiles) {
+export function planSetup(root, agents, python, skillFiles, options = {}) {
   const writes = [];
-  const entry = { command: python, args: ['-I', '-m', 'repograph', '--root', root, 'serve'] };
+  const configuration = inspectConfiguration(root);
   for (const agent of agents) {
     const spec = AGENTS[agent];
     if (!spec) throw new Error(`Unsupported agent: ${agent}`);
     const config = projectPath(root, spec.config);
     const before = readOptional(config);
     const text = before?.toString('utf8') || '';
-    const merged = agent === 'codex' ? mergeToml(text, entry) : mergeJson(text, spec.key, { type: 'stdio', ...entry });
+    const previous = configuration[agent]?.entry;
+    const existingFlags = previous ? managedOptions(previous, root, [python, ...(options.previousPythons || [])]) : [];
+    if (options.upgrade && previous && existingFlags === null) throw new Error('Customized RepoGraph entry cannot be upgraded automatically');
+    let flags = options.upgrade ? [...(existingFlags || [])] : [];
+    if (options.verificationEnabled !== undefined) {
+      flags = flags.filter(value => value !== '--enable-verification');
+      if (options.verificationEnabled) flags.push('--enable-verification');
+    }
+    for (const flag of VALUE_FLAGS) {
+      if (options[flag] !== undefined) {
+        const index = flags.indexOf(flag);
+        if (index !== -1) flags.splice(index, 2);
+        flags.push(flag, options[flag]);
+      }
+    }
+    const entry = { command: python, args: ['-I', '-m', 'repograph', '--root', root, ...flags, 'serve'] };
+    const merged = agent === 'codex' ? mergeToml(text, entry, options.upgrade ? previous : null) : mergeJson(text, spec.key, { type: 'stdio', ...entry }, options.upgrade ? previous : null);
     writes.push({ root, relative: spec.config, target: config, before, after: Buffer.from(merged) });
     for (const [name, bytes] of Object.entries(skillFiles)) {
       const relative = `${spec.skill}/${name}`;
       const target = projectPath(root, relative);
       const original = readOptional(target);
       if (original && original.toString('utf8').replaceAll('\r\n', '\n') !== bytes.toString('utf8').replaceAll('\r\n', '\n')) {
-        throw new Error(`Existing skill file differs: ${relative}. Preserve or move your changes first.`);
+        const hash = crypto.createHash('sha256').update(original.toString('utf8').replaceAll('\r\n', '\n')).digest('hex');
+        if (!options.upgrade || !options.previousSkillHashes?.some(hashes => hashes[name] === hash)) throw new Error(`Existing skill file differs: ${relative}. Preserve or move your changes first.`);
+        writes.push({ root, relative, target, before: original, after: bytes });
+        continue;
       }
       writes.push({ root, relative, target, before: original, after: original || bytes });
     }

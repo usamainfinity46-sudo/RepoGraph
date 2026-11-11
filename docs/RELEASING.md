@@ -1,5 +1,11 @@
 # Release procedure
 
+The 0.1.1 npm reliability candidate bundles Python 0.1.0rc3 and skill 1.0.1.
+Publication status and artifact/test receipts are in
+[reliability acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md). Preserve historical
+0.1.0 acceptance. Publish only the exact shared tarball after successful CI.
+Standalone production PyPI publication is outside this npm patch release.
+
 ## Separate npm kit release
 
 Kit 0.1.0 was published and installation-tested on npm on 2026-11-10. See

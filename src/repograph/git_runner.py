@@ -29,6 +29,31 @@ class GitRunner:
             )
         self.environment = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
         self.text_configuration: list[str] = []
+        self.trust_configuration: list[str] = []
+        # Preserve only ownership exceptions already granted in protected host scopes.
+        # Repository-local values cannot grant trust. Never add the root implicitly.
+        trust = self.run(
+            "config",
+            "--null",
+            "--show-scope",
+            "--get-all",
+            "safe.directory",
+            max_bytes=65_536,
+            allow_failure=True,
+        ).split(b"\x00")
+        if trust[-1:] == [b""]:
+            trust.pop()
+        if len(trust) % 2 or len(trust) > 512:
+            raise RepositoryError("unsupported_git_configuration", "Invalid ownership trust data")
+        for scope, value in zip(trust[::2], trust[1::2], strict=True):
+            if scope in {b"global", b"system"}:
+                try:
+                    directory = value.decode("utf-8")
+                except UnicodeError as error:
+                    raise RepositoryError(
+                        "unsupported_git_configuration", "Ownership trust paths must be UTF-8"
+                    ) from error
+                self.trust_configuration.extend(["-c", "safe.directory=" + directory])
         # Query only this safe scalar before suppressing host configuration. `git config`
         # reads data; fsmonitor/hooks/protocols remain disabled by run() throughout.
         text_mode = (
@@ -91,17 +116,19 @@ class GitRunner:
             "-c",
             "protocol.allow=never",
             *self.text_configuration,
+            *self.trust_configuration,
             "-C",
             str(self.root),
             *args,
         ]
         chunks = []
+        errors = []
         overflow = threading.Event()
         try:
             with subprocess.Popen(
                 command,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
                 stdin=subprocess.DEVNULL,
                 env=self.environment,
             ) as process:
@@ -114,22 +141,40 @@ class GitRunner:
                     chunks.append(data)
 
                 reader = threading.Thread(target=read, daemon=True)
+
+                def read_errors() -> None:
+                    data = process.stderr.read(16_385)
+                    if len(data) > 16_384:
+                        overflow.set()
+                        process.kill()
+                    errors.append(data)
+
+                error_reader = threading.Thread(target=read_errors, daemon=True)
                 reader.start()
+                error_reader.start()
                 try:
                     process.wait(timeout=timeout)
                 except subprocess.TimeoutExpired as error:
                     process.kill()
                     process.wait()
                     reader.join(timeout=2)
+                    error_reader.join(timeout=2)
                     raise RepositoryError(
                         "git_timeout", "Git command exceeded its timeout"
                     ) from error
                 reader.join(timeout=2)
-                if reader.is_alive():
+                error_reader.join(timeout=2)
+                if reader.is_alive() or error_reader.is_alive():
                     raise RepositoryError("git_timeout", "Git output stream did not close")
                 if overflow.is_set():
                     raise RepositoryError("git_output_limit", "Git output exceeded its byte limit")
                 if process.returncode and not allow_failure:
+                    if errors and b"detected dubious ownership" in errors[0].lower():
+                        raise RepositoryError(
+                            "git_ownership_untrusted",
+                            "Git rejected repository ownership. Review ownership and host "
+                            "safe.directory settings; RepoGraph does not grant trust",
+                        )
                     raise RepositoryError("git_error", "Read-only Git command failed")
                 return chunks[0] if chunks else b""
         except OSError as error:

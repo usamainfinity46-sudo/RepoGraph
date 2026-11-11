@@ -1,5 +1,34 @@
 # RepoGraph Kit npm installer
 
+Reliability candidate: kit 0.1.1, Python 0.1.0rc3, skill 1.0.1. See
+[acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md) for actual publication status.
+Upgrade existing stock installs with:
+
+```sh
+npm i repograph-kit@0.1.1
+npx repograph-kit setup --agent codex --upgrade
+npx repograph-kit doctor --agent codex
+```
+
+Replace codex with your agent. Recognized upgrades preserve execution choices,
+unrelated settings and extra skill files. Custom entries/skill edits remain
+conflicts. Stock 0.1.0 runtime identities and normalized skill hashes are recorded.
+
+Setup now performs a bounded static project preflight. Doctor separates installed
+backend, current agent entries and source readiness; ready requires a current
+entry and source preflight. No tests run; neither establishes GUI connection or
+successful indexing. Dry-run does not bootstrap or run backend preflight.
+
+Explicit --enable-verification opts in to execution. Use --python-executable for
+the project's installed Python/pytest, or --node-executable/--jest-entry/
+--vitest-entry for installed JS runners. Use --upgrade --disable-verification to
+remove opt-in. Reload the client. Each concrete plan still needs approval.
+Node built-in tests are discovery-only; unknown runners are not guessed.
+
+Exclude custom generated output with a Git-style rule such as /dist-reporting/
+in a root/nested .repographignore, then retry indexing. No Git initialization is
+needed for static analysis. Preflight does not validate syntax/source encoding.
+
 `repograph-kit` is the unscoped npm distribution for installing the local Python
 MCP server and companion skill together. Kit **0.1.0** bundles server candidate
 **0.1.0rc2** and skill **1.0.0**. The Python core remains independent of Node and
@@ -27,7 +56,7 @@ npx repograph-kit setup --agent cursor
 Agent values: codex, claude-code, cursor, copilot, all. Reload the agent and approve
 its workspace/MCP prompt if required. Setup never grants trust or changes approval
 policies. Ask it to use RepoGraph for impact and test recommendations. Verification
-stays disabled; executing tests requires the existing separate host/approval gates.
+stays disabled by default; explicit setup opt-in and per-plan approval are required.
 
 Setup installs the bundled wheel and exported, hash-locked production dependencies
 into an isolated user cache. uv can provision Python 3.12; the fallback uses an
@@ -56,8 +85,9 @@ npx repograph-kit setup --agent codex --dry-run
 npx repograph-kit doctor
 ```
 
-Dry-run downloads/writes nothing. Doctor reports backend cache readiness; it does
-not certify GUI discovery or establish source freshness. --json returns summaries;
+Dry-run downloads/writes nothing. Doctor checks backend cache, project entries and
+static source readiness; it does not certify GUI discovery or source freshness.
+--json returns summaries;
 bootstrap progress can precede the setup JSON line. --cache-dir selects an explicit
 trusted cache and must be passed consistently on later setup/doctor calls. Incomplete
 or foreign runtime directories are refused rather than executed/deleted.

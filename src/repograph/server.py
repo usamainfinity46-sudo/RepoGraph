@@ -26,6 +26,7 @@ from repograph.models import (
     NodePage,
     ParsePage,
     RepositoryOverview,
+    RepositoryReadiness,
     ScanSummary,
     SnapshotDelta,
     TestDiscoveryReport,
@@ -35,6 +36,7 @@ from repograph.models import (
     VerificationResult,
 )
 from repograph.overview import OverviewService
+from repograph.readiness import ReadinessService
 from repograph.service import RepositoryService
 from repograph.storage import SCHEMA_VERSION, Database
 from repograph.testing import TestIntelligence
@@ -67,6 +69,19 @@ def create_server(settings: Settings) -> FastMCP:
         return Health(
             version=__version__, schema_version=SCHEMA_VERSION, repository=str(settings.root)
         )
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+        )
+    )
+    def get_repository_readiness() -> RepositoryReadiness:
+        """Check source limits, Git availability and static test runner evidence.
+
+        No indexing or tests run. Inspect diagnostics before the first index. Node's
+        built-in runner is discovery-only; execution supports pytest/Jest/Vitest.
+        """
+        return guarded(lambda: ReadinessService(settings).get())
 
     @server.resource("repograph://status")
     def status() -> str:

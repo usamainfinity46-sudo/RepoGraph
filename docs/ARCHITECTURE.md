@@ -1,5 +1,21 @@
 # Architecture
 
+rc3 adds a transport-independent readiness service. CLI doctor and MCP
+get_repository_readiness inspect bounded discovery metadata, source sizes,
+safe read-only Git plumbing and static test evidence. No graph is published and
+no tests run. npm doctor checks project entries separately from backend cache
+readiness; it does not establish GUI connection or graph freshness.
+
+Discovery evaluates .gitignore then .repographignore in each directory, root to
+leaf, with bounded Git ignore syntax and existing link/ignore boundaries. Hard
+exclusions cannot be negated; ignored directories remain pruned. This permits
+custom output exclusions without guessing which source files to discard.
+
+npm --upgrade recognizes exact generated entry shapes and recorded runtime paths.
+Old skill files are replaceable only when normalized hashes match recorded stock
+files. Custom files, unknown flags and extra entry keys remain conflicts. Host
+execution choices survive upgrades unless explicitly changed.
+
 RepoGraph is a local Python package with a stdio MCP adapter. The official MCP
 SDK's FastMCP supplies protocol negotiation, tool schemas, and resources. The
 SDK is deliberately pinned to the v1 maintenance major (`mcp<2`) to keep its

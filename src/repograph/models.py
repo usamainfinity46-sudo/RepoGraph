@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 Language = Literal["python", "javascript", "typescript", "tsx"]
 Framework = Literal["pytest", "jest", "vitest"]
+DiscoveredFramework = Literal["pytest", "jest", "vitest", "node:test"]
 
 
 class Diagnostic(BaseModel):
@@ -13,6 +14,25 @@ class Diagnostic(BaseModel):
     message: str
     path: str | None = None
     line: int | None = None
+
+
+class RepositoryReadiness(BaseModel):
+    schema_version: int = 1
+    repository: str
+    ready_for_indexing: bool
+    source_files: int
+    source_bytes: int
+    oversized_files: list[str]
+    git_status: str
+    tests_found: int
+    test_frameworks: list[DiscoveredFramework]
+    test_discovery_complete: bool
+    verification_enabled: bool
+    supported_verification_frameworks: list[Framework] = Field(
+        default_factory=lambda: ["pytest", "jest", "vitest"]
+    )
+    verification_readiness: dict[str, str] = Field(default_factory=dict)
+    diagnostics: list[Diagnostic] = Field(default_factory=list)
 
 
 class Symbol(BaseModel):
@@ -302,7 +322,7 @@ class TestDefinition(BaseModel):
 
 class TestFile(BaseModel):
     path: str
-    frameworks: list[Framework]
+    frameworks: list[DiscoveredFramework]
     definitions: list[TestDefinition]
     total_definitions: int
     evidence: str
@@ -318,7 +338,7 @@ class TestDiscoveryReport(BaseModel):
 
 class TestRecommendation(BaseModel):
     path: str
-    frameworks: list[Framework]
+    frameworks: list[DiscoveredFramework]
     reason: Literal["changed_test", "graph_dependency", "fixture_scope", "name_match", "fallback"]
     confidence: Literal["static", "heuristic"]
     evidence: list[ImpactEvidence] = Field(default_factory=list)

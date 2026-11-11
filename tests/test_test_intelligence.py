@@ -52,8 +52,33 @@ def test_ambiguous_js_and_malformed_metadata_are_reported(tmp_path):
     (tmp_path / "package.json").write_text("[]")
     report = TestIntelligence(Settings.load(tmp_path)).discover()
     assert not report.complete
-    assert report.files[0].frameworks == ["jest", "vitest"]
-    assert {d.code for d in report.diagnostics} == {"test_config_error", "ambiguous_test_framework"}
+    assert report.files[0].frameworks == []
+    assert {d.code for d in report.diagnostics} == {"test_config_error", "unknown_test_framework"}
+
+
+def test_node_builtin_runner_is_not_misidentified(tmp_path):
+    (tmp_path / "package.json").write_text('{"devDependencies":{"vitest":"5"}}')
+    (tmp_path / "native.test.mjs").write_text(
+        'import test from "node:test"; test("native", () => {});'
+    )
+    (tmp_path / "common.test.cjs").write_text(
+        'const {test} = require("node:test"); test("common", () => {});'
+    )
+    report = TestIntelligence(Settings.load(tmp_path)).discover()
+    assert report.complete and report.total == 2
+    assert all(file.frameworks == ["node:test"] for file in report.files)
+    assert {d.code for d in report.diagnostics} == {"unsupported_test_runner"}
+
+
+def test_nearest_package_does_not_inherit_an_unrelated_runner(tmp_path):
+    (tmp_path / "package.json").write_text('{"devDependencies":{"jest":"30"}}')
+    child = tmp_path / "child"
+    child.mkdir()
+    (child / "package.json").write_text("{}")
+    (child / "unknown.test.js").write_text('test("unknown", () => {});')
+    report = TestIntelligence(Settings.load(tmp_path)).discover()
+    assert report.files[0].frameworks == []
+    assert report.diagnostics[0].code == "unknown_test_framework"
 
 
 def test_graph_backed_test_selection_and_unrelated_exclusion(tmp_path):

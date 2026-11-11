@@ -95,7 +95,11 @@ def read_content(settings: Settings, relative: str) -> bytes:
     except OSError as error:
         raise RepositoryError("read_error", "Could not read source file") from error
     if len(data) > settings.max_file_bytes:
-        raise RepositoryError("file_too_large", "File exceeds configured byte limit")
+        raise RepositoryError(
+            "file_too_large",
+            "File exceeds configured byte limit. For generated output, exclude its path "
+            "in .repographignore and retry indexing; otherwise review --max-file-bytes.",
+        )
     return data
 
 
@@ -124,8 +128,11 @@ class Discovery:
         while stack:
             directory, inherited, depth = stack.pop()
             rules = list(inherited)
-            ignore = directory / ".gitignore"
-            if ignore.is_file() and not is_link(ignore):
+            ignore_failed = False
+            for ignore_name in (".gitignore", ".repographignore"):
+                ignore = directory / ignore_name
+                if not ignore.is_file() or is_link(ignore):
+                    continue
                 try:
                     with ignore.open("rb") as stream:
                         data = stream.read(262_145)
@@ -143,7 +150,10 @@ class Discovery:
                             message="Could not read ignore rules",
                         )
                     )
-                    continue
+                    ignore_failed = True
+                    break
+            if ignore_failed:
+                continue
             try:
                 # Bound directory enumeration before sorting, including unsupported files.
                 entries = []

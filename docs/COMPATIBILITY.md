@@ -1,5 +1,11 @@
 # Compatibility matrix
 
+rc3 detects Node built-in node:test for static recommendations only; verification
+still supports pytest/Jest/Vitest. Unknown JS runners remain unknown. Project
+doctor checks configuration, source limits and installed runner-entry presence
+without running tests; GUI/runtime certification remains separate. See
+[reliability acceptance](ONBOARDING_RELEASE_ACCEPTANCE.md).
+
 | Surface | Automated coverage | Boundary |
 | --- | --- | --- |
 | Python | 3.11, 3.12, 3.13 on Linux, Windows, macOS | Nine CI jobs; local evidence recorded separately |

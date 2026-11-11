@@ -5,7 +5,9 @@ import path from 'node:path';
 import { test, mock } from 'node:test';
 import { parse as parseToml } from 'smol-toml';
 import { parse as parseJson } from 'jsonc-parser';
-import { AGENTS, mergeJson, mergeToml, planSetup, applySetup, projectPath } from '../lib/config.mjs';
+import { AGENTS, mergeJson, mergeToml, planSetup, applySetup, projectPath, inspectConfiguration } from '../lib/config.mjs';
+import { configurationReport } from '../lib/doctor.mjs';
+import crypto from 'node:crypto';
 
 function fixture(t) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'repograph-kit-test-')));
@@ -70,6 +72,52 @@ test('customized skill prevents every project write', t => {
   assert.throws(() => planSetup(root, ['cursor'], '/python', skill), /Existing skill file differs/);
   assert.equal(fs.readFileSync(custom, 'utf8'), 'my custom instructions');
   assert.ok(!fs.existsSync(path.join(root, '.cursor/mcp.json')));
+});
+
+test('execution opt-in is explicit and doctor distinguishes cache from configuration', t => {
+  const root = fixture(t);
+  assert.ok(Object.values(configurationReport(root, '/python')).every(s => !s.currentBackend));
+  const interpreter = path.resolve(root, 'project-python');
+  const options = { verificationEnabled: true, '--python-executable': interpreter };
+  applySetup(planSetup(root, ['codex'], '/python', skill, options));
+  const entry = inspectConfiguration(root).codex.entry;
+  assert.ok(entry.args.includes('--enable-verification'));
+  assert.equal(entry.args[entry.args.indexOf('--python-executable') + 1], interpreter);
+  assert.ok(configurationReport(root, '/python').codex.verificationEnabled);
+  assert.deepEqual(planSetup(root, ['codex'], '/python', skill, options), []);
+  assert.throws(() => planSetup(root, ['codex'], '/other', skill, { upgrade: true }), /Customized/);
+  applySetup(planSetup(root, ['codex'], '/python', skill, { upgrade: true, verificationEnabled: false }));
+  assert.ok(!configurationReport(root, '/python').codex.verificationEnabled);
+});
+
+test('upgrade updates recognized stock files and preserves execution choices and other servers', t => {
+  const root = fixture(t);
+  const oldSkill = { ...skill, 'SKILL.md': Buffer.from('known stock skill\n') };
+  const hashes = Object.fromEntries(Object.entries(oldSkill).map(([name, bytes]) => [name, crypto.createHash('sha256').update(bytes).digest('hex')]));
+  fs.mkdirSync(path.join(root, '.cursor'));
+  fs.writeFileSync(path.join(root, '.cursor/mcp.json'), '// retained\n{"mcpServers":{"other":{"command":"other"}}}');
+  applySetup(planSetup(root, Object.keys(AGENTS), '/old-python', oldSkill, { verificationEnabled: true }));
+  const options = { upgrade: true, previousPythons: ['/old-python'], previousSkillHashes: [hashes] };
+  const changes = planSetup(root, Object.keys(AGENTS), '/new-python', skill, options);
+  applySetup(changes);
+  for (const agent of Object.keys(AGENTS)) {
+    const entry = inspectConfiguration(root)[agent].entry;
+    assert.equal(entry.command, '/new-python');
+    assert.ok(entry.args.includes('--enable-verification'));
+    assert.deepEqual(fs.readFileSync(path.join(root, AGENTS[agent].skill, 'SKILL.md')), skill['SKILL.md']);
+  }
+  assert.ok(fs.readFileSync(path.join(root, '.cursor/mcp.json'), 'utf8').startsWith('// retained'));
+  assert.deepEqual(planSetup(root, Object.keys(AGENTS), '/new-python', skill, options), []);
+  fs.writeFileSync(path.join(root, AGENTS.codex.skill, 'SKILL.md'), 'customized');
+  assert.throws(() => planSetup(root, ['codex'], '/new-python', skill, options), /Existing skill file differs/);
+});
+
+test('Codex upgrade treats dollar sequences in executable paths as literal text', () => {
+  const old = { command: '/old', args: ['serve'] };
+  const next = { command: '/tools/$&/python', args: ['serve'] };
+  const text = mergeToml('# keep\n', old);
+  const result = mergeToml(text, next, old);
+  assert.deepEqual({ ...parseToml(result).mcp_servers.repograph }, next);
 });
 
 test('destination junctions/symlinks and escaping paths are rejected', t => {

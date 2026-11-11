@@ -31,7 +31,10 @@ async def protocol(entry, root, version):
         async with ClientSession(reader, writer) as session:
             await session.initialize()
             tools = await session.list_tools()
-            assert len(tools.tools) == 19
+            assert len(tools.tools) == 20
+            readiness = await session.call_tool("get_repository_readiness", {})
+            assert not readiness.isError
+            assert json.loads(readiness.content[0].text)["ready_for_indexing"]
             health = await session.call_tool("health", {})
             payload = json.loads(health.content[0].text)
             assert payload["version"] == version and Path(payload["repository"]).resolve() == root
@@ -42,7 +45,41 @@ async def protocol(entry, root, version):
             )
             assert denied.isError and "verification_disabled" in denied.content[0].text
     assert not (root / "sample.executed").exists()
-    return {"tools": 19, "version": version, "indexed": True, "host_disabled_gate": "passed"}
+    return {"tools": 20, "version": version, "indexed": True, "host_disabled_gate": "passed"}
+
+
+async def approved_fixture(entry):
+    """Authorized engineering check of a reviewed trivial test, never application code."""
+    params = StdioServerParameters(command=entry["command"], args=entry["args"])
+    async with stdio_client(params) as (reader, writer):
+        async with ClientSession(reader, writer) as session:
+            await session.initialize()
+            response = await session.call_tool(
+                "prepare_verification",
+                {
+                    "framework": "pytest",
+                    "paths": ["test_smoke.py"],
+                    "scope": "targeted",
+                },
+            )
+            assert not response.isError
+            plan = json.loads(response.content[0].text)
+            assert plan["execution_enabled"] and plan["paths"] == ["test_smoke.py"]
+            assert plan["command"][0] == os.path.abspath(sys.executable)
+            assert "pytest" in plan["command"] and plan["command"][-1] == "./test_smoke.py"
+            denied = await session.call_tool("verify_changes", {"plan_id": plan["id"]})
+            assert denied.isError and "verification_approval_required" in denied.content[0].text
+            result = await session.call_tool(
+                "verify_changes", {"plan_id": plan["id"], "approved": True}
+            )
+            assert not result.isError
+            payload = json.loads(result.content[0].text)
+            assert payload["status"] == "passed" and payload["counts"]["passed"] == 1
+            replay = await session.call_tool(
+                "verify_changes", {"plan_id": plan["id"], "approved": True}
+            )
+            assert replay.isError and "consumed" in replay.content[0].text
+    return {"status": "passed", "approval_gate": "passed", "replay_gate": "passed"}
 
 
 def smoke(source: Path | str):
@@ -107,6 +144,8 @@ def smoke(source: Path | str):
         )
         report = json.loads(setup.strip().splitlines()[-1])
         assert not report["verificationEnabled"]
+        assert report["project"]["ready_for_indexing"]
+        assert not report["guiConnectionVerified"]
         assert "// keep this comment" in (root / ".cursor/mcp.json").read_text()
         assert '"other"' in (root / ".cursor/mcp.json").read_text()
         entry = json.loads((root / ".mcp.json").read_text())["mcpServers"]["repograph"]
@@ -131,6 +170,58 @@ def smoke(source: Path | str):
         assert Path(actual_module).resolve().is_relative_to(cache)
         print("Checking packed backend over real MCP stdio", flush=True)
         uv_result = asyncio.run(asyncio.wait_for(protocol(entry, root, version), timeout=60))
+
+        # Only this reviewed, self-contained fixture is executed; the import canary
+        # remains unexecuted. Setup opt-in does not waive per-plan approval.
+        (root / "test_smoke.py").write_text("def test_smoke(): assert 2 + 2 == 4\n")
+        run(
+            [
+                node,
+                str(cli),
+                "setup",
+                "--agent",
+                "all",
+                "--upgrade",
+                "--enable-verification",
+                "--python-executable",
+                sys.executable,
+                *arguments,
+            ],
+            root,
+        )
+        enabled = json.loads((root / ".mcp.json").read_text())["mcpServers"]["repograph"]
+        execution = asyncio.run(asyncio.wait_for(approved_fixture(enabled), timeout=60))
+        assert not (root / "sample.executed").exists()
+
+        # Exercise the published previous install, then upgrade its exact stock
+        # config/skill/runtime identities. This catches upgrade-only regressions.
+        upgrade_root = temporary / "upgrade project"
+        upgrade_root.mkdir()
+        upgrade_cache = temporary / "upgrade-cache"
+        upgrade_args = ["--root", str(upgrade_root), "--cache-dir", str(upgrade_cache), "--json"]
+        run(
+            [*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "repograph-kit@0.1.0"],
+            upgrade_root,
+        )
+        upgrade_cli = upgrade_root / "node_modules/repograph-kit/bin/repograph-kit.mjs"
+        run([node, str(upgrade_cli), "setup", "--agent", "all", *upgrade_args], upgrade_root)
+        run(
+            [*npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", str(source)],
+            upgrade_root,
+        )
+        upgraded = json.loads(
+            run(
+                [node, str(upgrade_cli), "setup", "--agent", "all", "--upgrade", *upgrade_args],
+                upgrade_root,
+            )
+            .strip()
+            .splitlines()[-1]
+        )
+        assert upgraded["serverVersion"] == version and upgraded["files"]
+        assert not upgraded["verificationEnabled"]
+        assert json.loads(run([node, str(upgrade_cli), "doctor", *upgrade_args], upgrade_root))[
+            "ready"
+        ]
 
         print("Bootstrapping the Python-without-uv fallback", flush=True)
         fallback_root = temporary / "fallback project"
@@ -175,7 +266,9 @@ def smoke(source: Path | str):
             "agents": ["codex", "claude-code", "cursor", "copilot"],
             "dry_run": "passed",
             "repeat_setup": "unchanged",
-            "target_code_executed": False,
+            "application_canary_executed": False,
+            "reviewed_engineering_fixture": execution,
+            "stock_0_1_0_upgrade": "passed",
             "gui_client_certification": "not performed",
         }
 

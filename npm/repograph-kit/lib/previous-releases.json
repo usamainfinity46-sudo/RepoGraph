@@ -1,0 +1,17 @@
+[
+  {
+    "serverVersion": "0.1.0rc2",
+    "wheel": "repograph_mcp-0.1.0rc2-py3-none-any.whl",
+    "sha256": "b086f96437a7a853fa6e0997e028cd2fa8145856d1e8c618278538eb42d2f63d",
+    "requirementsSha256": "c61fd61bee90be23411908192a2f7b90362765c6b4c869c1f8bccceeead2736b",
+    "skillFiles": {
+      "SKILL.md": "364e42865642f707052b5e5a6240ec5be65c780ff1009195296ecf97c759a0ff",
+      "agents/openai.yaml": "eaadba0703b2cea23ad1bd88a0c0716a1da5f399363fc7a304d8665d3e61c5e3",
+      "references/setup.md": "996f41e5274f5e91cfa3ecf34f494a46f220c04312f85d70229bdff28be10525",
+      "references/verification.md": "40fb3fa040cf06970276714dd926c053ae1060a594206c3d3e0bea8d5db69666",
+      "references/examples.md": "6765acfb49b42612e5e1b85dc221cbf01f2c6460ab2eab82a164800c2575a7dd",
+      "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "NOTICE": "29eea376491290d02d111d7d30ce4655e22d63a2fc3024c68f73dc8e5417a2bb"
+    }
+  }
+]

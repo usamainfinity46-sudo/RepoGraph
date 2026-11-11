@@ -1,5 +1,21 @@
 # Changelog
 
+## RepoGraph Kit 0.1.1 / Python 0.1.0rc3 / skill 1.0.1 - 2026-11-11
+
+- Add source/Git/test-runner preflight through setup, doctor and MCP readiness.
+- Honor existing protected-host Git safe.directory ownership exceptions while
+  suppressing unrelated host configuration; local values cannot grant trust.
+- Detect node:test as discovery-only; unknown JS runners are no longer guessed
+  as Jest/Vitest. Stop dependency inference at the nearest package boundary.
+- Add bounded root/nested .repographignore and actionable oversized-file recovery,
+  preserving fail-closed graph publication.
+- Add explicit host execution opt-in and installed interpreter/runner setup flags.
+- Upgrade only recognized stock entries/skills; preserve execution choices,
+  unrelated settings and refusal of customized files.
+- Advance verifier policy to verification-5 for changed inventory semantics;
+  old plans must be prepared, reviewed and approved again.
+- Publication/validation evidence: docs/ONBOARDING_RELEASE_ACCEPTANCE.md.
+
 ## RepoGraph Kit 0.1.0 — npm, 2026-11-10
 
 - Public unscoped npm installer, bundling Python candidate 0.1.0rc2 and skill 1.0.0.

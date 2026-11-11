@@ -1,5 +1,24 @@
 # MCP contracts
 
+rc3 adds get_repository_readiness(): repository, ready_for_indexing, bounded source
+counts/sizes and oversized paths, git_status, static test counts/frameworks,
+test_discovery_complete, verification_enabled, supported_verification_frameworks,
+verification_readiness and up to 200 diagnostics. No graph publication or test
+execution occurs. Runner presence checks never execute interpreters/import pytest.
+CLI doctor shares this contract and exits 1 for source/inventory blockers.
+Git absence and unsupported runners do not prevent static indexing. Preflight
+does not prove source encoding, syntax, runtime packages or GUI connection.
+
+Discovery/recommendation frameworks additionally accept node:test (discovery
+only). Unknown JS runners have an empty list and unknown_test_framework. Node
+tests emit unsupported_test_runner. Nearest package boundaries stop parent
+dependency fallback. Verification still accepts only pytest, jest and vitest.
+Node tests cannot be selected as Jest/Vitest. Root/nested .repographignore changes
+static/verification inventories; verification-5 invalidates previous plans.
+Kit setup enables verification only on explicit host opt-in, never through MCP.
+Git ownership rejection uses git_ownership_untrusted instead of claiming that
+the working tree does not exist. Git stderr is bounded and never returned raw.
+
 Static JS/TS paths aliases are resolved from bounded nearest tsconfig/jsconfig
 data. Alias metadata participates in snapshot identity and freshness. Configuration
 warnings use alias_config_unresolved; inventory/aggregate failures use
@@ -14,7 +33,7 @@ are negotiated by the official SDK; tool contracts have schema version 1.
 
 The optional npm kit only installs/configures this existing transport. It adds no
 MCP methods, root-selection arguments, approval bypass or network listener. Its
-generated entries omit --enable-verification and invoke installed Python directly,
+generated entries default to omitting --enable-verification and invoke installed Python directly,
 keeping setup/downloads outside MCP startup and analysis operations.
 
 Implemented Phase 1:

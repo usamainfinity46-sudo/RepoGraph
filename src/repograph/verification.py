@@ -34,7 +34,7 @@ from repograph.reports import parse_report
 from repograph.service import pagination
 from repograph.testing import TestIntelligence
 
-VERIFIER_VERSION = "verification-4"
+VERIFIER_VERSION = "verification-5"
 
 
 class VerificationService:

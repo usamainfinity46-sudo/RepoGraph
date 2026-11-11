@@ -86,6 +86,29 @@ def test_unreadable_ignore_is_incomplete(tmp_path):
     assert not discovery.complete
 
 
+def test_repographignore_excludes_generated_output_without_changing_gitignore(tmp_path):
+    write(tmp_path, ".gitignore", "node_modules/\n")
+    write(tmp_path, "src/app.js", "export const value = 1;")
+    write(tmp_path, "dist-reporting/assets/bundle.js", "x" * 500)
+    write(tmp_path, "src/generated.js", "x" * 500)
+    write(tmp_path, ".repographignore", "/dist-reporting/\n")
+    write(tmp_path, "src/.repographignore", "generated.js\n")
+    settings = Settings.load(tmp_path).model_copy(update={"max_file_bytes": 128})
+    assert Discovery(settings).files() == ["src/app.js"]
+    from repograph.graph import GraphService
+
+    assert GraphService(settings).index().published
+    assert (tmp_path / ".gitignore").read_text() == "node_modules/\n"
+
+
+def test_invalid_repographignore_fails_closed(tmp_path):
+    (tmp_path / ".repographignore").write_bytes(b"\xff")
+    write(tmp_path, "source.py")
+    discovery = Discovery(Settings.load(tmp_path))
+    assert discovery.files() == [] and not discovery.complete
+    assert discovery.diagnostics[0].path == ".repographignore"
+
+
 def test_windows_junction_rejected(tmp_path):
     import sys
 

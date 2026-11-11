@@ -1,5 +1,12 @@
 # Testing strategy
 
+rc3 regression checks cover oversized custom-output recovery with .repographignore,
+invalid-ignore refusal, node:test/unknown runner classification, nearest package
+isolation, host-only Git ownership exceptions, readiness CLI/MCP, and npm execution
+opt-in/disable/idempotence/stock upgrades/custom-file refusal. Packed-artifact smoke
+checks readiness through generated entries and real stdio. Manual GUI acceptance
+remains a separately recorded activity.
+
 The npm kit has Node tests for preserving JSONC/TOML data, invalid/duplicate
 configuration, customized skill conflicts, all four layouts, idempotence, links,
 concurrent edits, rollback, payload checksums and incomplete runtime refusal.

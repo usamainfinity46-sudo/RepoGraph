@@ -2,6 +2,11 @@
 
 Current SQLite schema version: 4 (PRAGMA user_version).
 
+rc3 adds readiness/test-discovery contracts without SQLite or extractor changes.
+.repographignore changes the discovered inventory, which participates in graph
+publication/freshness. Verifier policy verification-5 invalidates old plans for
+this change in inventory semantics.
+
 `repositories(id, root UNIQUE)` owns
 `files(repository_id, path, sha256, parser_version, data)`, whose composite
 primary key is (repository_id, path). `data` is a validated ParsedFile JSON

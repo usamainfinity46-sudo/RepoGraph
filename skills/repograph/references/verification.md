@@ -10,6 +10,18 @@ cannot enable it. The host selects the project's installed Python/pytest or
 Node/Jest/Vitest runner; target dependencies are never installed by RepoGraph.
 Runner/configuration setup must stay within the user's authorized task.
 
+For the npm kit, a host can run:
+
+```sh
+npx repograph-kit setup --agent codex --upgrade --enable-verification
+```
+
+Replace codex with the configured agent. For pytest, add `--python-executable`
+pointing to the installed project interpreter with pytest. Reload the agent after
+changing host configuration. This opts in to execution, not approval of a specific
+command; each concrete plan still needs review and approval. Node's built-in
+`node:test` runner is discovery-only in this version. Do not prepare it as Jest/Vitest.
+
 Python defaults to the server interpreter; use host `--python-executable` to select
 the target environment. Plugin autoload is disabled; host `--pytest-plugin` can
 allow an installed plugin. JS defaults to root node_modules runner entries; a

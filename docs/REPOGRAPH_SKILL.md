@@ -7,8 +7,8 @@ instructions and references; it contains no server, executable or automatic inst
 The separate [RepoGraph Kit npm installer](NPM_INSTALLATION.md) can configure both
 components using `npm i repograph-kit` followed by `npx repograph-kit setup`.
 
-Source: [skills/repograph](../skills/repograph/SKILL.md). Skill version: **1.0.0**,
-independent of the server's 0.1.0rc2 version. The setup reference pins the tested
+Source: [skills/repograph](../skills/repograph/SKILL.md). Skill version: **1.0.1**,
+independent of the server's 0.1.0rc3 version. The setup reference pins the tested
 rc2 source commit for alias and Vitest workflows; published rc1 remains available
 with the limitations described there. The npm kit bundles rc2; a standalone rc2
 Python registry release is still pending.
