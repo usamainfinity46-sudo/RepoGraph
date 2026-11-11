@@ -16,6 +16,47 @@ installer packages the server and skill with project setup for Codex, Claude Cod
 Cursor and VS Code Copilot. Public registry installation and setup passed;
 see [release acceptance](docs/ONBOARDING_RELEASE_ACCEPTANCE.md).
 
+## Latest practical review
+
+On a 361-file JavaScript/JSX project (4.93 MB of source), rc3 corrected Node test
+detection and Git ownership-trust handling. Indexing/navigation speed was broadly
+similar to rc2. The local review measured:
+
+| Operation | rc2 | rc3 |
+| --- | ---: | ---: |
+| Index 361 files | 8.66 s | 8.63 s |
+| Cached refresh | 3.70 s | 3.25 s |
+| Symbol lookup | 123 ms | 125 ms |
+| Dependency lookup | 117 ms | 130 ms |
+| Discover tests | 278 ms | 310 ms |
+| Impact analysis | 0.93 s | 1.12 s |
+
+These are local engine measurements excluding MCP/model/approval overhead.
+Lookup/discovery timings are medians of three calls; indexing/impact timings are
+single samples. Small differences do not establish a speed improvement/regression.
+rc3 correctly identified 20 Node test files and 57 lexical tests. The sampled
+change still selected all 20 files (one graph-linked plus 19 fallback files).
+Full Git comparison took 16.58 seconds and was incomplete on oversized tracked
+archives/bundles. Parser recovery and unresolved relationships remain limitations;
+the unresolved-edge percentage is not an accuracy/error rate.
+
+### Next candidate: in development, not published
+
+- Preserve client-added per-tool approval settings when upgrading the server path.
+  Updating the npm package alone does not replace an active MCP connection.
+- Add approved, bounded Node built-in test execution with machine-readable results.
+  Local execution regressions pass; cross-platform candidate validation is pending.
+- Map literal dynamic imports and separate focused test evidence from specific
+  uncertainty candidates. A local static follow-up now identifies two receipt test
+  files plus four fallback candidates, rather than all 20 files. Broader testing
+  is still recommended; this is not proof that excluded tests cannot regress.
+- Profile/batch Git metadata work and add explicit comparison scopes for source
+  directories while keeping full-repository limitations visible.
+
+Published **0.1.1** still has discovery-only Node support. Candidate changes must
+pass engineering checks and trials across additional real projects before wider
+promotion. No GUI-client certification or general speed/accuracy claim is implied.
+
 ## Get started
 
 With Node 22+ and either uv or Python 3.11-3.13, run in the target repository:
