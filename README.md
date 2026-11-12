@@ -1,6 +1,6 @@
 # RepoGraph MCP
 
-**Local candidate: RepoGraph Canvas 0.2.0rc1 / kit 0.2.0-rc.1.** Explore a repository, follow a change's potential
+**Local candidate: RepoGraph Canvas 0.2.0rc2 / kit 0.2.0-rc.2.** Explore a repository, follow a change's potential
 impact, inspect source evidence and preview proposed edits without changing files.
 The light interface works as an offline HTML export or an embedded MCP Apps view
 in supporting hosts. Includes guided tours, test suggestions and clearly labelled

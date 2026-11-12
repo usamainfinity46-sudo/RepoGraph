@@ -169,6 +169,64 @@ test("repository map, selection, search, zoom, tour and source evidence", async 
   });
 });
 
+test("expanded canvas fills the window, traps focus and restores with Escape", async ({
+  page,
+}) => {
+  await page.goto(url("repository"));
+  const viewport = page.locator("#viewport");
+  const original = await viewport.boundingBox();
+  await page
+    .getByRole("button", { name: "Expand canvas", exact: true })
+    .click();
+  await expect(
+    page.getByRole("dialog", { name: "Expanded repository canvas" }),
+  ).toBeVisible();
+  const enlarged = await viewport.boundingBox();
+  expect(enlarged.width).toBeGreaterThan(original.width);
+  expect(enlarged.height).toBeGreaterThan(original.height);
+  const expandedAccessibility = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(expandedAccessibility.violations).toEqual([]);
+  await page.locator("#zoom-in").click();
+  await page.locator("#zoom-in").click();
+  const metrics = await page.locator("#scene").evaluate((scene) => ({
+    transform: getComputedStyle(scene).transform,
+    zoom: Number(getComputedStyle(scene).zoom),
+    compositing: getComputedStyle(scene).willChange,
+    ratio:
+      scene.querySelector(".node").getBoundingClientRect().width /
+      scene.querySelector(".node").offsetWidth,
+  }));
+  expect(metrics.transform).toBe("none");
+  expect(metrics.compositing).toBe("auto");
+  expect(metrics.zoom).toBeGreaterThan(1);
+  expect(metrics.ratio).toBeCloseTo(metrics.zoom, 2);
+  await page.locator("#search").focus();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.locator("#fit")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#search")).toBeFocused();
+  await page.locator("#fit").click();
+  await page.screenshot({
+    path: "../../.repograph/canvas-qa/studio-expanded.png",
+    fullPage: true,
+  });
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".workspace")).not.toHaveClass(/expanded/);
+  await expect(
+    page.getByRole("button", { name: "Expand canvas", exact: true }),
+  ).toBeFocused();
+  await expect(page.locator(".sidebar")).not.toHaveAttribute("inert", "");
+  await page
+    .getByRole("button", { name: "Expand canvas", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Restore canvas", exact: true })
+    .click();
+  await expect(page.locator(".workspace")).not.toHaveClass(/expanded/);
+});
+
 test("large repositories collapse into readable folder groups with source drilldown", async ({
   page,
 }) => {
@@ -273,6 +331,47 @@ test("mobile and reduced-motion view remain usable", async ({ page }) => {
     path: "../../.repograph/canvas-qa/mobile.png",
     fullPage: true,
   });
+  await page
+    .getByRole("button", { name: "Expand canvas", exact: true })
+    .click();
+  const expanded = await page.locator("#viewport").boundingBox();
+  expect(expanded.width).toBeGreaterThan(340);
+  expect(expanded.height).toBeGreaterThan(500);
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".workspace")).not.toHaveClass(/expanded/);
+});
+
+test("Retina zoom keeps paper cards and SVG connections in the paint path", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 1050 },
+    deviceScaleFactor: 2,
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(url("repository"));
+    await page.locator("#expand-canvas").click();
+    for (let i = 0; i < 4; i++) await page.locator("#zoom-in").click();
+    await expect(page.locator("#zoom-label")).toHaveText("200%");
+    const painted = await page.locator("#scene").evaluate((scene) => ({
+      scale: window.devicePixelRatio,
+      transform: getComputedStyle(scene).transform,
+      text: scene.querySelector(".node strong").textContent,
+      width: scene.querySelector(".node").getBoundingClientRect().width,
+      paths: scene.querySelectorAll("svg .connection").length,
+    }));
+    expect(painted.scale).toBe(2);
+    expect(painted.transform).toBe("none");
+    expect(painted.width).toBeCloseTo(390, 0);
+    expect(painted.paths).toBeGreaterThan(0);
+    expect(painted.text).toBeTruthy();
+    await page.screenshot({
+      path: "../../.repograph/canvas-qa/studio-retina-200.png",
+    });
+  } finally {
+    await context.close();
+  }
 });
 
 test("keyboard access and accessibility contrast pass", async ({ page }) => {

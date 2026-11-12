@@ -4,6 +4,22 @@ Canvas implementation covers all six planned phases. Scope and deliberate
 boundaries are documented in CANVAS.md; this record distinguishes implementation
 and local automated evidence from publication or commercial-client certification.
 
+## Visual revision: Python 0.2.0rc2 / kit 0.2.0-rc.2
+
+The revised interface uses neutral inset window chrome, warm paper source notes,
+folder tabs and a clipboard inspector, with rounded controls throughout. Fit and
+Expand are separate actions. Expanded mode fills the window without browser
+fullscreen permission, traps keyboard focus, restores with Escape or its button,
+and adapts the inspector on narrow screens. Layout zoom replaces transformed
+scene scaling, and the permanently promoted texture layer has been removed.
+
+The browser suite now has 15 checks, adding expanded geometry, focus/restore,
+mobile expansion and a device-scale-factor-2 view at 200% graph zoom. DOM text and
+SVG paths remain live and the scene has no scaling transform or will-change
+promotion. Screenshots were inspected at normal and high zoom. Automated contrast
+checks include the live testing panel and expanded view. This is engineering
+evidence for the shipped browser, not certification of every GPU or MCP client.
+
 ## Implemented phases
 
 1. Versioned bounded projection: stable source IDs, snapshot-qualified edges,
@@ -41,7 +57,7 @@ use pinned Playwright 1.65.0 and the official MCP Apps SDK 2.0.4.
 - Browser suite passes desktop/mobile, search, zoom, pointer/keyboard pan,
   guided tours, dependency traces, interpretation/test distinctions, hostile-text
   handling, WCAG AA scans, readable folder grouping and reduced-motion use.
-  All 13 browser tests pass, including actual local Node pass/fail runs, cancelled
+  All 15 browser tests pass, including actual local Node pass/fail runs, cancelled
   plans without execution, persisted results after refresh, authenticated shutdown
   and actual approved pytest execution through MCP Apps. The suite also passes
   using the clean installed npm tarball's launcher and isolated packaged backend.

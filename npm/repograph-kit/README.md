@@ -1,6 +1,6 @@
 # RepoGraph Kit
 
-RepoGraph Kit **0.2.0-rc.1** bundles Python candidate **0.2.0rc1** and companion skill
+RepoGraph Kit **0.2.0-rc.2** bundles Python candidate **0.2.0rc2** and companion skill
 **1.1.0**. It provides local repository intelligence for Codex, Claude Code,
 Cursor and VS Code Copilot. The analyzer needs no LLM API key, cloud database,
 Docker or telemetry.
@@ -30,7 +30,7 @@ repository, and `--no-open` prints the browser URL without opening it.
 Requires Node.js 22+ and either uv or Python 3.11-3.13. From your project root:
 
 ```sh
-npm i repograph-kit@0.2.0-rc.1
+npm i repograph-kit@0.2.0-rc.2
 npx repograph-kit setup
 ```
 
@@ -43,7 +43,7 @@ npx repograph-kit doctor --agent codex
 
 Replace codex with claude-code, cursor, copilot or all. Reload the client after
 setup, then ask it to call health and index_repository. Health should report
-0.2.0rc1. Updating the npm package alone does not switch an active MCP process.
+0.2.0rc2. Updating the npm package alone does not switch an active MCP process.
 
 This is a locally built candidate; registry publication is a separate step.
 Install its verified tarball when the candidate is not available on npm.

@@ -17,6 +17,10 @@ checksum-locked backend, indexes source and opens this interface without agent s
 Content previews statically reparse a fresh indexed tree in memory and preserve
 the base graph for deleted dependencies without publishing either preview graph.
 See CANVAS.md for exact scope, limits, UI lifecycle and acceptance boundaries.
+The viewer uses CSS layout zoom for sharp text/vector repaint at the selected
+scale, without a permanently composited transformed scene. Window-filling canvas
+expansion is a local UI state with focus containment and Escape/restore controls;
+it needs neither browser fullscreen permissions nor MCP host capabilities.
 
 The rc4 candidate adds a bundled Node 22/24 reporter and execution adapter. Only
 approved verification loads the reporter; discovery/preparation never invokes

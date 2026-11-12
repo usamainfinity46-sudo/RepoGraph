@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0rc2 / kit 0.2.0-rc.2 - Canvas visual revision
+
+- Replace the blue-tinted presentation with neutral inset window chrome, paper
+  source notes, folder tabs, a clipboard inspector and rounded warm controls.
+- Repaint graph text and SVG at the selected layout zoom rather than stretching
+  a composited texture. Increase note typography and spacing.
+- Separate Fit from Expand. Expand fills the window, contains focus and supports
+  Escape/button restoration without fullscreen permissions; support narrow screens.
+- Add real expanded-view, focus, mobile and Retina 200% zoom browser regressions.
+
 ## 0.2.0rc1 / kit 0.2.0-rc.1 / skill 1.1.0 — local Canvas candidate
 
 - Add one-command live browser launch, automatic safe indexing, whole-scope folder

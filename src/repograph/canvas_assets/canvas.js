@@ -34,6 +34,11 @@
         "M9 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M18 3v8M14 7h8",
       ],
       fit: ["M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"],
+      expand: ["M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"],
+      folder: [
+        "M3 7V5a2 2 0 0 1 2-2h5l3 3h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z",
+        "M3 8h18",
+      ],
       layers: ["M12 3l10 5-10 5L2 8zM2 12l10 5 10-5M2 16l10 5 10-5"],
       link: [
         "M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2",
@@ -166,14 +171,17 @@
       $("files").append(b);
     }
     function transform() {
-      $("scene").style.transform =
-        `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
+      // CSS zoom lays text out at its destination resolution. A transformed,
+      // composited scene can stretch an already rasterized texture instead.
+      $("scene").style.zoom = String(scale);
+      $("scene").style.left = `${pan.x / scale}px`;
+      $("scene").style.top = `${pan.y / scale}px`;
       $("zoom-label").textContent = `${Math.round(scale * 100)}%`;
     }
     function fit(readable = true) {
       const r = $("viewport").getBoundingClientRect();
       scale = Math.max(
-        readable ? 0.65 : 0.12,
+        readable ? 0.8 : 0.12,
         Math.min(
           1,
           (r.width - 45) / sceneSize.width,
@@ -198,6 +206,57 @@
     $("zoom-in").onclick = () => setZoom(scale * 1.2);
     $("zoom-out").onclick = () => setZoom(scale / 1.2);
     $("fit").onclick = () => fit(false);
+    const workspace = document.querySelector(".workspace");
+    const expand = $("expand-canvas");
+    function expanded(open) {
+      workspace.classList.toggle("expanded", open);
+      document.body.classList.toggle("canvas-expanded", open);
+      expand.setAttribute("aria-pressed", String(open));
+      expand.setAttribute(
+        "aria-label",
+        open ? "Restore canvas" : "Expand canvas",
+      );
+      expand.title = open ? "Restore canvas (Escape)" : "Expand canvas";
+      if (open) {
+        workspace.setAttribute("role", "dialog");
+        workspace.setAttribute("aria-modal", "true");
+        workspace.setAttribute("aria-label", "Expanded repository canvas");
+      } else {
+        for (const name of ["role", "aria-modal", "aria-label"])
+          workspace.removeAttribute(name);
+      }
+      for (const child of document.querySelector("main").children)
+        if (child !== workspace) child.inert = open;
+      document.querySelector(".sidebar").inert = open;
+      requestAnimationFrame(() => {
+        fit();
+        expand.focus({ preventScroll: true });
+      });
+    }
+    expand.onclick = () => expanded(!workspace.classList.contains("expanded"));
+    function expandedKeys(event) {
+      if (!workspace.classList.contains("expanded")) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        expanded(false);
+      } else if (event.key === "Tab") {
+        const controls = [
+          ...workspace.querySelectorAll(
+            "button:not(:disabled), input, [tabindex='0']",
+          ),
+        ].filter((node) => node.getClientRects().length);
+        const first = controls[0],
+          last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", expandedKeys);
     let drag = null;
     $("viewport").onpointerdown = (e) => {
       if (e.target.closest("button")) return;
@@ -343,9 +402,12 @@
         $("nodes").append(heading);
         list.forEach((n, row) => {
           const x = col * 250,
-            y = 32 + row * 97;
+            y = 32 + row * 112;
           positions.set(n.id, { x, y });
           const b = el("button", "node");
+          b.dataset.kind = n.kind;
+          if (/(^|\/)(test[^/]*|[^/]*[._]test[._])/.test(n.path))
+            b.classList.add("test-node");
           b.dataset.nodeId = n.id;
           b.style.left = `${x}px`;
           b.style.top = `${y}px`;
@@ -390,7 +452,7 @@
       });
       sceneSize = {
         width: keys.length * 250 - 55,
-        height: Math.max(130, 32 + maxRows * 97),
+        height: Math.max(144, 32 + maxRows * 112),
       };
       $("scene").style.width = `${sceneSize.width}px`;
       $("scene").style.height = `${sceneSize.height}px`;
@@ -423,7 +485,7 @@
       entries.forEach(([folder, modules], i) => {
         const id = groupIds.get(folder),
           x = (i % columns) * 250,
-          y = Math.floor(i / columns) * 110 + 20;
+          y = Math.floor(i / columns) * 132 + 28;
         positions.set(id, { x, y });
         const b = el("button", "node folder-node");
         b.style.left = `${x}px`;
@@ -433,7 +495,7 @@
           `Folder ${folder}, ${modules.length} included modules`,
         );
         const glyph = el("span", "node-icon");
-        glyph.append(icon("layers"));
+        glyph.append(icon("folder"));
         const copy = el("span", "node-copy");
         copy.append(
           el("strong", "", folder),
@@ -525,7 +587,7 @@
           }));
       sceneSize = {
         width: columns * 250 - 55,
-        height: Math.ceil(entries.length / columns) * 110 + 20,
+        height: Math.ceil(entries.length / columns) * 132 + 28,
       };
       $("scene").style.width = `${sceneSize.width}px`;
       $("scene").style.height = `${sceneSize.height}px`;
@@ -549,7 +611,7 @@
       const tip = document.createElementNS(svgNS, "path");
       tip.setAttribute("d", "M0 1 L9 5 L0 9");
       tip.setAttribute("fill", "none");
-      tip.setAttribute("stroke", "#93a5c1");
+      tip.setAttribute("stroke", "#9c958b");
       tip.setAttribute("stroke-width", "1.5");
       marker.append(tip);
       defs.append(marker);
@@ -566,9 +628,9 @@
         p.dataset.edgeId = e.id;
         p.setAttribute("marker-end", "url(#edge-arrow)");
         let ax = a.x + 195,
-          ay = a.y + 34,
+          ay = a.y + 42,
           bx = b.x,
-          by = b.y + 34;
+          by = b.y + 42;
         if (a.x === b.x) {
           ax = a.x + 195;
           bx = b.x + 195;
@@ -1125,7 +1187,7 @@
         ? data.scenario
           ? "Explore a change before you make it."
           : "Understand the ripple effect."
-        : "A clearer view of your code.";
+        : "Your repository, at a glance.";
     if (data.impact)
       $("subtitle").textContent =
         "Follow potential dependents, with the source evidence behind every step.";
@@ -1134,7 +1196,10 @@
     requestAnimationFrame(fit);
     const observer = new ResizeObserver(() => fit());
     observer.observe($("viewport"));
-    dispose = () => observer.disconnect();
+    dispose = () => {
+      observer.disconnect();
+      document.removeEventListener("keydown", expandedKeys);
+    };
     document.dispatchEvent(
       new CustomEvent("repograph:mounted", { detail: data }),
     );

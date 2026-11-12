@@ -11,6 +11,9 @@
   <body>
     <div class="window">
       <aside class="sidebar">
+        <div class="window-lights" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </div>
         <a class="brand" href="#" aria-label="RepoGraph Canvas"
           ><span class="brandmark" aria-hidden="true"
             ><i></i><i></i><i></i></span
@@ -127,11 +130,10 @@
         </section>
         <section class="heading">
           <div>
-            <div class="eyebrow">SEE THE CONNECTIONS</div>
-            <h1 id="title">A clearer view of your code.</h1>
+            <div class="eyebrow">YOUR CODE, LAID OUT</div>
+            <h1 id="title">Your repository, at a glance.</h1>
             <p id="subtitle">
-              Explore the pieces. Follow the relationships. Understand what
-              connects.
+              Explore source, follow dependencies, and review changes.
             </p>
           </div>
           <div class="segmented" aria-label="Detail level">
@@ -183,6 +185,14 @@
                   placeholder="Find in this view…"
                   aria-label="Find nodes in this saved view"
               /></label>
+              <button
+                id="expand-canvas"
+                class="expand-canvas"
+                aria-label="Expand canvas"
+                aria-pressed="false"
+                title="Expand canvas"
+                data-icon="expand"
+              ></button>
             </div>
             <div class="scope-note" id="scope"></div>
             <div
@@ -210,8 +220,10 @@
                 ><button
                   id="fit"
                   aria-label="Fit graph to view"
-                  data-icon="fit"
-                ></button>
+                  title="Fit graph to view"
+                >
+                  Fit
+                </button>
               </div>
             </div>
           </section>

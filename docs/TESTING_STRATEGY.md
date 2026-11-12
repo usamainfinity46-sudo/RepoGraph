@@ -15,6 +15,9 @@ source/deletions, unchanged checkout/database, HTML injection/CSP and CLI/stdio
 resources. Browser tests cover graph selection, search, zoom/pan, tours, source
 evidence, step-through impact, test distinction, scenarios, mobile/reduced motion,
 keyboard access, WCAG AA checks, inert hostile metadata and zero external requests.
+Expanded-view regressions assert increased graph dimensions, focus containment,
+Escape/button restoration and mobile use. A device-scale-factor-2 browser checks
+200% zoom, live DOM text, vector paths and absence of texture-scaling transforms.
 An official AppBridge host uses a sandboxed iframe and actual stdio calls to test
 initialization, tool results, paging, refresh, hypothetical selection, refusal and
 teardown. CI has the three-OS browser matrix; commercial host manual certification

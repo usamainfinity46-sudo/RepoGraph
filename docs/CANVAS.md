@@ -1,13 +1,22 @@
 # RepoGraph Canvas
 
-Canvas is an evidence-backed local code explorer. It has a light macOS-inspired
-interface, restrained colors, rounded panels, soft shadows, authored vector icons,
+Canvas is an evidence-backed local code explorer. Its light desktop interface uses
+neutral inset window chrome, warm paper notes, folder tabs, a clipboard inspector,
+rounded controls, soft shadows, authored vector icons,
 search, zoom/pan, source inspection, guided tours and dependency walkthroughs.
 Dense repository views collapse into folder groups; select a group to inspect
 its modules. Group arrows aggregate indexed imports, without assigning product
 roles or implying a runtime sequence. Initial zoom keeps cards readable; Fit
 can show the entire graph, and pointer/keyboard panning reaches larger layouts.
 It uses bundled assets, system fonts and no CDN, telemetry or model API.
+
+**Expand canvas** opens a window-filling graph and inspector with keyboard focus
+contained inside; **Restore canvas** or Escape returns to the page. On narrow
+screens, selecting a node reveals the inspector below the expanded graph.
+**Fit** is a separate control that fits the graph bounds. Zoom uses browser layout
+zoom rather than stretching a composited scene texture, so text and SVG paths
+repaint at the destination scale, including high-density displays. At very small
+fit scales, text is necessarily small; zoom in to read the evidence.
 
 ## Use it
 
@@ -42,11 +51,11 @@ uses the launcher's host executable; Jest/Vitest use installed project runners.
 `--port 0` selects a free loopback port. The browser cannot change roots, enable
 execution, install dependencies or submit arbitrary commands.
 
-This is the local **Python 0.2.0rc1 / kit 0.2.0-rc.1** candidate. Until publication,
+This is the local **Python 0.2.0rc2 / kit 0.2.0-rc.2** candidate. Until publication,
 install the verified local tarball; registry 0.1.2 has not been retroactively changed:
 
 ```sh
-npm install --global /path/to/repograph-kit-0.2.0-rc.1.tgz
+npm install --global /path/to/repograph-kit-0.2.0-rc.2.tgz
 ```
 
 ## Offline exports
