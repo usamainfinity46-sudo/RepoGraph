@@ -1,7 +1,7 @@
 # RepoGraph Canvas
 
 Canvas is an evidence-backed local code explorer. Its light desktop interface uses
-neutral inset window chrome, warm paper notes, folder tabs, a clipboard inspector,
+neutral white/gray window chrome, paper notes, folder tabs, a clipboard inspector,
 rounded controls, soft shadows, authored vector icons,
 search, zoom/pan, source inspection, guided tours and dependency walkthroughs.
 Dense repository views collapse into folder groups; select a group to inspect
@@ -40,6 +40,13 @@ uses the launcher's host executable; Jest/Vitest use installed project runners.
    repository or expand a folder to fetch details.
 2. Use **Working changes** to refresh source and retain the previous graph for
    impact evidence. **Refresh index** updates navigation without executing code.
+   **Change impact** analyzes a selected source card, or loads working changes
+   when nothing is selected. A clean compared scope explicitly reports no
+   uncommitted changes. Use **Choose code to explore**, select a source card and
+   **Show potential dependents** to explore a change before editing anything.
+   Direct dependents are one relationship away; transitive dependents are farther
+   away. Select one to see source lines and trace the dependency path. These are
+   static possibilities, not a prediction that every dependent will break.
 3. Open **Tests & verification**, choose a framework and selected files or a
    broader suite, then select **Review test plan**.
 4. Inspect the exact argument array, working directory, scope, timeout, expiry
@@ -51,11 +58,11 @@ uses the launcher's host executable; Jest/Vitest use installed project runners.
 `--port 0` selects a free loopback port. The browser cannot change roots, enable
 execution, install dependencies or submit arbitrary commands.
 
-This is the local **Python 0.2.0rc2 / kit 0.2.0-rc.2** candidate. Until publication,
+This is the local **Python 0.2.0rc4 / kit 0.2.0-rc.4** candidate. Until publication,
 install the verified local tarball; registry 0.1.2 has not been retroactively changed:
 
 ```sh
-npm install --global /path/to/repograph-kit-0.2.0-rc.2.tgz
+npm install --global /path/to/repograph-kit-0.2.0-rc.4.tgz
 ```
 
 ## Offline exports

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, unlink } from "node:fs/promises";
 import { resolve } from "node:path";
 const url = (name) => `http://127.0.0.1:43187/${name}.html`;
 
@@ -91,6 +91,89 @@ test("live repository launch, reviewed tests, saved results, changes and failed 
   }
 });
 
+test("live Change impact loads clean working changes and selected-code dependents", async ({
+  page,
+  request,
+}) => {
+  const info = await (
+    await request.get("http://127.0.0.1:43187/local-info")
+  ).json();
+  const calls = [];
+  page.on("request", (r) => {
+    if (r.url().endsWith("/api/call")) calls.push(r.postDataJSON());
+  });
+  await page.goto(info.url);
+  await expect(page.locator("#repo-name")).toHaveText("node-example-host");
+  await page.locator("#show-repository").click();
+  await expect(page.locator("#map-title")).toHaveText("Repository map");
+  await page.locator('.sidebar [data-view="impact"]').click();
+  await expect(page.locator("#empty")).toContainText(
+    "No uncommitted changes found",
+  );
+  expect(
+    calls.some(
+      (c) =>
+        c.name === "get_repository_canvas" && c.arguments.mode === "changes",
+    ),
+  ).toBe(true);
+  const note = resolve(
+    import.meta.dirname,
+    "../../../.repograph/canvas-qa/node-example-host/unindexed-impact-note.txt",
+  );
+  await writeFile(
+    note,
+    "Engineering fixture: a text change has no indexed source graph.\n",
+  );
+  try {
+    await page.locator("#working-changes").click();
+    await expect(page.locator("#empty")).toContainText(
+      "No indexed source in these changes",
+    );
+    await expect(page.locator("#empty")).toContainText(
+      "effects may be unknown",
+    );
+  } finally {
+    await unlink(note);
+  }
+  await page.getByRole("button", { name: "Choose code to explore" }).click();
+  await expect(page.locator("#map-title")).toHaveText("Repository map");
+  const pricing = page
+    .locator(".node")
+    .filter({ hasText: "pricing.js" })
+    .first();
+  const id = await pricing.getAttribute("data-node-id");
+  await pricing.click();
+  await page.locator('.sidebar [data-view="impact"]').click();
+  await expect(page.locator("#map-title")).toHaveText("Change impact");
+  await expect(page.locator("#empty")).toBeHidden();
+  await expect(
+    page.locator(".node").filter({ hasText: "checkout.js" }).first(),
+  ).toBeVisible();
+  expect(
+    calls.some(
+      (c) =>
+        c.name === "get_repository_canvas" &&
+        c.arguments.mode === "impact" &&
+        c.arguments.node_ids[0] === id,
+    ),
+  ).toBe(true);
+  await page
+    .locator(".node")
+    .filter({ hasText: "checkout.js" })
+    .first()
+    .click();
+  await expect(page.locator("#inspector-content .badge")).toContainText(
+    /direct|transitive|context/,
+  );
+  await page
+    .getByRole("button", { name: "Show potential dependents", exact: true })
+    .click();
+  await expect(page.locator("#bridge-status")).toContainText(
+    "Potential dependents loaded",
+  );
+  expect(calls.filter((c) => c.name === "verify_changes")).toHaveLength(0);
+});
+
 test("live API denies missing authorization and cross-site requests", async ({
   request,
 }) => {
@@ -120,6 +203,26 @@ test("repository map, selection, search, zoom, tour and source evidence", async 
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(url("repository"));
   await expect(page.locator("#repo-name")).toHaveText("checkout-example");
+  for (const selector of [
+    ":root",
+    ".sidebar",
+    ".stat",
+    ".viewport",
+    ".node:not(.test-node)",
+    ".detail-icon",
+  ]) {
+    const rgb = await page
+      .locator(selector)
+      .first()
+      .evaluate((node) =>
+        getComputedStyle(node)
+          .backgroundColor.match(/[\d.]+/g)
+          .slice(0, 3)
+          .map(Number),
+      );
+    expect(rgb[0], selector).toBe(rgb[1]);
+    expect(rgb[1], selector).toBe(rgb[2]);
+  }
   await page.screenshot({
     path: "../../.repograph/canvas-qa/initial-desktop.png",
     fullPage: true,

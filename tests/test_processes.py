@@ -31,7 +31,11 @@ def exited(pid):
     from pathlib import Path
 
     status = Path(f"/proc/{pid}/stat")
-    return status.exists() and status.read_text().split()[2] == "Z"
+    try:
+        return status.exists() and status.read_text().split()[2] == "Z"
+    except (FileNotFoundError, ProcessLookupError):
+        # The child can exit after kill(0)/exists() and before the procfs read.
+        return True
 
 
 @pytest.mark.parametrize("normal_exit", [True, False])

@@ -112,7 +112,7 @@ def main():
     live.mkdir(exist_ok=True)
     for name, content in {
         "package.json": '{"type":"module"}\n',
-        ".gitignore": ".repograph/\nnode_modules/\n",
+        ".gitignore": ".repograph/\nnode_modules/\n.agents/\n.codex/\n",
         "pricing.js": "export function discount(price) { return price * 0.9; }\n",
         "checkout.js": (
             "import {discount} from './pricing.js'; "

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0rc4 / kit 0.2.0-rc.4 - Neutral canvas palette
+
+- Remove beige/yellow surface and ink tints from the canvas, notes, folders,
+  inspector and controls. Keep restrained semantic accents and native window dots.
+- Retain the live impact-navigation repair from rc3; core indexing, graph,
+  extraction, test selection and verification policies are unchanged.
+
+## 0.2.0rc3 / kit 0.2.0-rc.3 - Live change-impact navigation
+
+- Make Change impact request selected-node analysis or refresh working changes,
+  instead of only switching an empty display tab.
+- Add Show potential dependents to source inspectors and distinguish clean Git
+  scopes from changes containing no indexed source, with actionable guidance.
+- Verify live click-to-analysis, selected scope and source evidence without
+  executing tests; offline maps explain how to obtain an impact report.
+
 ## 0.2.0rc2 / kit 0.2.0-rc.2 - Canvas visual revision
 
 - Replace the blue-tinted presentation with neutral inset window chrome, paper

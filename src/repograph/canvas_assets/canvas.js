@@ -73,7 +73,7 @@
     );
     const uncertainPaths = new Set(data.impact?.uncertain_modules || []);
     const files = [...new Set(data.nodes.map((n) => n.path))].sort();
-    let view = data.impact ? "impact" : "map",
+    let view = data.impact || data.mode === "changes" ? "impact" : "map",
       selected = null,
       developer = false,
       filter = "",
@@ -323,10 +323,30 @@
         renderTests();
         return;
       }
+      if (view === "impact" && data.mode === "changes" && !data.nodes.length) {
+        empty(
+          data.changes?.changes.length
+            ? "No indexed source in these changes."
+            : "No uncommitted changes found.",
+          data.changes?.changes.length
+            ? "Changed files are listed above, but no indexed code can be traced in this scope. Review the diagnostics; effects may be unknown. Choose indexed code to explore potential dependents."
+            : "Nothing changed in the compared Git scope. You can still explore what could depend on a file or function before editing it.",
+        );
+        if (window.RepoGraphCanvas.request) {
+          const choose = el(
+            "button",
+            "action-button",
+            "Choose code to explore",
+          );
+          choose.onclick = () => $("show-repository").click();
+          $("empty").append(choose);
+        }
+        return;
+      }
       if (view === "impact" && !data.impact) {
         empty(
           "Choose a change to explore.",
-          "Export an impact or changes canvas to see evidence-backed dependents.",
+          "This saved repository map has no impact analysis. In a live canvas, select a file or function and choose Show potential dependents, or use Working changes. For an offline report, export with --canvas-mode impact and a source path.",
         );
         return;
       }
@@ -611,7 +631,7 @@
       const tip = document.createElementNS(svgNS, "path");
       tip.setAttribute("d", "M0 1 L9 5 L0 9");
       tip.setAttribute("fill", "none");
-      tip.setAttribute("stroke", "#9c958b");
+      tip.setAttribute("stroke", "#969696");
       tip.setAttribute("stroke-width", "1.5");
       marker.append(tip);
       defs.append(marker);
@@ -811,6 +831,12 @@
         !data.scenario?.proposed_snapshot_id
       ) {
         const actions = section("Explore further");
+        const impact = el(
+          "button",
+          "action-button",
+          "Show potential dependents",
+        );
+        impact.onclick = () => requestImpact(n);
         const expand = el("button", "action-button", "Expand this module");
         expand.onclick = () =>
           window.RepoGraphCanvas.request({
@@ -839,7 +865,7 @@
             intent: `Explore a proposed change to ${n.name}`,
             proposed_files: [],
           }).catch(() => {});
-        actions.append(expand, scenario);
+        actions.append(impact, expand, scenario);
         box.append(actions);
       }
       if (developer) {
@@ -977,9 +1003,43 @@
         .querySelectorAll(".dimmed")
         .forEach((n) => n.classList.remove("dimmed"));
     }
+    async function requestImpact(node) {
+      $("bridge-status").textContent =
+        `Finding potential dependents of ${node.name}…`;
+      try {
+        await window.RepoGraphCanvas.request({
+          mode: "impact",
+          paths: [],
+          node_ids: [node.id],
+          query: "",
+          offset: 0,
+          limit: 200,
+          before_snapshot_id: null,
+          intent: "",
+          assumptions: [],
+          proposed_files: [],
+          explanations: [],
+          verification_plan_id: null,
+        });
+        $("bridge-status").textContent =
+          "Potential dependents loaded. Select a dependent to inspect its source evidence. No tests ran.";
+      } catch (error) {
+        $("bridge-status").textContent =
+          error.message || "Impact analysis could not be loaded.";
+      }
+    }
     document.querySelectorAll("[data-view]").forEach(
       (b) =>
         (b.onclick = () => {
+          if (
+            b.dataset.view === "impact" &&
+            !data.impact &&
+            window.RepoGraphCanvas.request
+          ) {
+            if (selected) requestImpact(selected);
+            else window.RepoGraphCanvas.workbench?.showChanges();
+            return;
+          }
           view = b.dataset.view;
           folderFilter = null;
           fileFilter = null;
@@ -988,7 +1048,7 @@
             .querySelectorAll("[data-view]")
             .forEach((n) => n.classList.toggle("active", n === b));
           $("title").textContent = {
-            map: "A clearer view of your code.",
+            map: "Your repository, at a glance.",
             impact: "Understand the ripple effect.",
             tests: "Know what to check next.",
           }[view];

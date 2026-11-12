@@ -1,6 +1,6 @@
 {
   "name": "repograph-kit",
-  "version": "0.2.0-rc.2",
+  "version": "0.2.0-rc.4",
   "description": "Set up RepoGraph MCP and its companion skill for your coding agent",
   "type": "module",
   "license": "Apache-2.0",

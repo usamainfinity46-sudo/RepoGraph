@@ -18,6 +18,9 @@ keyboard access, WCAG AA checks, inert hostile metadata and zero external reques
 Expanded-view regressions assert increased graph dimensions, focus containment,
 Escape/button restoration and mobile use. A device-scale-factor-2 browser checks
 200% zoom, live DOM text, vector paths and absence of texture-scaling transforms.
+Live navigation checks verify that Change impact actually requests working-change
+analysis, clean checkouts explain the empty scope, and selected source cards request
+impact with explicit node IDs and display real dependent evidence without execution.
 An official AppBridge host uses a sandboxed iframe and actual stdio calls to test
 initialization, tool results, paging, refresh, hypothetical selection, refusal and
 teardown. CI has the three-OS browser matrix; commercial host manual certification

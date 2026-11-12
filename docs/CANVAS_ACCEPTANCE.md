@@ -4,7 +4,36 @@ Canvas implementation covers all six planned phases. Scope and deliberate
 boundaries are documented in CANVAS.md; this record distinguishes implementation
 and local automated evidence from publication or commercial-client certification.
 
+## Neutral palette: Python 0.2.0rc4 / kit 0.2.0-rc.4
+
+Canvas surfaces and primary ink are neutral white/gray, including paper cards,
+folders, clipboard and controls. Semantic accents and native window dots remain.
+The live impact navigation fix is included. Core discovery/indexing, extraction,
+graph/impact algorithms, test selection and approved execution implementations
+are unchanged by this palette revision. Full Windows/Linux regression suites,
+installer tests, installed-wheel MCP smoke and packed-installer checks are rerun
+to verify existing behavior. Platform skips remain explicit in the test reports.
+The first Linux run exposed a pre-existing process-test race: a child disappeared
+between the status existence check and procfs read. The helper now accepts those
+missing-process errors as exit evidence; production cleanup is unchanged.
+
+Final rc4 results: Windows 211 passed / 2 platform skips; Linux 212 passed /
+1 Windows-only skip; browser 16 passed through both source and installed-kit
+launchers; installer 15 passed. Installed-wheel stdio/resources, both npm bootstrap
+paths, four agent layouts, policy-preserving upgrades, real approved pytest/Node
+fixtures and approval/replay gates pass. Static skill canaries, format/lint,
+deterministic bundle and release-content checks pass. The global command serves
+the final UI against RepoGraph itself and shuts down cleanly.
+
 ## Visual revision: Python 0.2.0rc2 / kit 0.2.0-rc.2
+
+The subsequent 0.2.0rc3 / kit 0.2.0-rc.3 revision repairs live Change impact
+navigation. The browser suite has 16 checks: the new regression starts from a
+clean checkout, loads working changes, checks explicit clean/non-source scope
+guidance, selects a source card and verifies a real impact request, displayed
+dependents and zero execution calls. Prior broad platform results below belong
+to the visual revision; the navigation fix additionally runs the canvas/local
+transport Python regressions and rebuilt-package browser suite.
 
 The revised interface uses neutral inset window chrome, warm paper source notes,
 folder tabs and a clipboard inspector, with rounded controls throughout. Fit and

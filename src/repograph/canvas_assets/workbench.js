@@ -291,6 +291,7 @@
     if (report.verification) displayResult(report.verification);
   });
   canvas.workbench = {
+    showChanges: () => action(() => refresh("changes")),
     async connect(call) {
       rpc = call;
       $("workbench").hidden = false;
