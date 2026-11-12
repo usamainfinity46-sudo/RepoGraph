@@ -1,5 +1,11 @@
 # Release procedure
 
+Canvas release candidate: kit **0.2.0-rc.4**, Python **0.2.0rc4**, skill **1.1.0**.
+Publish the exact successful shared CI npm artifact with `--tag next`, preserving
+the stable `latest` channel. Registry availability must be verified after upload;
+the release candidate instructions alone are not publication evidence. Python
+uses the matching `v0.2.0rc4` tag and the protected `release.yml` workflow below.
+
 Kit 0.1.2 / Python rc4 / skill 1.0.2 was published from the exact tested CI
 artifact. See CANDIDATE_RC4_ACCEPTANCE.md. Continue real-project trials before
 wider promotion. Future releases require their own reviewed artifact, successful

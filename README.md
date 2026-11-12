@@ -1,18 +1,22 @@
 # RepoGraph MCP
 
-**Local candidate: RepoGraph Canvas 0.2.0rc4 / kit 0.2.0-rc.4.** Explore a repository, follow a change's potential
+**Release candidate: RepoGraph Canvas 0.2.0rc4 / kit 0.2.0-rc.4.** Explore a repository, follow a change's potential
 impact, inspect source evidence and preview proposed edits without changing files.
 The light interface works as an offline HTML export or an embedded MCP Apps view
 in supporting hosts. Includes guided tours, test suggestions and clearly labelled
 agent interpretations. See [Canvas usage and limits](docs/CANVAS.md).
-This feature is in the working source; published 0.1.2 artifacts are unchanged.
+Use the explicit Canvas prerelease; the stable 0.1.2 channel remains separate:
+
+```sh
+npx repograph-kit@0.2.0-rc.4 canvas --enable-verification
+```
 
 With the new kit installed, run `repograph-kit canvas --enable-verification` in
 your repository. It opens a live map with whole-repository search, change impact,
 test selection and reviewed/approved execution. Omit the flag for analysis only.
 On Windows PowerShell use `repograph-kit.cmd` if script policy blocks `.ps1`.
 
-Published release: **repograph-kit 0.1.2**, bundling Python candidate **0.1.0rc4** and
+Stable release: **repograph-kit 0.1.2**, bundling Python candidate **0.1.0rc4** and
 skill **1.0.2**. Adds native Node verification, upgrades preserving client tool
 policies, focused uncertainty candidates, batched/scoped Git comparison and
 separate verification-input readiness. See

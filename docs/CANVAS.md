@@ -58,11 +58,11 @@ uses the launcher's host executable; Jest/Vitest use installed project runners.
 `--port 0` selects a free loopback port. The browser cannot change roots, enable
 execution, install dependencies or submit arbitrary commands.
 
-This is the local **Python 0.2.0rc4 / kit 0.2.0-rc.4** candidate. Until publication,
-install the verified local tarball; registry 0.1.2 has not been retroactively changed:
+This is the **Python 0.2.0rc4 / kit 0.2.0-rc.4** prerelease. Install its explicit
+version (or npm's `next` channel); stable 0.1.2 remains separate:
 
 ```sh
-npm install --global /path/to/repograph-kit-0.2.0-rc.4.tgz
+npm install --global repograph-kit@0.2.0-rc.4
 ```
 
 ## Offline exports

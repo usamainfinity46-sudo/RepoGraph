@@ -45,8 +45,9 @@ Replace codex with claude-code, cursor, copilot or all. Reload the client after
 setup, then ask it to call health and index_repository. Health should report
 0.2.0rc4. Updating the npm package alone does not switch an active MCP process.
 
-This is a locally built candidate; registry publication is a separate step.
-Install its verified tarball when the candidate is not available on npm.
+This is a prerelease. Select the explicit version above, or use the npm `next`
+tag; the stable `latest` channel is separate. Release checks and receipts are in
+[Canvas acceptance](https://github.com/usamainfinity46-sudo/RepoGraph/blob/main/docs/CANVAS_ACCEPTANCE.md).
 
 Recognized stock upgrades preserve client-added per-tool approval settings,
 unrelated configuration and extra skill files. Custom execution flags/environment
