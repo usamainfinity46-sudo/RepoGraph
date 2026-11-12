@@ -22,6 +22,7 @@ const transport = new StdioClientTransport({
   cwd: root,
   stderr: "pipe",
 });
+transport.stderr.on("data", (chunk) => process.stderr.write(chunk));
 const client = new Client(
   { name: "Canvas browser engineering test", version: "1.0.0" },
   {
@@ -34,7 +35,9 @@ const client = new Client(
     },
   },
 );
+console.error("Canvas QA: initializing the real MCP server");
 await client.connect(transport);
+console.error("Canvas QA: MCP connected; starting the local canvas");
 const localArgs = process.env.REPOGRAPH_KIT_BIN
   ? [
       process.env.REPOGRAPH_KIT_BIN,
@@ -66,8 +69,14 @@ const local = spawn(
   localArgs,
   { cwd: root, stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
 );
+local.stderr.on("data", (chunk) => process.stderr.write(chunk));
 let localStartup;
 await new Promise((resolveReady, reject) => {
+  const timer = setTimeout(
+    () => reject(new Error("Local canvas startup exceeded 60 seconds")),
+    60000,
+  );
+  timer.unref();
   let buffer = "";
   local.stdout.on("data", (chunk) => {
     buffer += chunk;
@@ -79,6 +88,7 @@ await new Promise((resolveReady, reject) => {
       try {
         const value = JSON.parse(line);
         if (value.url) {
+          clearTimeout(timer);
           localStartup = value;
           resolveReady();
         }
@@ -182,7 +192,9 @@ const server = createServer(async (req, res) => {
     res.end(JSON.stringify({ error: String(error) }));
   }
 });
-server.listen(43187, "127.0.0.1");
+server.listen(43187, "127.0.0.1", () =>
+  console.error("Canvas QA: browser host ready"),
+);
 for (const signal of ["SIGTERM", "SIGINT"])
   process.on(signal, async () => {
     server.close();

@@ -1,3 +1,5 @@
 # Generated browser assets must retain exact hashes across Windows/macOS/Linux.
+src/repograph/canvas_assets/* text eol=lf
+web/canvas/** text eol=lf
 src/repograph/canvas_assets/app.bundle.js -text
 src/repograph/canvas_assets/third_party_licenses.txt -text whitespace=-trailing-space,-blank-at-eof

@@ -7,6 +7,11 @@ exercise the one-command launch, no-run-before-approval/cancel, actual Node pass
 and fail results after an edit, saved results after reload and stopping a session.
 The same browser suite can run against a clean installed kit via
 REPOGRAPH_KIT_BIN, instead of a development Python entry point.
+Authored browser files use explicit LF checkout attributes across platforms.
+The engineering browser host reports startup stages and drains both child stderr
+streams; its overall startup budget is 90 seconds, with a 60-second local-process
+deadline, so a cold CI runner exposes a diagnostic instead of an opaque 30-second
+timeout. These are development-host controls, not production policy changes.
 
 Canvas Python regressions cover static/no-execution boundaries, pinned pagination,
 repository isolation, real Python/TypeScript/mixed cycles, changed/deleted history,

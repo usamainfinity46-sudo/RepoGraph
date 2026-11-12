@@ -22,7 +22,7 @@ export default defineConfig({
     command: "node tests/host.mjs",
     url: "http://127.0.0.1:43187/health",
     reuseExistingServer: false,
-    timeout: 30000,
+    timeout: 90000,
     env: {
       REPOGRAPH_PYTHON:
         process.env.REPOGRAPH_PYTHON ||
