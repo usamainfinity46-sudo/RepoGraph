@@ -1,0 +1,20 @@
+{
+  "name": "repograph-canvas-development",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "playwright test",
+    "format": "prettier --write ../../src/repograph/canvas_assets/canvas.{css,html,js} ../../src/repograph/canvas_assets/workbench.js ../../src/repograph/canvas_assets/local.js app.js build.mjs playwright.config.js tests/*.js tests/*.mjs",
+    "format:check": "prettier --check ../../src/repograph/canvas_assets/canvas.{css,html,js} ../../src/repograph/canvas_assets/workbench.js ../../src/repograph/canvas_assets/local.js app.js build.mjs playwright.config.js tests/*.js tests/*.mjs"
+  },
+  "dependencies": {"@modelcontextprotocol/ext-apps": "2.0.4"},
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@axe-core/playwright": "4.11.1",
+    "esbuild": "0.28.2",
+    "prettier": "3.10.0"
+  }
+}

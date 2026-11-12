@@ -1,16 +1,36 @@
 # RepoGraph Kit
 
-RepoGraph Kit **0.1.2** bundles Python candidate **0.1.0rc4** and companion skill
-**1.0.2**. It provides local repository intelligence for Codex, Claude Code,
+RepoGraph Kit **0.2.0-rc.1** bundles Python candidate **0.2.0rc1** and companion skill
+**1.1.0**. It provides local repository intelligence for Codex, Claude Code,
 Cursor and VS Code Copilot. The analyzer needs no LLM API key, cloud database,
 Docker or telemetry.
+
+## Open the canvas
+
+From any repository after installing this candidate:
+
+```sh
+repograph-kit canvas --enable-verification
+```
+
+The command safely indexes the repository and opens a local browser canvas with
+folder navigation, source evidence, working changes and test discovery. Review a
+prepared command and click **Approve and run these tests** to inspect real results.
+No tests run on launch. Omit `--enable-verification` for analysis only. Keep the
+terminal running; use **Stop canvas** when finished. No MCP client is required.
+
+Python projects need pytest in their project `.venv`, or an explicit
+`--python-executable PATH`. Node's built-in runner uses the launching Node;
+Jest/Vitest require installed runners selected with `--jest-entry`/`--vitest-entry`.
+Nothing installs project dependencies automatically. `--root PATH` selects a
+repository, and `--no-open` prints the browser URL without opening it.
 
 ## Install or upgrade
 
 Requires Node.js 22+ and either uv or Python 3.11-3.13. From your project root:
 
 ```sh
-npm i repograph-kit@0.1.2
+npm i repograph-kit@0.2.0-rc.1
 npx repograph-kit setup
 ```
 
@@ -23,7 +43,10 @@ npx repograph-kit doctor --agent codex
 
 Replace codex with claude-code, cursor, copilot or all. Reload the client after
 setup, then ask it to call health and index_repository. Health should report
-0.1.0rc4. Updating the npm package alone does not switch an active MCP process.
+0.2.0rc1. Updating the npm package alone does not switch an active MCP process.
+
+This is a locally built candidate; registry publication is a separate step.
+Install its verified tarball when the candidate is not available on npm.
 
 Recognized stock upgrades preserve client-added per-tool approval settings,
 unrelated configuration and extra skill files. Custom execution flags/environment

@@ -1,10 +1,12 @@
+# Security-image builds need only the reviewed probe and built wheels.
 **
-!dist/
-!dist/*.whl
 !scripts/
 !scripts/security/
+!scripts/security/Dockerfile
 !scripts/security/probe.py
+!dist/
+!dist/*.whl
 !.repograph/
-!.repograph/release/
-!.repograph/release/dist/
-!.repograph/release/dist/*.whl
+!.repograph/canvas-release/
+!.repograph/canvas-release/*.whl
+!.repograph/canvas-release/*.tar.gz

@@ -66,6 +66,11 @@ def package_npm(wheel: Path, output: Path):
                 continue
             if archive.read("repograph/" + source.name) != source.read_bytes():
                 raise ValueError(f"Wheel differs from the checkout: {source.name}")
+        for source in (ROOT / "src/repograph/canvas_assets").iterdir():
+            if archive.read("repograph/canvas_assets/" + source.name) != source.read_bytes():
+                raise ValueError(f"Wheel canvas differs from checkout: {source.name}")
+        if any("marketing" in Path(name).parts for name in archive.namelist()):
+            raise ValueError("Marketing files must not ship in the bundled wheel")
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="kit-stage-", dir=output) as temporary:
@@ -142,6 +147,7 @@ def package_npm(wheel: Path, output: Path):
             ):
                 raise ValueError("Unexpected npm archive member")
         names = archive.getnames()
+        assert not any("marketing" in Path(name).parts for name in names)
         assert not any(
             "node_modules/" in name or "/test/" in name or name.endswith(".npmrc") for name in names
         )

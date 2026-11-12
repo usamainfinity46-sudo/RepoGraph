@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="{{CSP}}" />
+    <title>RepoGraph — Canvas</title>
+    <!-- prettier-ignore -->
+    <style>{{CSS}}</style>
+  </head>
+  <body>
+    <div class="window">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="RepoGraph Canvas"
+          ><span class="brandmark" aria-hidden="true"
+            ><i></i><i></i><i></i></span
+          >RepoGraph<span class="edition">CANVAS</span></a
+        >
+        <div class="repo-label">WORKSPACE</div>
+        <div class="repo-name" id="repo-name"></div>
+        <div class="nav-label">EXPLORE</div>
+        <button class="nav active" data-view="map">
+          <span data-icon="map"></span>Repository map
+        </button>
+        <button class="nav" data-view="impact">
+          <span data-icon="ripple"></span>Change impact<span
+            id="impact-count"
+            class="count"
+          ></span>
+        </button>
+        <button class="nav" data-view="tests">
+          <span data-icon="check"></span>Suggested tests<span
+            id="tests-count"
+            class="count"
+          ></span>
+        </button>
+        <div class="files-heading">
+          IN THIS VIEW <span id="file-count"></span>
+        </div>
+        <div class="file-list" id="files"></div>
+        <div class="sidebar-bottom">
+          <span class="local-dot"></span>Local analysis<span class="saved-tag"
+            >Saved view</span
+          >
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div class="breadcrumb">
+            Workspace <span>/</span> <strong id="crumb"></strong>
+          </div>
+          <div class="header-right">
+            <span class="status" id="freshness"></span
+            ><button
+              class="icon-button"
+              id="help"
+              aria-label="Show analysis limitations"
+              data-icon="info"
+            ></button>
+          </div>
+        </header>
+        <div class="bridge-bar">
+          <span id="bridge-status" role="status"></span>
+          <div id="bridge-actions" hidden>
+            <button id="refresh">Refresh view</button
+            ><button id="next-page">Next page</button>
+          </div>
+        </div>
+        <section
+          id="workbench"
+          class="workbench"
+          hidden
+          aria-label="Repository actions"
+        >
+          <div class="workbench-actions">
+            <button id="show-repository">Whole repository</button
+            ><button id="refresh-index">Refresh index</button
+            ><button id="working-changes">Working changes</button
+            ><button id="discover-tests">Tests &amp; verification</button
+            ><button id="stop-local" hidden>Stop canvas</button>
+          </div>
+          <div class="global-search">
+            <label for="repository-search">Search the whole repository</label
+            ><input
+              id="repository-search"
+              type="search"
+              placeholder="Folder, file, or function…"
+              maxlength="1000"
+            /><button id="search-repository">Search</button>
+          </div>
+          <p id="workbench-status" role="status">
+            Connecting to your repository…
+          </p>
+        </section>
+        <section
+          id="testing-panel"
+          class="testing-panel"
+          hidden
+          aria-label="Test selection and verification"
+        >
+          <div class="testing-heading">
+            <div>
+              <h2>Tests &amp; verification</h2>
+              <p id="testing-policy"></p>
+            </div>
+            <button id="close-testing" aria-label="Close test panel">×</button>
+          </div>
+          <div class="test-options">
+            <label
+              >Framework<select id="test-framework">
+                <option value="pytest">pytest</option>
+                <option value="jest">Jest</option>
+                <option value="vitest">Vitest</option>
+                <option value="node:test">Node built-in</option>
+              </select></label
+            ><label
+              >Scope<select id="test-scope">
+                <option value="targeted">Selected files</option>
+                <option value="suite">Broader suite</option>
+              </select></label
+            ><button id="review-tests" disabled>Review test plan</button
+            ><button id="more-tests" hidden>More test files</button>
+          </div>
+          <p id="test-selection-status" role="status"></p>
+          <div id="test-file-choices" class="test-file-choices"></div>
+          <div id="live-test-result" aria-live="polite"></div>
+        </section>
+        <section class="heading">
+          <div>
+            <div class="eyebrow">SEE THE CONNECTIONS</div>
+            <h1 id="title">A clearer view of your code.</h1>
+            <p id="subtitle">
+              Explore the pieces. Follow the relationships. Understand what
+              connects.
+            </p>
+          </div>
+          <div class="segmented" aria-label="Detail level">
+            <button id="simple" aria-pressed="true" class="selected">
+              Overview</button
+            ><button id="detailed" aria-pressed="false">Developer</button>
+          </div>
+        </section>
+        <section class="stats" id="stats" aria-label="Report summary"></section>
+        <section class="scenario-banner" id="scenario" hidden></section>
+        <details class="change-summary" id="changes" hidden>
+          <summary>Compared file changes</summary>
+          <div id="change-files"></div>
+        </details>
+        <section
+          class="saved-verification"
+          id="verification"
+          hidden
+          aria-label="Saved verification result"
+        ></section>
+        <section class="tour-bar">
+          <div>
+            <strong id="tour-title">A guided introduction</strong>
+            <p id="tour-copy">
+              A short tour of the code and the available evidence.
+            </p>
+          </div>
+          <button id="tour">
+            Start tour <span aria-hidden="true">→</span>
+          </button>
+        </section>
+        <nav class="mobile-nav" aria-label="Canvas views">
+          <button data-view="map">Repository map</button
+          ><button data-view="impact">Change impact</button
+          ><button data-view="tests">Suggested tests</button>
+        </nav>
+        <div class="workspace">
+          <section class="map-panel" aria-label="Interactive repository graph">
+            <div class="map-toolbar">
+              <div class="toolbar-label">
+                <span class="live-dot"></span
+                ><strong id="map-title">Repository map</strong>
+              </div>
+              <label class="search"
+                ><span data-icon="search"></span
+                ><input
+                  id="search"
+                  type="search"
+                  placeholder="Find in this view…"
+                  aria-label="Find nodes in this saved view"
+              /></label>
+            </div>
+            <div class="scope-note" id="scope"></div>
+            <div
+              class="viewport"
+              id="viewport"
+              tabindex="0"
+              aria-label="Graph. Use node buttons to inspect relationships; drag the background to pan."
+            >
+              <div class="scene" id="scene">
+                <svg id="connections" aria-hidden="true"></svg>
+                <div id="nodes"></div>
+              </div>
+              <div class="empty" id="empty" hidden></div>
+            </div>
+            <div class="map-footer">
+              <div class="legend">
+                <span><i class="key blue"></i>Selected scope</span
+                ><span><i class="key purple"></i>Potential dependent</span
+                ><span><i class="key amber"></i>Uncertainty</span>
+              </div>
+              <div class="zoom">
+                <button id="zoom-out" aria-label="Zoom out">−</button
+                ><span id="zoom-label">100%</span
+                ><button id="zoom-in" aria-label="Zoom in">+</button
+                ><button
+                  id="fit"
+                  aria-label="Fit graph to view"
+                  data-icon="fit"
+                ></button>
+              </div>
+            </div>
+          </section>
+          <aside class="inspector" aria-label="Selected item details">
+            <div class="inspector-top">
+              <span>INSPECTOR</span><span data-icon="panel"></span>
+            </div>
+            <div id="inspector-content"></div>
+          </aside>
+        </div>
+        <section class="walkthrough">
+          <div class="walk-icon" data-icon="route"></div>
+          <div class="walk-copy">
+            <strong id="walk-title">Follow a connection.</strong>
+            <p id="walk-copy">
+              Select a node to inspect its relationships and source evidence.
+            </p>
+          </div>
+          <button id="walk" disabled>
+            Trace impact <span aria-hidden="true">→</span>
+          </button>
+        </section>
+        <div id="notices" class="notices" aria-live="polite"></div>
+        <footer class="page-footer">
+          <span>Built from source evidence.</span
+          ><span>Static analysis · Tests run only after approval</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="limitations">
+      <div class="dialog-head">
+        <h2>What this canvas can tell you</h2>
+        <button id="close-help" aria-label="Close limitations">×</button>
+      </div>
+      <div id="limitations-body"></div>
+    </dialog>
+    <dialog id="test-plan">
+      <div class="dialog-head">
+        <h2>Review test execution</h2>
+        <button id="cancel-plan" aria-label="Close test plan">×</button>
+      </div>
+      <p id="plan-scope"></p>
+      <p id="plan-cwd"></p>
+      <pre id="plan-command"></pre>
+      <div id="plan-warnings"></div>
+      <div class="plan-actions">
+        <button id="decline-plan">Cancel</button
+        ><button id="approve-plan" disabled>Approve and run these tests</button>
+      </div>
+    </dialog>
+    <!-- prettier-ignore -->
+    <script id="canvas-data" type="application/json">{{DATA}}</script>
+    <!-- prettier-ignore -->
+    <script>{{JS}}</script>
+  </body>
+</html>

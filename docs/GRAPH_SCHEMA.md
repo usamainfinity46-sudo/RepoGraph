@@ -1,5 +1,16 @@
 # Graph schema and extraction contract
 
+CanvasReport schema 1 is an API projection, not a new SQLite schema. It references
+existing GraphNode/GraphEdge records, with snapshot-qualified edge identities,
+totals, pagination, freshness and separate analysis/view completeness. Optional
+ScenarioReport distinguishes selected-scope exploration from proposed-content
+graphs. Virtual graph IDs are content-addressed but never persisted. Citation
+validation requires an existing snapshot/edge touching the explained node.
+No extractor, resolver or verifier policy changes are introduced by the viewer.
+Folder summaries aggregate full-snapshot file ownership and resolved imports;
+they do not introduce graph nodes, runtime stages or new SQLite tables. Folder
+counts and links remain distinct from paginated original source-edge evidence.
+
 rc4 candidate: extractor-6 adds Import.literal (false on legacy records), and
 graph-3 adds GraphEdge.unresolved_reason plus GraphSnapshot.resolver_version.
 Existing records remain readable; an old primary resolver version is stale for

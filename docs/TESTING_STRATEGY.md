@@ -1,5 +1,26 @@
 # Testing strategy
 
+The live-workbench candidate additionally tests loopback Host/Origin/bearer
+checks, strict JSON/Pydantic tool allowlists, policy immutability, reviewed real
+execution, stale/replayed-plan refusal and authenticated shutdown. Browser checks
+exercise the one-command launch, no-run-before-approval/cancel, actual Node pass
+and fail results after an edit, saved results after reload and stopping a session.
+The same browser suite can run against a clean installed kit via
+REPOGRAPH_KIT_BIN, instead of a development Python entry point.
+
+Canvas Python regressions cover static/no-execution boundaries, pinned pagination,
+repository isolation, real Python/TypeScript/mixed cycles, changed/deleted history,
+freshness, bounded malformed inputs, cited interpretations, in-memory proposed
+source/deletions, unchanged checkout/database, HTML injection/CSP and CLI/stdio
+resources. Browser tests cover graph selection, search, zoom/pan, tours, source
+evidence, step-through impact, test distinction, scenarios, mobile/reduced motion,
+keyboard access, WCAG AA checks, inert hostile metadata and zero external requests.
+An official AppBridge host uses a sandboxed iframe and actual stdio calls to test
+initialization, tool results, paging, refresh, hypothetical selection, refusal and
+teardown. CI has the three-OS browser matrix; commercial host manual certification
+is separate. Built wheel/npm checks compare bundled assets/licenses against source
+and reject marketing files. See CANVAS.md and CANVAS_ACCEPTANCE.md.
+
 rc4 candidate regressions cover real Node pass/fail/skip/nested/empty/hook/timeout
 runs, exact targeting with an unrelated failing file, explicit suites, host and
 approval/replay refusal, malformed counts/paths/summaries and static preparation.

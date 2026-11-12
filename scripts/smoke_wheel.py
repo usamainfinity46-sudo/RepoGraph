@@ -70,6 +70,14 @@ async def main():
             assert data['indexed_files'] == 1
             resource = await session.read_resource('repograph://overview')
             assert json.loads(resource.contents[0].text) == data
+            canvas = await session.call_tool('open_repository_canvas', {})
+            assert not canvas.isError
+            assert canvas.structuredContent['nodes']
+            app = await session.read_resource('ui://repograph/canvas.html')
+            assert app.contents[0].mimeType == 'text/html;profile=mcp-app'
+            assert 'ui/initialize' in app.contents[0].text
+            html = await session.read_resource('repograph://canvas')
+            assert 'canvas-data' in html.contents[0].text
 
 asyncio.run(asyncio.wait_for(main(), timeout=30))
 """,

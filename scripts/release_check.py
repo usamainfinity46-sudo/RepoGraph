@@ -42,6 +42,9 @@ def main():
                 f"Wheel source differs from checkout: {source.name}"
             )
         assert not any(name.startswith(("tests/", ".venv/", ".repograph/")) for name in names)
+        assert not any("marketing" in Path(name).parts for name in names)
+        for source in (root / "src" / "repograph" / "canvas_assets").iterdir():
+            assert archive.read("repograph/canvas_assets/" + source.name) == source.read_bytes()
         metadata_path = f"repograph_mcp-{__version__}.dist-info/METADATA"
         metadata = BytesParser().parsebytes(archive.read(metadata_path))
         assert metadata["Name"] == project["name"] and metadata["Version"] == __version__
@@ -69,6 +72,8 @@ def main():
         for member in archive.getmembers():
             assert member.name.startswith(prefix)
             assert not member.issym() and not member.islnk()
+            relative = member.name.removeprefix(prefix)
+            assert not relative.startswith(("marketing/", "docs/marketing/", "dist/"))
     checksums = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in artifacts}
     (args.dist / "SHA256SUMS").write_text(
         "".join(f"{digest}  {name}\n" for name, digest in sorted(checksums.items())),

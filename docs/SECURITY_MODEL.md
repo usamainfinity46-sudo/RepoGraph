@@ -1,5 +1,33 @@
 # Security model
 
+Canvas analysis never executes repository code, writes source or enables host
+verification. Content scenarios reparse bounded proposed edits/deletions entirely
+in memory, require a fresh base and validate inventory/hash/configuration again
+before returning. JSON escapes script delimiters; UI labels use textContent.
+Bundled script/style hashes and restrictive CSP disable external resource loads,
+network connections for offline/MCP views, forms and base URLs. MCP Apps uses
+the official parent-only message transport inside the host sandbox. Live controls
+can invoke existing index/test/preparation tools; execution requires host opt-in
+and a fresh reviewed plan approved by the user. UI approval is a client attestation,
+not independent proof of human identity; client tool policies still apply.
+Agent explanations are labelled interpretations with validated edge provenance,
+not trusted instructions or verified product predictions. HTML exports contain
+repository metadata and, if explicitly requested, saved test output. Their sharing
+is controlled by the user. No canvas telemetry, upload or remote hosting occurs.
+Marketing material is local-only, ignored/untracked and excluded from builds.
+Git history and previously published artifacts are not rewritten by these rules.
+
+The explicitly launched local workbench is a separate adapter, not remote MCP.
+It binds only 127.0.0.1 on an ephemeral/default or host-selected port. Calls require
+an unguessable session bearer, exact Host and Origin, JSON content and bounded
+length/concurrency. No CORS or remote bind is exposed. CSP allows only same-origin
+local calls, framing is denied, and responses are not cached. The token is a URL
+fragment and session-storage value, never a query or access-log field. Token
+access assumes a trusted local OS/browser; it is not an OS sandbox. Routes are
+allowlisted Pydantic inputs and cannot select roots, alter execution settings,
+install project dependencies or provide commands/environments. Stop closes only
+the local session and waits for active bounded approved work before process exit.
+
 rc4 candidate Node verification uses a bundled, trusted reporter; its path/size/
 mtime joins Node in the host-policy fingerprint. Fixed argv uses a file URI for
 the reporter, explicit discovered test files, one test-file worker, and a private

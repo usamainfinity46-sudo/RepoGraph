@@ -48,6 +48,32 @@ jobs:
           name: repograph-kit-npm
           path: dist/npm/*
           if-no-files-found: error
+  canvas:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: uv sync --locked --group dev --python 3.12
+      - run: npm ci --prefix web/canvas --ignore-scripts --no-audit --no-fund
+      - run: npm run check --prefix web/canvas
+      - run: npm run format:check --prefix web/canvas
+      - run: uv run --no-sync python scripts/canvas_fixtures.py
+      - run: node web/canvas/node_modules/playwright/cli.js install --with-deps chromium
+      - run: npm test --prefix web/canvas
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canvas-${{ matrix.os }}
+          path: .repograph/canvas-qa/
+          if-no-files-found: error
   npm-kit:
     needs: npm-package
     strategy:

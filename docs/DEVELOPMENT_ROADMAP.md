@@ -1,5 +1,13 @@
 # Development roadmap
 
+Canvas expansion (unreleased source): the six planned phases are implemented:
+bounded evidence projection; interactive light-mode explorer; actual-change
+walkthrough; MCP Apps/skill integration with offline fallback; structural tours
+and cited agent interpretations; selected-scope and in-memory proposed-content
+exploration of indexed source. See CANVAS.md for exact capabilities and limits,
+and CANVAS_ACCEPTANCE.md for tests actually run. This is not a registry publication
+or certification of specific commercial MCP clients.
+
 1. Foundation and MCP infrastructure: complete. Python package, configuration,
    logging, Pydantic contracts, SQLite migrations, CLI, stdio connectivity tests.
 2. Repository discovery and parsing: complete. Ignore-aware bounded scanning,

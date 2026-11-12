@@ -9,6 +9,8 @@ from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from repograph import __version__
+from repograph.canvas import CanvasExplanation, CanvasReport, CanvasService
+from repograph.canvas_render import render_canvas
 from repograph.config import Settings
 from repograph.discovery import RepositoryError
 from repograph.git_service import GitService
@@ -37,6 +39,7 @@ from repograph.models import (
 )
 from repograph.overview import OverviewService
 from repograph.readiness import ReadinessService
+from repograph.scenarios import ProposedFile
 from repograph.service import RepositoryService
 from repograph.storage import SCHEMA_VERSION, Database
 from repograph.testing import TestIntelligence
@@ -95,6 +98,115 @@ def create_server(settings: Settings) -> FastMCP:
         Counts describe the last published graph, which may be stale until re-indexed.
         """
         return guarded(overview_service.get)
+
+    @server.tool(
+        annotations=ToolAnnotations(
+            readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+        )
+    )
+    def get_repository_canvas(
+        mode: str = "repository",
+        paths: list[str] | None = None,
+        node_ids: list[str] | None = None,
+        snapshot_id: str | None = None,
+        before_snapshot_id: str | None = None,
+        baseline: str | None = None,
+        query: str = "",
+        offset: int = 0,
+        limit: int = 100,
+        max_depth: int = 6,
+        intent: str = "",
+        assumptions: list[str] | None = None,
+        proposed_files: list[ProposedFile] | None = None,
+        explanations: list[CanvasExplanation] | None = None,
+        verification_plan_id: str | None = None,
+    ) -> CanvasReport:
+        """Build a bounded visual projection with source evidence; never executes tests.
+
+        repository reads saved graph data; impact requires explicit paths/node IDs;
+        changes compares actual WORKTREE changes. No automatic indexing. Use snapshot_id
+        to pin pages. Node-based test suggestions are conservatively file-level.
+        """
+        return guarded(
+            lambda: CanvasService(settings).get(
+                mode=mode,
+                paths=paths,
+                node_ids=node_ids,
+                snapshot_id=snapshot_id,
+                before_snapshot_id=before_snapshot_id,
+                baseline=baseline,
+                query=query,
+                offset=offset,
+                limit=limit,
+                max_depth=max_depth,
+                intent=intent,
+                assumptions=assumptions or [],
+                proposed_files=proposed_files or [],
+                explanations=explanations or [],
+                verification_plan_id=verification_plan_id,
+            )
+        )
+
+    @server.tool(
+        meta={"ui": {"resourceUri": "ui://repograph/canvas.html"}},
+        annotations=ToolAnnotations(
+            readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+        ),
+    )
+    def open_repository_canvas(
+        mode: str = "repository",
+        paths: list[str] | None = None,
+        node_ids: list[str] | None = None,
+        snapshot_id: str | None = None,
+        before_snapshot_id: str | None = None,
+        baseline: str | None = None,
+        query: str = "",
+        offset: int = 0,
+        limit: int = 100,
+        max_depth: int = 6,
+        intent: str = "",
+        assumptions: list[str] | None = None,
+        proposed_files: list[ProposedFile] | None = None,
+        explanations: list[CanvasExplanation] | None = None,
+        verification_plan_id: str | None = None,
+    ) -> CanvasReport:
+        """Open an MCP Apps canvas, with structured fallback in other clients.
+
+        scenario previews selected existing symbols or proposed edits/deletions of indexed
+        source, in memory. Cited agent explanations remain labelled interpretations.
+        No tests or repository code execute and no source files are written.
+        """
+        return get_repository_canvas(
+            mode,
+            paths,
+            node_ids,
+            snapshot_id,
+            before_snapshot_id,
+            baseline,
+            query,
+            offset,
+            limit,
+            max_depth,
+            intent,
+            assumptions,
+            proposed_files,
+            explanations,
+            verification_plan_id,
+        )
+
+    @server.resource(
+        "ui://repograph/canvas.html",
+        mime_type="text/html;profile=mcp-app",
+        meta={"ui": {"csp": {"connectDomains": [], "resourceDomains": []}, "prefersBorder": True}},
+    )
+    def canvas_app() -> str:
+        """Bundled MCP Apps viewer; data arrives through the host tool-result channel."""
+        return render_canvas(None, embedded=True)
+
+    @server.resource("repograph://canvas", mime_type="text/html")
+    def canvas_view() -> str:
+        """Offline repository canvas HTML. Rendering depends on the client's HTML support."""
+        return guarded(lambda: render_canvas(CanvasService(settings).get()))
 
     @server.resource("repograph://overview")
     def overview() -> str:

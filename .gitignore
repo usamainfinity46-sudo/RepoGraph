@@ -9,3 +9,9 @@ dist/
 .coverage
 htmlcov/
 node_modules/
+
+# Private working material and generated deliverables stay local.
+/marketing/
+/docs/marketing/
+playwright-report/
+test-results/

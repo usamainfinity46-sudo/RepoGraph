@@ -31,7 +31,10 @@ async def protocol(entry, root, version):
         async with ClientSession(reader, writer) as session:
             await session.initialize()
             tools = await session.list_tools()
-            assert len(tools.tools) == 20
+            assert len(tools.tools) == 22
+            assert {"get_repository_canvas", "open_repository_canvas"} <= {
+                tool.name for tool in tools.tools
+            }
             readiness = await session.call_tool("get_repository_readiness", {})
             assert not readiness.isError
             assert json.loads(readiness.content[0].text)["ready_for_indexing"]
@@ -40,12 +43,22 @@ async def protocol(entry, root, version):
             assert payload["version"] == version and Path(payload["repository"]).resolve() == root
             indexed = await session.call_tool("index_repository", {})
             assert not indexed.isError and json.loads(indexed.content[0].text)["published"]
+            canvas = await session.call_tool("open_repository_canvas", {})
+            assert not canvas.isError and canvas.structuredContent["nodes"]
+            viewer = await session.read_resource("ui://repograph/canvas.html")
+            assert viewer.contents[0].mimeType == "text/html;profile=mcp-app"
             denied = await session.call_tool(
                 "verify_changes", {"plan_id": "nonexistent", "approved": True}
             )
             assert denied.isError and "verification_disabled" in denied.content[0].text
     assert not (root / "sample.executed").exists()
-    return {"tools": 20, "version": version, "indexed": True, "host_disabled_gate": "passed"}
+    return {
+        "tools": 22,
+        "version": version,
+        "indexed": True,
+        "host_disabled_gate": "passed",
+        "canvas": "passed",
+    }
 
 
 async def approved_fixture(entry, framework="pytest", path="test_smoke.py"):
@@ -125,6 +138,10 @@ def smoke(source: Path | str):
             run([node, str(cli), "setup", "--agent", "all", "--dry-run", *arguments], root)
         )
         assert dry["dryRun"] and not cache.exists() and not (root / ".mcp.json").exists()
+        canvas_dry = json.loads(run([node, str(cli), "canvas", "--dry-run", *arguments], root))
+        assert canvas_dry["args"][-1] == "canvas-live"
+        assert "--enable-verification" not in canvas_dry["args"]
+        assert not cache.exists()
         (root / ".cursor").mkdir()
         (root / ".cursor/mcp.json").write_text(
             '// keep this comment\n{"mcpServers":{"other":{"url":"https://example.invalid"}}}',
@@ -194,6 +211,15 @@ def smoke(source: Path | str):
             root,
         )
         enabled = json.loads((root / ".mcp.json").read_text())["mcpServers"]["repograph"]
+        canvas_disabled = json.loads(run([node, str(cli), "canvas", "--dry-run", *arguments], root))
+        assert "--enable-verification" not in canvas_disabled["args"]
+        canvas_enabled = json.loads(
+            run(
+                [node, str(cli), "canvas", "--enable-verification", "--dry-run", *arguments],
+                root,
+            )
+        )
+        assert "--enable-verification" in canvas_enabled["args"]
         execution = asyncio.run(asyncio.wait_for(approved_fixture(enabled), timeout=60))
         (root / "native.test.mjs").write_text(
             "import test from 'node:test'; test('native smoke',()=>{});"

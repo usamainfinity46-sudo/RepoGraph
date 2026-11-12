@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.0rc1 / kit 0.2.0-rc.1 / skill 1.1.0 — local Canvas candidate
+
+- Add one-command live browser launch, automatic safe indexing, whole-scope folder
+  summaries/search, test selection, exact plan review/cancel/approve, saved outcomes
+  and session shutdown through an authenticated loopback-only adapter.
+
+- Add bounded visual repository/impact/change/scenario contracts, source evidence,
+  guided tours, validated agent citations and saved verification display.
+- Add a self-contained macOS-inspired light explorer with search, zoom/pan,
+  accessible controls, dependency walkthroughs and mobile/reduced-motion support.
+- Add MCP Apps tool/resource integration using the official bundled bridge,
+  live exploration, prepared-plan test review/execution and structured/offline fallbacks.
+- Preview edits/deletions of fresh indexed source entirely in memory, preserving
+  historical dependency evidence and conservative test recommendations.
+- Keep marketing directories local and out of Git and release packages; validate
+  UI asset/license provenance in Python and npm build checks.
+
 ## Kit 0.1.2 / Python 0.1.0rc4 / skill 1.0.2 - npm, 2026-11-11
 
 - Preserve client tool-policy tables when upgrading recognized runtime entries.

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createInterface } from 'node:readline/promises';
+import { spawn } from 'node:child_process';
 import { AGENTS, planSetup, applySetup, inspectConfiguration, managedOptions } from '../lib/config.mjs';
 import { defaultCache, loadRelease, runtimePaths, runtimeReady, ensureRuntime } from '../lib/runtime.mjs';
 import { configurationReport, projectReadiness, readinessText } from '../lib/doctor.mjs';
@@ -17,6 +18,8 @@ async function main() {
     'dry-run': { type: 'boolean' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean', short: 'v' },
     upgrade: { type: 'boolean' }, 'enable-verification': { type: 'boolean' }, 'disable-verification': { type: 'boolean' },
     'python-executable': { type: 'string' }, 'node-executable': { type: 'string' }, 'jest-entry': { type: 'string' }, 'vitest-entry': { type: 'string' },
+    port: {type:'string'}, 'no-open': {type:'boolean'},
+    'pytest-plugin':{type:'string',multiple:true},
   } });
   if (values.version) { console.log(metadata.version); return; }
   const command = positionals[0] || 'setup';
@@ -25,25 +28,58 @@ async function main() {
 Usage: repograph-kit setup [--agent codex|claude-code|cursor|copilot|all] [--root PATH]
        repograph-kit setup --agent AGENT --dry-run
        repograph-kit doctor [--root PATH]
+       repograph-kit canvas [--root PATH] [--enable-verification] [--no-open]
 Options: --cache-dir PATH   Isolated backend cache (default: user cache)
-         --json            Print setup/doctor result as JSON
+         --json            Print setup/doctor result or canvas launch as JSON
          --upgrade         Update recognized stock configuration and skill files
          --enable-verification  Opt in to approved test execution (off by default)
          --disable-verification Remove execution opt-in during an upgrade
          --python-executable PATH  Project Python interpreter with pytest installed
          --node-executable PATH    Host Node executable for Jest/Vitest
          --jest-entry PATH / --vitest-entry PATH  Installed runner entry
+         --pytest-plugin MODULE    Explicitly approved installed pytest plugin
+         --port NUMBER     Local canvas port (default: automatically selected)
+         --no-open         Print the canvas URL without opening a browser
 Setup installs the bundled Python server, skill and project MCP entry.
 Requires Node 22+, and uv or Python 3.11-3.13. No tests run during setup/doctor.
 npm install itself has no setup hooks. Run setup explicitly.`);
     return;
   }
-  if (positionals.length > 1 || !['setup', 'doctor'].includes(command)) throw new Error('Use setup, doctor or --help');
+  if (positionals.length > 1 || !['setup', 'doctor', 'canvas'].includes(command)) throw new Error('Use setup, doctor, canvas or --help');
   const root = fs.realpathSync(values.root || process.cwd());
   if (!fs.statSync(root).isDirectory()) throw new Error('Project root must be a directory');
   const release = loadRelease(packageRoot);
   const runtime = runtimePaths(values['cache-dir'] || defaultCache(), release);
   if (values['enable-verification'] && values['disable-verification']) throw new Error('Choose either --enable-verification or --disable-verification');
+  if (command === 'canvas') {
+    if (values.port && (!/^\d+$/.test(values.port) || Number(values.port)>65535)) throw new Error('Port must be 0..65535');
+    // A checked-in client entry cannot grant execution to a standalone browser session.
+    const flags=[];
+    if(values['enable-verification'])flags.push('--enable-verification');
+    for(const flag of ['python-executable','node-executable','jest-entry','vitest-entry'])if(values[flag]){
+      const index=flags.indexOf('--'+flag);if(index>=0)flags.splice(index,2);
+      flags.push('--'+flag,path.resolve(values[flag]));
+    }
+    if(!flags.includes('--node-executable'))flags.push('--node-executable',process.execPath);
+    for(const plugin of values['pytest-plugin']||[])flags.push('--pytest-plugin',plugin);
+    if(flags.includes('--enable-verification')&&!flags.includes('--python-executable')){
+      const projectPython=path.join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
+      if(fs.existsSync(projectPython))flags.push('--python-executable',projectPython);
+    }
+    const launch=['-I','-m','repograph','--root',root,...flags,'--port',values.port||'0'];
+    if(values['no-open'])launch.push('--no-open');
+    if(values.json)launch.push('--launch-json');
+    launch.push('canvas-live');
+    if(values['dry-run']){console.log(JSON.stringify({dryRun:true,root,python:runtime.python,args:launch}));return;}
+    ensureRuntime(runtime,release,root);
+    const child=spawn(runtime.python,launch,{shell:false,stdio:'inherit',windowsHide:true,
+      env:Object.fromEntries(Object.entries(process.env).filter(([key])=>!/^(PYTHON|VIRTUAL_ENV$)/i.test(key)))});
+    child.on('error',error=>{console.error(`repograph-kit: ${error.message}`);process.exitCode=1;});
+    child.on('exit',code=>{process.exitCode=code??1;});
+    process.on('SIGINT',()=>child.kill('SIGINT'));
+    process.on('SIGTERM',()=>child.kill('SIGTERM'));
+    return;
+  }
   if (command === 'doctor') {
     if (values.agent && !Object.hasOwn(AGENTS, values.agent) && values.agent !== 'all') throw new Error('Unknown agent');
     const backendReady = runtimeReady(runtime, release);

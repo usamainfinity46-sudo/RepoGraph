@@ -78,6 +78,17 @@ async def check_examples() -> dict:
                 assert denied.isError and "verification_disabled" in denied.content[0].text
                 empty = await session.call_tool("analyze_impact", {"paths": []})
                 assert not empty.isError and json.loads(empty.content[0].text)["total"] == 0
+                for arguments in (
+                    {"mode": "repository", "limit": 2},
+                    {"mode": "impact", "paths": ["pricing.py"]},
+                    {"mode": "scenario", "paths": ["pricing.py"], "intent": "Explore pricing"},
+                ):
+                    name = "open_repository_canvas"
+                    Draft202012Validator(available[name].inputSchema).validate(arguments)
+                    response = await session.call_tool(name, arguments)
+                    assert not response.isError, response.content
+                    canvas = json.loads(response.content[0].text)
+                    assert canvas["schema_version"] == 1 and canvas["snapshot_ids"]
         assert all(path.read_bytes() == content for path, content in original.items())
         assert not (root / "pricing.executed").exists(), "Target code executed during analysis"
         return {

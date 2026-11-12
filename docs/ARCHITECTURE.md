@@ -1,5 +1,23 @@
 # Architecture
 
+Canvas adds transport-independent projection (`canvas.py`) and in-memory proposed
+source analysis (`scenarios.py`). Existing graph/impact/test services remain the
+source of evidence. Pydantic projections include pagination, provenance, unknowns,
+guided tours, optional cited interpretations and optional saved verification.
+The renderer ships self-contained HTML with inert escaped data and hashed assets.
+MCP Apps metadata/resources and tool wrappers live only in the MCP adapter; the
+official frontend bridge is bundled from pinned npm source in web/canvas.
+No Node process, model API or repository execution is required for canvas analysis.
+Explicit `canvas-live` adds a separate local-browser adapter in `workbench.py`;
+the MCP transport remains stdio. It binds IPv4 loopback only, checks bearer plus
+exact Host/Origin, rejects framing and limits request sizes/concurrency. It calls
+validated existing services with the unchanged prepared-plan approval boundary.
+It cannot change roots or host policy. The npm `canvas` launcher bootstraps the
+checksum-locked backend, indexes source and opens this interface without agent setup.
+Content previews statically reparse a fresh indexed tree in memory and preserve
+the base graph for deleted dependencies without publishing either preview graph.
+See CANVAS.md for exact scope, limits, UI lifecycle and acceptance boundaries.
+
 The rc4 candidate adds a bundled Node 22/24 reporter and execution adapter. Only
 approved verification loads the reporter; discovery/preparation never invokes
 Node or imports repository code. Fixed argv pins the host Node and trusted

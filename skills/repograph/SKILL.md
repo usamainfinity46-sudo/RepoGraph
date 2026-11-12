@@ -3,9 +3,9 @@ name: repograph
 description: "Use RepoGraph MCP to explore Python/JS/TS repositories, trace callers and dependencies, assess change impact, and select tests with source evidence. Apply when RepoGraph is requested or a connected RepoGraph server can help with repository impact or test planning. Optional verification requires a reviewed, approved plan. Not for general questions unrelated to repository code."
 license: Apache-2.0
 metadata:
-  version: "1.0.2"
+  version: "1.1.0"
   repository: "https://github.com/usamainfinity46-sudo/RepoGraph"
-  requires: "Local RepoGraph MCP; rc4 for Node execution and scoped uncertainty"
+  requires: "Local RepoGraph MCP; 0.2 for live Canvas, rc4 for Node/scoped uncertainty"
 ---
 
 # RepoGraph
@@ -84,6 +84,42 @@ Distinguish `context` ownership from semantic calls; unresolved edges and dynami
 imports are uncertainty, and an empty impact list does not prove no effects.
 Static aliases need rc2 and supported nearest tsconfig/jsconfig paths; inherited
 or executable configuration remains unsupported.
+
+## Explore visually and preview proposals
+
+When the user wants a canvas, inspect live schemas for `open_repository_canvas`
+and `get_repository_canvas`. These are optional newer tools: do not assume an
+older published server exposes them. Use `open_repository_canvas` for a capable
+MCP Apps host; otherwise explain the structured response and offer the offline
+`repograph://canvas` HTML resource or an authorized host CLI export. Do not claim
+an embedded view appeared without observing it. No remote publication is needed.
+
+Choose repository mode for saved navigation, impact mode with explicit paths or
+node_ids, and changes mode for actual WORKTREE changes. Pin snapshot_id when paging;
+honor complete/view_complete, next_offset, stale/unknown freshness and uncertainty.
+Refresh source through the existing index workflow when authorized; canvas refresh
+does not itself re-index. Keep original before_snapshot_id for deleted evidence.
+
+For a proposed change, use scenario mode with selected existing paths/symbol IDs,
+an explicit intent and any assumptions. Optional proposed_files contain bounded
+replacement contents or null for deletion of existing indexed source only. These
+previews require a fresh base, change no files and do not execute code. Do not
+claim they implement arbitrary feature requests, create new unindexed files or
+simulate runtime effects. Test suggestions remain conservative base-graph evidence.
+
+Optional explanations require a node_id, text and valid snapshot_id/edge_id
+citations touching that node. Label business meanings as agent interpretations;
+never invent citations, certainty or test results. A verification_plan_id can show
+an existing saved run but does not establish that it applies to the current tree.
+Canvas analysis tools never execute verification. Live 0.2 interfaces expose the
+same prepared-plan workflow: host opt-in, exact command review, then actual user
+approval. Never infer approval from opening the canvas or discovering tests.
+For a direct local browser experience, an installed 0.2 kit supports
+`repograph-kit canvas` in the target repository, or `--enable-verification` when
+the host explicitly opts in. It indexes and opens the interface without agent
+setup. Do not enable execution merely to display the map. The UI can select tests,
+review/cancel plans, run approved plans and show saved outcomes. Never substitute
+arbitrary package scripts or bypass host/client refusals.
 
 ## Select tests; execute only when requested and approved
 

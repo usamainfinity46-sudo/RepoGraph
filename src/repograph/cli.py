@@ -5,6 +5,8 @@ import sqlite3
 from pathlib import Path
 
 from repograph import __version__
+from repograph.canvas import CanvasService
+from repograph.canvas_render import render_canvas
 from repograph.config import Settings
 from repograph.git_service import GitService
 from repograph.graph import GraphService
@@ -42,6 +44,35 @@ def main() -> None:
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--max-nodes", type=int, default=5000)
     parser.add_argument(
+        "--port", type=int, default=0, help="Local canvas port (0 selects a free port)"
+    )
+    parser.add_argument(
+        "--no-open", action="store_true", help="Print the canvas URL without opening it"
+    )
+    parser.add_argument("--launch-json", action="store_true", help="Print canvas startup as JSON")
+    parser.add_argument(
+        "--canvas-mode",
+        choices=["repository", "impact", "changes", "scenario"],
+        default="repository",
+    )
+    parser.add_argument(
+        "--output", type=Path, help="New HTML file for canvas; existing files refused"
+    )
+    parser.add_argument("--query", default="", help="Canvas repository search")
+    parser.add_argument("--offset", type=int, default=0, help="Canvas page offset")
+    parser.add_argument("--limit", type=int, default=100, help="Canvas page size (1..200)")
+    parser.add_argument("--node-id", action="append", help="Canvas impact seed symbol ID")
+    parser.add_argument(
+        "--verification-plan-id", help="Include an existing saved verification result"
+    )
+    parser.add_argument("--intent", default="", help="Proposed change description for scenario")
+    parser.add_argument("--assumption", action="append", default=[], help="Scenario assumption")
+    parser.add_argument(
+        "--proposal-file",
+        type=Path,
+        help="Host JSON file with proposed_files and optional cited explanations",
+    )
+    parser.add_argument(
         "--enable-verification", action="store_true", help="Host opt-in to approved test execution"
     )
     parser.add_argument("--python-executable", type=Path)
@@ -72,6 +103,8 @@ def main() -> None:
             "serve",
             "init",
             "overview",
+            "canvas",
+            "canvas-live",
             "doctor",
             "scan",
             "parse",
@@ -129,6 +162,81 @@ def main() -> None:
             print(f"Initialized {settings.database}")
         elif args.command == "overview":
             print(OverviewService(settings).get().model_dump_json(indent=2))
+        elif args.command == "canvas-live":
+            import json
+            import signal
+            import sys
+            import webbrowser
+
+            from repograph.workbench import WorkbenchServer
+
+            indexed = GraphService(settings).index()
+            with WorkbenchServer(settings, args.port) as workbench:
+                startup = {
+                    "url": workbench.url,
+                    "root": str(settings.root),
+                    "indexed": indexed.published,
+                    "verification_enabled": settings.verification_enabled,
+                }
+                print(
+                    json.dumps(startup)
+                    if args.launch_json
+                    else f"RepoGraph Canvas: {workbench.url}\n"
+                    "Keep this terminal open. Press Ctrl+C to stop the local canvas.",
+                    flush=True,
+                )
+                if not args.no_open:
+                    try:
+                        webbrowser.open(workbench.url, new=2)
+                    except (OSError, webbrowser.Error):
+                        print("Open the canvas link above in your browser.", file=sys.stderr)
+
+                def stop_workbench(signum, frame):
+                    raise KeyboardInterrupt
+
+                signal.signal(signal.SIGTERM, stop_workbench)
+                try:
+                    workbench.serve_forever(poll_interval=0.2)
+                except KeyboardInterrupt:
+                    pass
+        elif args.command == "canvas":
+            import json
+
+            proposal = {}
+            if args.proposal_file:
+                with args.proposal_file.open("rb") as stream:
+                    raw = stream.read(2_500_001)
+                if len(raw) > 2_500_000:
+                    parser.error("Proposal file exceeds 2500000 bytes")
+                proposal = json.loads(raw)
+                if not isinstance(proposal, dict) or proposal.keys() - {
+                    "proposed_files",
+                    "explanations",
+                }:
+                    parser.error("Proposal JSON accepts proposed_files and explanations only")
+            report = CanvasService(settings).get(
+                mode=args.canvas_mode,
+                paths=([args.path] if args.path else args.change_path),
+                node_ids=args.node_id,
+                baseline=args.baseline,
+                snapshot_id=args.after,
+                before_snapshot_id=args.before,
+                query=args.query,
+                offset=args.offset,
+                limit=args.limit,
+                max_depth=args.max_depth,
+                intent=args.intent,
+                assumptions=args.assumption,
+                **proposal,
+                verification_plan_id=args.verification_plan_id,
+            )
+            if args.output:
+                html = render_canvas(report)
+                with args.output.open("x", encoding="utf-8", newline="\n") as output:
+                    output.write(html)
+                print(f"Canvas saved to {args.output.resolve()}")
+            else:
+                print(report.model_dump_json(indent=2))
         elif args.command == "doctor":
             report = ReadinessService(settings).get()
             print(report.model_dump_json(indent=2))

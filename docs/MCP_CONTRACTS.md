@@ -1,5 +1,35 @@
 # MCP contracts
 
+The 0.2.0rc1 browser workbench is explicitly launched by CLI/npm, independently
+of MCP. MCP remains stdio. Shared UI controls call existing readiness, indexing,
+test-discovery, preparation, verification and saved-result tools; execution keeps
+host opt-in and actual reviewed-plan approval. Offline resources cannot execute.
+Canvas repository reports additionally expose whole-scope total_files, folders
+(200 preview), folder_links (400 preview), their totals and unresolved counts.
+These aggregates are from the full selected snapshot, independent of node-page
+size; expanding/searching fetches details pinned to that snapshot.
+
+Unreleased Canvas schema 1 adds `get_repository_canvas` and
+`open_repository_canvas`. Both accept mode (repository/impact/changes/scenario),
+paths/node_ids, snapshot_id/before_snapshot_id/baseline, query, offset, limit,
+max_depth, intent, assumptions, proposed_files, explanations and optional
+verification_plan_id. Defaults are repository mode, offset 0, limit 100 and
+depth 6; limits are 200 nodes/page, 800 displayed edges, 2,000 traversed nodes,
+depth 0..20 and 8 MB output. No tool automatically indexes or executes tests.
+Impact requires explicit seeds; omitted paths in changes mode use actual Git
+WORKTREE changes. Empty paths selects nothing; proposed content seeds its edited
+paths. Repository query is a case-insensitive path/name substring.
+`open_repository_canvas` links `_meta.ui.resourceUri` to
+`ui://repograph/canvas.html` (`text/html;profile=mcp-app`). The resource requests
+no network/resource domains. `repograph://canvas` remains ordinary offline HTML.
+Non-UI clients retain structured results. Resources never enable verification.
+See CANVAS.md for projection fields, scenario/citation contracts and limitations.
+Errors include invalid_canvas_request, invalid_canvas_citation, canvas_output_limit,
+invalid_scenario, scenario_stale_base, scenario_unindexed_path, scenario_byte_limit
+plus existing graph/path/storage errors. Proposed content must target fresh,
+already indexed source; null content means deletion. Saved verification is read
+through the existing repository-scoped result contract, never re-executed.
+
 Changes in the 0.1.2 bundle / Python rc4:
 
 - Readiness distinguishes ready_for_indexing from verification_inventory_ready,
